@@ -159,7 +159,7 @@
     status.textContent='Mengambil video HD...';
     if(link.includes('vm.tiktok.com')||link.includes('vt.tiktok.com'))link=await resolveShort(link);
     try{
-      const api=`https://www.tikwm.com/api/?url=${encodeURIComponent(link)}`;
+      const api=`/api/download?url=${encodeURIComponent(link)}`;
       const r=await fetch(api);
       const j=await r.json();
       if(!j||!j.data)return status.textContent='Gagal ambil data.';
