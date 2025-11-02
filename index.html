@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="id">
+<!DOCTYPE html>
+<html lang="id">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -124,12 +125,29 @@
   const ctx=c.getContext('2d');
   let w,h,particles=[];
   function resize(){w=c.width=window.innerWidth;h=c.height=window.innerHeight;}
-  window.addEventListener('resize',resize);resize();function rand(a,b){return Math.random()*(b-a)+a;}
+  window.addEventListener('resize',resize);resize();
 
-for(let i=0;i<100;i++){ particles.push({x:rand(0,w),y:rand(0,h),r:rand(1,2),dx:rand(-0.3,0.3),dy:rand(-0.3,0.3),hue:rand(0,360)}); }
+  function rand(a,b){return Math.random()*(b-a)+a;}
 
-function draw(){ ctx.clearRect(0,0,w,h); for(const p of particles){ p.x+=p.dx;p.y+=p.dy;p.hue+=0.5; if(p.x<0||p.x>w)p.dx*=-1; if(p.y<0||p.y>h)p.dy*=-1; ctx.beginPath(); ctx.fillStyle=hsl(${p.hue},100%,60%); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); } requestAnimationFrame(draw); } draw(); </script>
+  for(let i=0;i<100;i++){
+    particles.push({x:rand(0,w),y:rand(0,h),r:rand(1,2),dx:rand(-0.3,0.3),dy:rand(-0.3,0.3),hue:rand(0,360)});
+  }
 
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    for(const p of particles){
+      p.x+=p.dx;p.y+=p.dy;p.hue+=0.5;
+      if(p.x<0||p.x>w)p.dx*=-1;
+      if(p.y<0||p.y>h)p.dy*=-1;
+      ctx.beginPath();
+      ctx.fillStyle=`hsl(${p.hue},100%,60%)`;
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+</script>
 <script>
   const urlInput=document.getElementById('urlInput');
   const fetchBtn=document.getElementById('fetchBtn');
@@ -246,46 +264,6 @@ function draw(){ ctx.clearRect(0,0,w,h); for(const p of particles){ p.x+=p.dx;p.
     const id=`tiktok_${rndStr(6)}_sound.mp3`;
     await blobDownload(soundUrl,id);
   };
-</script></body>
-</html>a(13,13,13,0.18)'; ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight);
-
-    for(const p of particles){
-      // update beberapa kali bergantung dt untuk stabilitas
-      p.step();
-      p.draw(ctx);
-    }
-
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-
-  // Efek interaksi: saat mouse bergerak, sedikit tarikan ke pointer
-  let pointer = null;
-  window.addEventListener('pointermove', (e)=>{
-    pointer = {x: e.clientX, y: e.clientY};
-    // apply small repulsion/attraction pada beberapa partikel
-    for(let i=0;i<6;i++){
-      const idx = Math.floor(Math.random()*particles.length);
-      const p = particles[idx];
-      const dx = pointer.x - p.x;
-      const dy = pointer.y - p.y;
-      const dist = Math.sqrt(dx*dx+dy*dy)+0.001;
-      // ubah velocity sedikit menuju pointer
-      p.vx += (dx/dist) * 0.08;
-      p.vy += (dy/dist) * 0.08;
-    }
-  }, {passive:true});
-
-  // Jika tab tidak aktif, hentikan animasi agar hemat resource
-  document.addEventListener('visibilitychange', ()=>{
-    if(document.hidden){
-      // pause (kosongkan canvas)
-      ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
-    } else {
-      last = performance.now();
-    }
-  });
-
-})();
-</script></body>
+</script>
+</body>
 </html>
