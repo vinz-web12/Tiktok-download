@@ -407,4 +407,89 @@ video,img{
 
 })();
 </script></body>
+</html>ntHeight); }
+        else { this.y = Math.random()<0.5? -10: canvas.clientHeight+10; this.x = rand(0, canvas.clientWidth); }
+      }
+    }
+    step(){
+      this.x += this.vx;
+      this.y += this.vy;
+      this.h += this.dh; if(this.h>360) this.h-=360;
+      // jika keluar area, reset ke sisi lain
+      if(this.x < -20 || this.x > canvas.clientWidth+20 || this.y < -20 || this.y > canvas.clientHeight+20){
+        this.reset(false);
+      }
+    }
+    draw(ctx){
+      ctx.beginPath();
+      // gradient kecil untuk membuat efek lembut
+      const r = this.size;
+      const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r*4);
+      const color = `hsla(${this.h},${this.s}%,${this.l}%,${this.alpha})`;
+      g.addColorStop(0, color);
+      g.addColorStop(0.6, `hsla(${this.h},${this.s}%,${this.l-10}%,${this.alpha*0.6})`);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.arc(this.x, this.y, r*3.2, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  // Inisialisasi
+  function initParticles(){
+    particles.length = 0;
+    for(let i=0;i<PARTICLE_COUNT;i++) particles.push(new Particle());
+  }
+  initParticles();
+
+  let last = performance.now();
+  function frame(t){
+    const dt = (t - last) / 1000;
+    last = t;
+
+    // clear dengan sedikit transparansi agar jejak halus
+    ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+
+    // optional: tambahkan overlay subtle untuk menguatkan tampilan
+    // ctx.fillStyle = 'rgba(13,13,13,0.18)'; ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight);
+
+    for(const p of particles){
+      // update beberapa kali bergantung dt untuk stabilitas
+      p.step();
+      p.draw(ctx);
+    }
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  // Efek interaksi: saat mouse bergerak, sedikit tarikan ke pointer
+  let pointer = null;
+  window.addEventListener('pointermove', (e)=>{
+    pointer = {x: e.clientX, y: e.clientY};
+    // apply small repulsion/attraction pada beberapa partikel
+    for(let i=0;i<6;i++){
+      const idx = Math.floor(Math.random()*particles.length);
+      const p = particles[idx];
+      const dx = pointer.x - p.x;
+      const dy = pointer.y - p.y;
+      const dist = Math.sqrt(dx*dx+dy*dy)+0.001;
+      // ubah velocity sedikit menuju pointer
+      p.vx += (dx/dist) * 0.08;
+      p.vy += (dy/dist) * 0.08;
+    }
+  }, {passive:true});
+
+  // Jika tab tidak aktif, hentikan animasi agar hemat resource
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden){
+      // pause (kosongkan canvas)
+      ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+    } else {
+      last = performance.now();
+    }
+  });
+
+})();
+</script></body>
 </html>
