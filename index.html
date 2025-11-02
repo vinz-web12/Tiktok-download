@@ -18,24 +18,24 @@
       padding:24px;
       overflow:hidden;
     }
-    #particleCanvas{
+    canvas#particles {
       position:fixed;
-      inset:0;
+      top:0;
+      left:0;
       width:100%;
       height:100%;
       z-index:0;
       pointer-events:none;
-      mix-blend-mode:lighter;
     }
     .wrap{
+      position:relative;
+      z-index:1;
       width:100%;
       max-width:640px;
       display:flex;
       flex-direction:column;
       align-items:center;
       gap:12px;
-      z-index:1;
-      position:relative;
     }
     h1{margin:0;color:var(--accent);font-size:20px}
     input{
@@ -101,12 +101,12 @@
     .download-slide-btn{background:#00ff90;}
     #downloadNow{background:#ff5500;width:220px;}
     #downloadSound{background:#ffcc00;width:220px;}
-    @media(max-width:420px){.wrap{padding:0 8px}#fetchBtn,.btn{width:100%}}
+    @media (max-width:420px){.wrap{padding:0 8px}#fetchBtn,.btn{width:100%}}
     .status{color:var(--muted);font-size:13px;margin-top:6px}
   </style>
 </head>
 <body>
-<canvas id="particleCanvas" aria-hidden="true"></canvas>
+<canvas id="particles"></canvas>
 <div class="wrap">
   <h1>🎵 TikTok Downloader</h1>
   <input id="urlInput" placeholder="Tempel link TikTok..." />
@@ -120,78 +120,54 @@
   </div>
 </div>
 <script>
+  const c=document.getElementById('particles'),ctx=c.getContext('2d');
+  let w,h,particles=[];
+  function resize(){w=c.width=window.innerWidth;h=c.height=window.innerHeight;}
+  window.addEventListener('resize',resize);resize();
+  function rnd(a,b){return Math.random()*(b-a)+a;}
+  for(let i=0;i<80;i++){
+    particles.push({x:rnd(0,w),y:rnd(0,h),r:rnd(1.5,3),dx:rnd(-0.5,0.5),dy:rnd(-0.5,0.5),hue:rnd(0,360)});
+  }
+  function draw(){
+    ctx.clearRect(0,0,w,h);
+    for(const p of particles){
+      p.x+=p.dx;p.y+=p.dy;p.hue+=0.5;
+      if(p.x<0||p.x>w)p.dx*=-1;
+      if(p.y<0||p.y>h)p.dy*=-1;
+      ctx.beginPath();
+      ctx.fillStyle=`hsl(${p.hue},100%,60%)`;
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+</script>
+<script>
   const urlInput=document.getElementById('urlInput');
   const fetchBtn=document.getElementById('fetchBtn');
   const previewVideo=document.getElementById('previewVideo');
   const downloadNow=document.getElementById('downloadNow');
   const downloadSound=document.getElementById('downloadSound');
   const status=document.getElementById('status');
-  const photoGallery=document.getElementById('photoGallery');
-  let currentMedia=[],isVideo=false,soundUrl='';
-  function rnd(n=8){const s="abcdefghijklmnopqrstuvwxyz0123456789";let r="";for(let i=0;i<n;i++)r+=s[Math.floor(Math.random()*s.length)];return r;}
-  async function blobDownload(url,filename){try{const res=await fetch(url);if(!res.ok)throw new Error('fetch');const blob=await res.blob();const a=document.createElement('a');const obj=URL.createObjectURL(blob);a.href=obj;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(obj);}catch(e){alert('Gagal mengunduh');}}
-  async function resolveShort(u){try{const r=await fetch(u,{method:'HEAD',redirect:'follow'});return r.url||u;}catch{return u;}}
-  function createPhotoGallery(images){photoGallery.innerHTML='';const idPrefix=`tiktok_${rnd(6)}`;images.forEach((url,index)=>{const slideNumber=index+1;const itemDiv=document.createElement('div');itemDiv.className='photo-item';const img=document.createElement('img');img.src=url;img.alt=`Slide ${slideNumber}`;const downloadBtn=document.createElement('button');downloadBtn.className='btn download-slide-btn';downloadBtn.textContent=`Download Slide ${slideNumber}`;downloadBtn.onclick=async()=>{const filename=`${idPrefix}_slide_${slideNumber}.jpg`;await blobDownload(url,filename);};itemDiv.appendChild(img);itemDiv.appendChild(downloadBtn);photoGallery.appendChild(itemDiv);});}
-  fetchBtn.onclick=async()=>{let link=urlInput.value.trim();if(!link)return alert('Tempel link dulu');previewVideo.style.display='none';photoGallery.innerHTML='';downloadNow.style.display='none';downloadSound.style.display='none';status.style.display='block';status.textContent='Mengambil data...';if(link.includes('vm.tiktok.com')||link.includes('vt.tiktok.com'))link=await resolveShort(link);try{const api=`https://www.tikwm.com/api/?url=${encodeURIComponent(link)}`;const r=await fetch(api);if(!r.ok){status.textContent=`Gagal mengambil data. Kode status: ${r.status}. Coba hosting file ini.`;return;}const j=await r.json();if(!j||!j.data)return status.textContent='Gagal ambil data. Pastikan link benar.';const d=j.data;soundUrl=d.music||d.music_info?.play||'';currentMedia=[];if(Array.isArray(d.images)&&d.images.length){isVideo=false;currentMedia=d.images.slice();createPhotoGallery(currentMedia);downloadNow.style.display='inline-block';downloadNow.textContent='Download SEMUA Foto Sekaligus';status.textContent=`${currentMedia.length} foto (slide) ditemukan`;}else{const v=d.hdplay||d.play||'';if(v){isVideo=true;currentMedia=[v];previewVideo.src=v;previewVideo.style.display='block';downloadNow.style.display='inline-block';downloadNow.textContent='Download Video';status.textContent='Preview video';}else{status.textContent='Tidak ada media yang ditemukan';}}if(soundUrl)downloadSound.style.display='inline-block';}catch(e){console.error(e);status.textContent='Gagal memproses. Kemungkinan masalah CORS (Cross-Origin). Solusinya: **hosting file ini**.';}};
-  downloadNow.onclick=async()=>{const id=`tiktok_${rnd(6)}`;if(isVideo){await blobDownload(currentMedia[0],`${id}_video.mp4`);}else{for(let i=0;i<currentMedia.length;i++){const f=`${id}_slide_${i+1}.jpg`;await blobDownload(currentMedia[i],f);await new Promise(r=>setTimeout(r,300));}alert('Semua foto selesai diunduh!');}};
-  downloadSound.onclick=async()=>{if(!soundUrl)return alert('Tidak ada audio');const id=`tiktok_${rnd(6)}_sound.mp3`;await blobDownload(soundUrl,id);};
-</script>
-<script>
-(function(){
-  const canvas=document.getElementById('particleCanvas');
-  const ctx=canvas.getContext('2d');
-  let DPR=Math.max(1,window.devicePixelRatio||1);
-  function resize(){DPR=Math.max(1,window.devicePixelRatio||1);canvas.width=Math.floor(canvas.clientWidth*DPR);canvas.height=Math.floor(canvas.clientHeight*DPR);ctx.setTransform(DPR,0,0,DPR,0,0);}
-  window.addEventListener('resize',resize,{passive:true});
-  resize();
-  const PARTICLE_COUNT=200;
-  const particles=[];
-  function rand(min,max){return Math.random()*(max-min)+min;}
-  class Particle{constructor(){this.reset(true);}reset(initial=false){this.x=rand(0,canvas.clientWidth);this.y=rand(0,canvas.clientHeight);const speed=rand(0.2,1.2);const angle=rand(0,Math.PI*2);this.vx=Math.cos(angle)*speed;this.vy=Math.sin(angle)*speed;this.size=rand(0.5,1.8);this.h=rand(0,360);this.s=rand(70,100);this.l=rand(60,80);this.alpha=rand(0.6,1);this.dh=rand(0.4,1.2);if(!initial){if(Math.random()<0.5){this.x=Math.random()<0.5?-10:canvas.clientWidth+10;this.y=rand(0,canvas.clientHeight);}else{this.y=Math.random()<0.5?-10:canvas.clientHeight+10;this.x=rand(0,canvas.clientWidth);}}}step(){this.x+=this.vx;this.y+=this.vy;this.h+=this.dh;if(this.h>360)this.h-=360;if(this.x<-20||this.x>canvas.clientWidth+20||this.y<-20||this.y>canvas.clientHeight+20){this.reset(false);}}draw(ctx){ctx.beginPath();const r=this.size;const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,r*4);const color=`hsla(${this.h},${this.s}%,${this.l}%,${this.alpha})`;g.addColorStop(0,color);g.addColorStop(0.6,`hsla(${this.h},${this.s}%,${this.l-10}%,${this.alpha*0.7})`);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.arc(this.x,this.y,r*3.2,0,Math.PI*2);ctx.fill();}}
-  function initParticles(){particles.length=0;for(let i=0;i<PARTICLE_COUNT;i++)particles.push(new Particle());}
-  initParticles();
-  let last=performance.now();
-  function frame(t){last=t;ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);for(const p of particles){p.step();p.draw(ctx);}requestAnimationFrame(frame);}requestAnimationFrame(frame);
-})();
-</script>
+  const photoGallery=document.getElementById('photoGallery');let currentMedia=[],isVideo=false,soundUrl='';
+
+function rndStr(n=8){const s="abcdefghijklmnopqrstuvwxyz0123456789";let r="";for(let i=0;i<n;i++)r+=s[Math.floor(Math.random()*s.length)];return r;}
+
+async function blobDownload(url,filename){ try{ const res=await fetch(url); if(!res.ok)throw new Error('fetch'); const blob=await res.blob(); const a=document.createElement('a'); const obj=URL.createObjectURL(blob); a.href=obj;a.download=filename; document.body.appendChild(a);a.click();a.remove(); URL.revokeObjectURL(obj); }catch(e){alert('Gagal mengunduh');} }
+
+async function resolveShort(u){ try{const r=await fetch(u,{method:'HEAD',redirect:'follow'});return r.url||u;} catch{return u;} }
+
+function createPhotoGallery(images){ photoGallery.innerHTML=''; const idPrefix=tiktok_${rndStr(6)}; images.forEach((url,index)=>{ const slideNumber=index+1; const itemDiv=document.createElement('div'); itemDiv.className='photo-item'; const img=document.createElement('img'); img.src=url;img.alt=Slide ${slideNumber}; const downloadBtn=document.createElement('button'); downloadBtn.className='btn download-slide-btn'; downloadBtn.textContent=Download Slide ${slideNumber}; downloadBtn.onclick=async()=>{ const filename=${idPrefix}_slide_${slideNumber}.jpg; await blobDownload(url,filename); }; itemDiv.appendChild(img); itemDiv.appendChild(downloadBtn); photoGallery.appendChild(itemDiv); }); }
+
+fetchBtn.onclick=async()=>{ let link=urlInput.value.trim(); if(!link)return alert('Tempel link dulu'); previewVideo.style.display='none'; photoGallery.innerHTML=''; downloadNow.style.display='none'; downloadSound.style.display='none'; status.style.display='block'; status.textContent='Mengambil data...'; if(link.includes('vm.tiktok.com')||link.includes('vt.tiktok.com'))link=await resolveShort(link); try{ const api=https://www.tikwm.com/api/?url=${encodeURIComponent(link)}; const r=await fetch(api); if(!r.ok){status.textContent=Gagal mengambil data. Kode status: ${r.status};return;} const j=await r.json(); if(!j||!j.data)return status.textContent='Gagal ambil data. Pastikan link benar.'; const d=j.data; soundUrl=d.music||d.music_info?.play||''; currentMedia=[]; if(Array.isArray(d.images)&&d.images.length){ isVideo=false; currentMedia=d.images.slice(); createPhotoGallery(currentMedia); downloadNow.style.display='inline-block'; downloadNow.textContent='Download SEMUA Foto Sekaligus'; status.textContent=${currentMedia.length} foto (slide) ditemukan; }else{ const v=d.hdplay||d.play||''; if(v){ isVideo=true; currentMedia=[v]; previewVideo.src=v; previewVideo.style.display='block'; downloadNow.style.display='inline-block'; downloadNow.textContent='Download Video'; status.textContent='Preview video'; }else{status.textContent='Tidak ada media yang ditemukan';} } if(soundUrl)downloadSound.style.display='inline-block'; }catch(e){ console.error(e); status.textContent='Gagal memproses. Kemungkinan masalah CORS. Solusinya: hosting file ini.'; } };
+
+downloadNow.onclick=async()=>{ const id=tiktok_${rndStr(6)}; if(isVideo){await blobDownload(currentMedia[0],${id}_video.mp4);} else{ for(let i=0;i<currentMedia.length;i++){ const f=${id}_slide_${i+1}.jpg; await blobDownload(currentMedia[i],f); await new Promise(r=>setTimeout(r,300)); } alert('Semua foto selesai diunduh!'); } };
+
+downloadSound.onclick=async()=>{ if(!soundUrl)return alert('Tidak ada audio'); const id=tiktok_${rndStr(6)}_sound.mp3; await blobDownload(soundUrl,id); }; </script>
+
 </body>
-</html>;
-      ctx.fill();
-    }
-  }
-
-  // Inisialisasi
-  function initParticles(){
-    particles.length = 0;
-    for(let i=0;i<PARTICLE_COUNT;i++) particles.push(new Particle());
-  }
-  initParticles();
-
-  let last = performance.now();
-  function frame(t){
-    const dt = (t - last) / 1000;
-    last = t;
-
-    // clear dengan sedikit transparansi agar jejak halus
-    ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
-
-    // optional: tambahkan overlay subtle untuk menguatkan tampilan
-    // ctx.fillStyle = 'rgba(13,13,13,0.18)'; ctx.fillRect(0,0,canvas.clientWidth,canvas.clientHeight);
-
-    for(const p of particles){
-      // update beberapa kali bergantung dt untuk stabilitas
-      p.step();
-      p.draw(ctx);
-    }
-
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
-
-  // Efek interaksi: saat mouse bergerak, sedikit tarikan ke pointer
-  let pointer = null;
-  window.addEventListener('pointermove', (e)=>{
-    pointer = {x: e.clientX, y: e.clientY};
+</html>ientX, y: e.clientY};
     // apply small repulsion/attraction pada beberapa partikel
     for(let i=0;i<6;i++){
       const idx = Math.floor(Math.random()*particles.length);
