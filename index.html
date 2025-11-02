@@ -2,25 +2,108 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TikTok Downloader HD (Real)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TikTok Downloader HD - Sempurna</title>
   <style>
-    :root{--accent:#00e5ff;--bg:#0d0d0d;--muted:#9aa}
-    *{box-sizing:border-box}
-    body{
-      margin:0; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
-      background:var(--bg); color:#fff; font-family:Arial,sans-serif; padding:24px; overflow-y:auto; position:relative;
+    :root {
+      --accent: #00e5ff;
+      --bg: #0d0d0d;
+      --muted: #9aa;
     }
-    canvas#particles{position:fixed; inset:0; z-index:0; pointer-events:none;}
-    .wrap{position:relative; z-index:1; width:100%; max-width:640px; display:flex; flex-direction:column; align-items:center; gap:12px;}
-    h1{margin:0; color:var(--accent); font-size:24px; text-shadow:0 0 10px var(--accent); text-align:center;}
-    input{width:100%;padding:12px 14px;border-radius:10px;border:none;outline:none;font-size:15px;text-align:center;background:#0f1113;color:#fff}
-    button{padding:10px 16px;border-radius:10px;border:none;cursor:pointer;font-weight:700;margin-top:6px;}
-    #fetchBtn{background:var(--accent); color:#000; width:180px;}
-    .previewBox{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;margin-top:12px;}
-    video,img{width:100%;max-width:560px;border-radius:12px; display:block; box-shadow:0 10px 30px rgba(0,0,0,0.6);}
-    #downloadNow{background:#ff5500;color:#000;width:220px;display:none;}
-    .status{color:var(--muted);font-size:13px;margin-top:6px;text-align:center;}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: var(--bg);
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 24px;
+      overflow-y: auto;
+      position: relative;
+    }
+    canvas#particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    h1 {
+      margin: 0 0 16px 0;
+      color: var(--accent);
+      font-size: 24px;
+      text-shadow: 0 0 10px var(--accent);
+      text-align: center;
+    }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      text-align: center;
+      background: #0f1113;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    button {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      margin-top: 6px;
+    }
+    #fetchBtn {
+      background: var(--accent);
+      color: #000;
+      width: 180px;
+    }
+    .previewBox {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    video, img {
+      width: 100%;
+      max-width: 560px;
+      border-radius: 12px;
+      display: block;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    #downloadNow {
+      background: #ff5500;
+      color: #000;
+      width: 220px;
+      display: none;
+    }
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -35,6 +118,135 @@
       <video id="previewVideo" controls style="display:none"></video>
       <img id="previewImg" style="display:none"/>
       <button id="downloadNow">Download HD</button>
+      <p class="status" id="status" style="display:none"></p>
+    </div>
+  </div>
+
+  <!-- Partikel Background -->
+  <script>
+    (function(){
+      const canvas = document.getElementById('particles');
+      const ctx = canvas.getContext('2d');
+      function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
+      addEventListener('resize', resize); resize();
+      const parts=[]; 
+      for(let i=0;i<100;i++){
+        parts.push({
+          x:Math.random()*canvas.width,
+          y:Math.random()*canvas.height,
+          r:Math.random()*2+0.5,
+          dx:(Math.random()-0.5)*0.5,
+          dy:(Math.random()-0.5)*0.5,
+          h:Math.random()*360
+        });
+      }
+      (function anim(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        for(const p of parts){
+          p.x+=p.dx; p.y+=p.dy; p.h+=0.5;
+          if(p.x<0||p.x>canvas.width)p.dx*=-1;
+          if(p.y<0||p.y>canvas.height)p.dy*=-1;
+          const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
+          g.addColorStop(0,`hsla(${p.h},90%,65%,0.9)`);
+          g.addColorStop(0.6,`hsla(${p.h},90%,55%,0.45)`);
+          g.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle=g;
+          ctx.beginPath();
+          ctx.arc(p.x,p.y,p.r*3,0,Math.PI*2);
+          ctx.fill();
+        }
+        requestAnimationFrame(anim);
+      })();
+    })();
+  </script>
+
+  <!-- Logika Utama -->
+  <script>
+    const fetchBtn = document.getElementById('fetchBtn');
+    const urlInput = document.getElementById('urlInput');
+    const previewVideo = document.getElementById('previewVideo');
+    const previewImg = document.getElementById('previewImg');
+    const downloadNow = document.getElementById('downloadNow');
+    const status = document.getElementById('status');
+
+    // Bersihkan URL dari parameter tracking
+    function cleanTikTokURL(url) {
+      try {
+        const u = new URL(url);
+        u.search = ''; // hapus ?_r=1 dll
+        u.hash = '';
+        return u.toString();
+      } catch {
+        return url;
+      }
+    }
+
+    fetchBtn.onclick = async () => {
+      let url = urlInput.value.trim();
+      if (!url) return alert('📌 Masukkan link TikTok terlebih dahulu!');
+
+      // Reset UI
+      previewVideo.style.display = 'none';
+      previewImg.style.display = 'none';
+      downloadNow.style.display = 'none';
+      status.style.display = 'block';
+      status.textContent = '⏳ Mengambil video...';
+
+      try {
+        // Gunakan API publik tikwm.com (stabil, no CORS)
+        const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+
+        if (data.code !== 0) throw new Error(data.msg || 'Gagal mengambil video');
+
+        const videoData = data.data;
+        const videoUrl = videoData.play; // HD tanpa watermark
+        const coverUrl = videoData.cover;
+
+        // Tampilkan preview video
+        previewVideo.src = videoUrl;
+        previewVideo.style.display = 'block';
+        previewImg.style.display = 'none';
+
+        // Siapkan tombol download
+        downloadNow.style.display = 'inline-block';
+        downloadNow.onclick = () => downloadFile(videoUrl, 'tiktok_video_hd_no_watermark.mp4');
+
+        status.textContent = '✅ Video siap! Klik "Download HD" untuk simpan.';
+      } catch (e) {
+        console.error("Error:", e);
+        status.textContent = `❌ Gagal: ${e.message || 'Link tidak valid atau server sibuk'}`;
+        // Fallback ke demo jika gagal
+        const demoUrl = 'https://www.w3schools.com/html/mov_bbb.mp4';
+        previewVideo.src = demoUrl;
+        previewVideo.style.display = 'block';
+        downloadNow.style.display = 'inline-block';
+        downloadNow.onclick = () => downloadFile(demoUrl, 'demo_video.mp4');
+        status.textContent = '⚠️ Mode demo aktif (gagal ambil video asli)';
+      }
+    };
+
+    async function downloadFile(url, filename) {
+      try {
+        status.textContent = '📥 Sedang mengunduh...';
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+        status.textContent = '✅ Download selesai!';
+      } catch (e) {
+        status.textContent = `❌ Gagal download: ${e.message}`;
+      }
+    }
+  </script>
+</body>
+</html>      <button id="downloadNow">Download HD</button>
       <p class="status" id="status" style="display:none"></p>
     </div>
   </div>
