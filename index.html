@@ -155,30 +155,7 @@
 })();
 </script>
 </body>
-</html>ntHeight); }
-        else { this.y = Math.random()<0.5? -10: canvas.clientHeight+10; this.x = rand(0, canvas.clientWidth); }
-      }
-    }
-    step(){
-      this.x += this.vx;
-      this.y += this.vy;
-      this.h += this.dh; if(this.h>360) this.h-=360;
-      // jika keluar area, reset ke sisi lain
-      if(this.x < -20 || this.x > canvas.clientWidth+20 || this.y < -20 || this.y > canvas.clientHeight+20){
-        this.reset(false);
-      }
-    }
-    draw(ctx){
-      ctx.beginPath();
-      // gradient kecil untuk membuat efek lembut
-      const r = this.size;
-      const g = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r*4);
-      const color = `hsla(${this.h},${this.s}%,${this.l}%,${this.alpha})`;
-      g.addColorStop(0, color);
-      g.addColorStop(0.6, `hsla(${this.h},${this.s}%,${this.l-10}%,${this.alpha*0.6})`);
-      g.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = g;
-      ctx.arc(this.x, this.y, r*3.2, 0, Math.PI*2);
+</html>;
       ctx.fill();
     }
   }
