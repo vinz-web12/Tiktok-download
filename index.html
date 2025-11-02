@@ -1,133 +1,153 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TikTok Downloader HD</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      background: black;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: cyan;
-      font-family: 'Poppins', sans-serif;
-    }
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 0;
-    }
-    h1 {
-      z-index: 1;
-      font-size: 1.6em;
-      text-shadow: 0 0 10px cyan;
-      margin-bottom: 20px;
-    }
-    input {
-      width: 320px;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      outline: none;
-      text-align: center;
-      font-size: 14px;
-      margin-bottom: 12px;
-      z-index: 1;
-    }
-    button {
-      padding: 12px 25px;
-      border: none;
-      border-radius: 10px;
-      background-color: cyan;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-      z-index: 1;
-    }
-    button:hover {
-      background-color: #00ffffaa;
-      transform: scale(1.05);
-    }
-    p {
-      color: white;
-      font-size: 13px;
-      margin-top: 10px;
-      z-index: 1;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TikTok Downloader HD (Preview & Download Inline)</title>
+<style>
+  :root{--accent:#00e5ff;--bg:#0d0d0d;--muted:#9aa}
+  *{box-sizing:border-box}
+  body{
+    margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:var(--bg);color:#fff;font-family:Inter,Arial,sans-serif;padding:24px;overflow-y:auto;
+  }
+  canvas#particles{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .wrap{position:relative;z-index:1;width:100%;max-width:640px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+  h1{margin:0;color:var(--accent);font-size:20px;text-shadow:0 0 10px var(--accent)}
+  input{width:100%;padding:12px 14px;border-radius:10px;border:none;outline:none;font-size:15px;text-align:center;background:#0f1113;color:#fff}
+  #fetchBtn{width:180px;padding:10px 14px;border-radius:10px;border:none;background:var(--accent);color:#000;font-weight:700;cursor:pointer}
+  .previewBox{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;margin-top:6px}
+  video,img{width:100%;max-width:560px;border-radius:12px;display:block;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+  .btn{padding:10px 18px;border-radius:10px;border:none;cursor:pointer;font-weight:700;color:#000;width:220px}
+  #downloadNow{background:#ff5500;width:220px;display:none}
+  #downloadSound{background:#ffcc00;width:220px;display:none}
+  .status{color:var(--muted);font-size:13px;margin-top:6px}
+  @media (max-width:420px){.wrap{padding:0 8px}#fetchBtn,.btn{width:100%}}
+</style>
 </head>
 <body>
-  <canvas id="bg"></canvas>
+<canvas id="particles" aria-hidden="true"></canvas>
+
+<div class="wrap">
   <h1>🎵 TikTok Downloader HD</h1>
-  <input type="text" id="url" placeholder="Tempel link TikTok di sini" />
-  <button onclick="downloadHD()">Download HD</button>
-  <p id="status"></p>
+  <input id="urlInput" placeholder="Tempel link TikTok..." />
+  <button id="fetchBtn">Fetch HD</button>
 
-  <script>
-    function downloadHD() {
-      const url = document.getElementById("url").value.trim();
-      const status = document.getElementById("status");
+  <div class="previewBox" id="previewBox">
+    <video id="previewVideo" controls playsinline style="display:none"></video>
+    <img id="previewImg" style="display:none;border-radius:12px;max-width:560px" />
+    <button id="downloadNow" class="btn">Download Video (HD)</button>
+    <button id="downloadSound" class="btn" id="downloadSoundBtn" style="display:none;">🎵 Download Audio</button>
+    <p class="status" id="status" style="display:none"></p>
+  </div>
+</div>
 
-      if (!url) {
-        status.innerText = "Masukkan link TikTok dulu.";
+<script>
+  // particle bg (small, non-intrusive)
+  (function(){
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
+    addEventListener('resize', resize); resize();
+    const parts=[]; for(let i=0;i<100;i++){parts.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2+0.6,dx:(Math.random()-0.5)*0.6,dy:(Math.random()-0.5)*0.6,h:Math.random()*360})}
+    (function anim(){ctx.clearRect(0,0,canvas.width,canvas.height);for(const p of parts){p.x+=p.dx;p.y+=p.dy;p.h+=0.6; if(p.x<0||p.x>canvas.width)p.dx*=-1; if(p.y<0||p.y>canvas.height)p.dy*=-1; const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4); g.addColorStop(0,`hsla(${p.h},90%,65%,0.95)`); g.addColorStop(0.6,`hsla(${p.h},90%,55%,0.45)`); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,p.r*3,0,Math.PI*2); ctx.fill();} requestAnimationFrame(anim) })();
+  })();
+</script>
+
+<script>
+  const fetchBtn = document.getElementById('fetchBtn');
+  const urlInput = document.getElementById('urlInput');
+  const status = document.getElementById('status');
+  const previewVideo = document.getElementById('previewVideo');
+  const previewImg = document.getElementById('previewImg');
+  const downloadNow = document.getElementById('downloadNow');
+  const downloadSoundBtn = document.getElementById('downloadSound');
+
+  let currentVideoUrl = '';
+  let currentAudioUrl = '';
+
+  function showStatus(t){ status.style.display='block'; status.textContent = t; }
+  function hideStatus(){ status.style.display='none'; status.textContent=''; }
+
+  // helper: download via blob so it downloads in same tab
+  async function blobDownload(url, filename){
+    try{
+      showStatus('Mempersiapkan unduhan...');
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('fetch fail');
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+      hideStatus();
+    }catch(e){
+      showStatus('Gagal mengunduh: '+(e.message||e));
+    }
+  }
+
+  fetchBtn.onclick = async () => {
+    const link = urlInput.value.trim();
+    if(!link) return alert('Tempel link dulu');
+    previewVideo.style.display='none';
+    previewImg.style.display='none';
+    downloadNow.style.display='none';
+    downloadSoundBtn.style.display='none';
+    showStatus('Meminta sumber HD (server) ...');
+
+    try{
+      // panggil serverless proxy di /api/download (server akan mengakses TikTok & return best urls)
+      const proxyUrl = `/api/download?url=${encodeURIComponent(link)}`;
+      const res = await fetch(proxyUrl);
+      if(!res.ok) throw new Error('proxy fail');
+      const j = await res.json();
+
+      // j expected: { videoUrl: '...', audioUrl: '...', cover: '...', type: 'video'|'image' }
+      if(!j || (!j.videoUrl && !j.imageUrl)){
+        showStatus('Gagal mendapatkan media dari server.');
         return;
       }
 
-      // redirect ke situs download HD resmi (aman & cepat)
-      const encoded = encodeURIComponent(url);
-      const redirectUrl = `https://ssstik.io/`;
+      currentVideoUrl = j.videoUrl || '';
+      currentAudioUrl = j.audioUrl || '';
 
-      status.innerText = "Membuka downloader HD...";
-      setTimeout(() => {
-        window.open(redirectUrl, "_blank");
-        status.innerText = "Jika tidak terbuka otomatis, buka manual situs di tab baru.";
-      }, 800);
-    }
+      if(j.imageUrl && !j.videoUrl){
+        // image (photo/carousel) -> show image + download button
+        previewImg.src = j.imageUrl;
+        previewImg.style.display='block';
+        downloadNow.style.display='inline-block';
+        downloadNow.textContent = 'Download Foto (HD)';
+        downloadNow.onclick = ()=>blobDownload(j.imageUrl, `tiktok_photo_${Date.now()}.jpg`);
+        showStatus('Foto siap diunduh (HD)');
+        return;
+      }
 
-    // efek partikel
-    const canvas = document.getElementById("bg");
-    const ctx = canvas.getContext("2d");
-    let w, h, particles = [];
-    function resize() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
+      if(currentVideoUrl){
+        // show preview and download button below
+        previewVideo.src = currentVideoUrl;
+        previewVideo.style.display='block';
+        downloadNow.style.display='inline-block';
+        downloadNow.textContent = 'Download Video (HD)';
+        downloadNow.onclick = ()=>blobDownload(currentVideoUrl, `tiktok_video_hd_${Date.now()}.mp4`);
+        if(currentAudioUrl){
+          downloadSoundBtn.style.display='inline-block';
+          downloadSoundBtn.onclick = ()=>blobDownload(currentAudioUrl, `tiktok_sound_${Date.now()}.mp3`);
+        } else {
+          downloadSoundBtn.style.display='none';
+        }
+        showStatus('Preview siap — tekan Download di bawah untuk simpan (HD).');
+        return;
+      }
+
+      showStatus('Tidak ada media yang ditemukan.');
+    }catch(err){
+      console.error(err);
+      showStatus('Gagal koneksi ke server. Pastikan sudah deploy API.');
     }
-    window.addEventListener("resize", resize);
-    resize();
-    for (let i = 0; i < 100; i++) {
-      particles.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        r: Math.random() * 2,
-        dx: (Math.random() - 0.5) * 0.5,
-        dy: (Math.random() - 0.5) * 0.5,
-      });
-    }
-    function animate() {
-      ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = "white";
-      particles.forEach(p => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsl(${Math.random() * 360},100%,70%)`;
-        ctx.fill();
-        p.x += p.dx;
-        p.y += p.dy;
-        if (p.x < 0 || p.x > w) p.dx *= -1;
-        if (p.y < 0 || p.y > h) p.dy *= -1;
-      });
-      requestAnimationFrame(animate);
-    }
-    animate();
-  </script>
+  };
+</script>
 </body>
 </html>
