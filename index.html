@@ -17,7 +17,7 @@
       color:#fff;
       font-family:Inter,Arial,sans-serif;
       padding:24px;
-      overflow-y:auto; /* biar bisa scroll kalau konten panjang */
+      overflow-y:auto;
       overflow-x:hidden;
     }
     canvas#particles {
@@ -38,7 +38,7 @@
       flex-direction:column;
       align-items:center;
       gap:12px;
-      padding-bottom:60px; /* ruang bawah biar tombol gak ketutup */
+      padding-bottom:60px;
     }
     h1{margin:0;color:var(--accent);font-size:20px}
     input{
@@ -88,7 +88,7 @@
     video,img{
       width:100%;
       max-width:560px;
-      max-height:400px; /* batasi tinggi video */
+      max-height:400px;
       object-fit:contain;
       border-radius:12px;
       display:block;
@@ -109,7 +109,7 @@
     @media (max-width:420px){
       .wrap{padding:0 8px}
       #fetchBtn,.btn{width:100%}
-      video,img{max-height:300px;} /* di HP lebih kecil */
+      video,img{max-height:300px;}
     }
     .status{color:var(--muted);font-size:13px;margin-top:6px}
   </style>
@@ -130,19 +130,16 @@
 </div>
 
 <script>
-  // ====== Partikel warna-warni ======
+  // Particle effect
   const c=document.getElementById('particles');
   const ctx=c.getContext('2d');
   let w,h,particles=[];
   function resize(){w=c.width=window.innerWidth;h=c.height=window.innerHeight;}
   window.addEventListener('resize',resize);resize();
-
   function rand(a,b){return Math.random()*(b-a)+a;}
-
   for(let i=0;i<100;i++){
     particles.push({x:rand(0,w),y:rand(0,h),r:rand(1,2),dx:rand(-0.3,0.3),dy:rand(-0.3,0.3),hue:rand(0,360)});
   }
-
   function draw(){
     ctx.clearRect(0,0,w,h);
     for(const p of particles){
@@ -160,7 +157,6 @@
 </script>
 
 <script>
-  // ====== Logika TikTok Downloader ======
   const urlInput=document.getElementById('urlInput');
   const fetchBtn=document.getElementById('fetchBtn');
   const previewVideo=document.getElementById('previewVideo');
@@ -234,21 +230,21 @@
       currentMedia=[];
       if(Array.isArray(d.images)&&d.images.length){
         isVideo=false;
-        currentMedia=d.images.slice();
+        currentMedia=d.images.map(img => img.replace(/watermark=1/, 'watermark=0'));
         createPhotoGallery(currentMedia);
         downloadNow.style.display='inline-block';
         downloadNow.textContent='Download SEMUA Foto Sekaligus';
-        status.textContent=`${currentMedia.length} foto (slide) ditemukan`;
+        status.textContent=`${currentMedia.length} foto (HD) ditemukan`;
       }else{
-        const v=d.hdplay||d.play||'';
+        const v=d.hdplay||d.hd_video_url||d.play||d.play_addr||'';
         if(v){
           isVideo=true;
           currentMedia=[v];
           previewVideo.src=v;
           previewVideo.style.display='block';
           downloadNow.style.display='inline-block';
-          downloadNow.textContent='Download Video';
-          status.textContent='Preview video';
+          downloadNow.textContent='Download Video (HD)';
+          status.textContent='Preview video HD';
         }else{status.textContent='Tidak ada media yang ditemukan';}
       }
       if(soundUrl)downloadSound.style.display='inline-block';
@@ -260,14 +256,14 @@
 
   downloadNow.onclick=async()=>{
     const id=`tiktok_${rndStr(6)}`;
-    if(isVideo){await blobDownload(currentMedia[0],`${id}_video.mp4`);}
+    if(isVideo){await blobDownload(currentMedia[0],`${id}_video_hd.mp4`);}
     else{
       for(let i=0;i<currentMedia.length;i++){
-        const f=`${id}_slide_${i+1}.jpg`;
+        const f=`${id}_slide_${i+1}_hd.jpg`;
         await blobDownload(currentMedia[i],f);
         await new Promise(r=>setTimeout(r,300));
       }
-      alert('Semua foto selesai diunduh!');
+      alert('Semua foto HD selesai diunduh!');
     }
   };
 
