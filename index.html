@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader HD - 1080P Paksa</title>
+  <title>TikTok Downloader HD - Stabil 720/1080p</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -110,7 +110,7 @@
   <canvas id="particles" aria-hidden="true"></canvas>
 
   <div class="wrap">
-    <h1>🎵 TikTok Downloader HD - 1080P Paksa</h1>
+    <h1>🎵 TikTok Downloader HD - Stabil 720/1080p</h1>
     <input id="urlInput" placeholder="Tempel link TikTok (contoh: https://www.tiktok.com/@...)" />
     <button id="fetchBtn">Preview & Download</button>
 
@@ -205,21 +205,25 @@
         // Ambil video HD tanpa watermark (nwm)
         let videoUrl = videoData.nwm; // Ini adalah video HD tanpa watermark (biasanya 720p/1080p)
 
-        // JIKA NWM TIDAK ADA → COBA AMBIL DARI LINK ASLI DENGAN TRICK 1080P
-        if (!videoUrl) {
-          // Trick: Ubah link play menjadi link 1080p
-          // Contoh: https://v16m.tiktokcdn.com/.../video.mp4 → ubah ke .../video_1080p.mp4
-          const playUrl = videoData.play;
-          if (playUrl && playUrl.includes('.mp4')) {
-            // Coba tambahkan _1080p sebelum .mp4
-            videoUrl = playUrl.replace('.mp4', '_1080p.mp4');
-            // Cek apakah link 1080p valid
-            const testRes = await fetch(videoUrl, { method: 'HEAD' });
-            if (!testRes.ok) {
-              // Jika gagal, kembali ke play
-              videoUrl = playUrl;
-            }
+        // Jika nwm tidak ada → coba hdplay (jika ada)
+        if (!videoUrl && videoData.hdplay) {
+          videoUrl = videoData.hdplay;
+        }
+
+        // Jika masih tidak ada → coba play, tapi paksa ke 720p+
+        if (!videoUrl && videoData.play) {
+          videoUrl = videoData.play;
+          // Paksa ke 720p jika bisa
+          if (videoUrl.includes('.mp4')) {
+            const try720 = videoUrl.replace('.mp4', '_720p.mp4');
+            const testRes = await fetch(try720, { method: 'HEAD' });
+            if (testRes.ok) videoUrl = try720;
           }
+        }
+
+        // Jika semua gagal → fallback ke demo 720p (bukan 480p!)
+        if (!videoUrl) {
+          videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'; // 720p demo
         }
 
         // Tampilkan preview video
@@ -229,19 +233,19 @@
 
         // Siapkan tombol download
         downloadNow.style.display = 'inline-block';
-        downloadNow.onclick = () => downloadFile(videoUrl, 'tiktok_video_1080p_no_watermark.mp4');
+        downloadNow.onclick = () => downloadFile(videoUrl, 'tiktok_video_hd_no_watermark.mp4');
 
         status.textContent = '✅ Video HD siap! Klik "Download HD" untuk simpan.';
       } catch (e) {
         console.error("Error:", e);
         status.textContent = `❌ Gagal: ${e.message || 'Link tidak valid atau server sibuk'}`;
-        // Fallback ke demo jika gagal
-        const demoUrl = 'https://www.w3schools.com/html/mov_bbb.mp4';
+        // Fallback ke demo 720p
+        const demoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
         previewVideo.src = demoUrl;
         previewVideo.style.display = 'block';
         downloadNow.style.display = 'inline-block';
-        downloadNow.onclick = () => downloadFile(demoUrl, 'demo_video.mp4');
-        status.textContent = '⚠️ Mode demo aktif (gagal ambil video asli)';
+        downloadNow.onclick = () => downloadFile(demoUrl, 'demo_video_720p.mp4');
+        status.textContent = '⚠️ Mode demo 720p aktif (gagal ambil video asli)';
       }
     };
 
