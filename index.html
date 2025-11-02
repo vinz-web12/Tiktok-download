@@ -17,8 +17,7 @@
       color:#fff;
       font-family:Inter,Arial,sans-serif;
       padding:24px;
-      overflow-y:auto;
-      overflow-x:hidden;
+      overflow:hidden;
     }
     canvas#particles {
       position:fixed;
@@ -38,7 +37,6 @@
       flex-direction:column;
       align-items:center;
       gap:12px;
-      padding-bottom:60px;
     }
     h1{margin:0;color:var(--accent);font-size:20px}
     input{
@@ -72,24 +70,22 @@
       margin-top:6px;
     }
     #photoGallery{
-      width:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:20px;
+        width:100%;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:20px;
     }
     .photo-item {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
     }
     video,img{
       width:100%;
       max-width:560px;
-      max-height:400px;
-      object-fit:contain;
       border-radius:12px;
       display:block;
       box-shadow:0 10px 30px rgba(0,0,0,0.6);
@@ -106,11 +102,7 @@
     .download-slide-btn{background:#00ff90;}
     #downloadNow{background:#ff5500;width:220px;}
     #downloadSound{background:#ffcc00;width:220px;}
-    @media (max-width:420px){
-      .wrap{padding:0 8px}
-      #fetchBtn,.btn{width:100%}
-      video,img{max-height:300px;}
-    }
+    @media (max-width:420px){.wrap{padding:0 8px}#fetchBtn,.btn{width:100%}}
     .status{color:var(--muted);font-size:13px;margin-top:6px}
   </style>
 </head>
@@ -130,7 +122,7 @@
 </div>
 
 <script>
-  // Particle effect
+  // ---- Partikel ----
   const c=document.getElementById('particles');
   const ctx=c.getContext('2d');
   let w,h,particles=[];
@@ -164,7 +156,6 @@
   const downloadSound=document.getElementById('downloadSound');
   const status=document.getElementById('status');
   const photoGallery=document.getElementById('photoGallery');
-
   let currentMedia=[],isVideo=false,soundUrl='';
 
   function rndStr(n=8){const s="abcdefghijklmnopqrstuvwxyz0123456789";let r="";for(let i=0;i<n;i++)r+=s[Math.floor(Math.random()*s.length)];return r;}
@@ -209,6 +200,18 @@
     });
   }
 
+  async function getDirectHD(link){
+    try{
+      const clean = link.split("?")[0];
+      const html = await fetch(clean).then(r=>r.text());
+      const match = html.match(/"playAddr":"(.*?)"/);
+      if(match){
+        return decodeURIComponent(match[1].replace(/\\u0026/g,"&")).replace(/\\/g,"");
+      }
+    }catch(e){}
+    return null;
+  }
+
   fetchBtn.onclick=async()=>{
     let link=urlInput.value.trim();
     if(!link)return alert('Tempel link dulu');
@@ -220,23 +223,25 @@
     status.textContent='Mengambil data...';
     if(link.includes('vm.tiktok.com')||link.includes('vt.tiktok.com'))link=await resolveShort(link);
     try{
-      const api=`https://www.tikwm.com/api/?url=${encodeURIComponent(link)}`;
+      // Coba ambil video langsung HD
+      let directHD = await getDirectHD(link);
+      const api=`https://www.tikwm.com/api/?url=${encodeURIComponent(link)}&hd=1`;
       const r=await fetch(api);
-      if(!r.ok){status.textContent=`Gagal mengambil data. Kode status: ${r.status}`;return;}
       const j=await r.json();
       if(!j||!j.data)return status.textContent='Gagal ambil data. Pastikan link benar.';
       const d=j.data;
       soundUrl=d.music||d.music_info?.play||'';
       currentMedia=[];
+
       if(Array.isArray(d.images)&&d.images.length){
         isVideo=false;
-        currentMedia=d.images.map(img => img.replace(/watermark=1/, 'watermark=0'));
+        currentMedia=d.images.slice();
         createPhotoGallery(currentMedia);
         downloadNow.style.display='inline-block';
         downloadNow.textContent='Download SEMUA Foto Sekaligus';
-        status.textContent=`${currentMedia.length} foto (HD) ditemukan`;
+        status.textContent=`${currentMedia.length} foto (slide) ditemukan`;
       }else{
-        const v=d.hdplay||d.hd_video_url||d.play||d.play_addr||'';
+        const v = directHD || d.hdplay || d.play;
         if(v){
           isVideo=true;
           currentMedia=[v];
@@ -244,8 +249,8 @@
           previewVideo.style.display='block';
           downloadNow.style.display='inline-block';
           downloadNow.textContent='Download Video (HD)';
-          status.textContent='Preview video HD';
-        }else{status.textContent='Tidak ada media yang ditemukan';}
+          status.textContent='Preview video (Full HD)';
+        }else{status.textContent='Tidak ada media ditemukan';}
       }
       if(soundUrl)downloadSound.style.display='inline-block';
     }catch(e){
@@ -259,11 +264,11 @@
     if(isVideo){await blobDownload(currentMedia[0],`${id}_video_hd.mp4`);}
     else{
       for(let i=0;i<currentMedia.length;i++){
-        const f=`${id}_slide_${i+1}_hd.jpg`;
+        const f=`${id}_slide_${i+1}.jpg`;
         await blobDownload(currentMedia[i],f);
         await new Promise(r=>setTimeout(r,300));
       }
-      alert('Semua foto HD selesai diunduh!');
+      alert('Semua foto selesai diunduh!');
     }
   };
 
