@@ -2,124 +2,76 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TikTok HD Downloader</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>TikTok Downloader HD (Front-End)</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: #f2f2f2;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-    }
-    .container {
-        background: #fff;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
-        max-width: 500px;
-        width: 100%;
-    }
-    input[type="text"] {
-        width: 100%;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        margin-bottom: 10px;
-        font-size: 16px;
-    }
-    button {
-        width: 100%;
-        padding: 10px;
-        background: #25f;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #0077ff;
-    }
-    .preview {
-        margin-top: 20px;
-        text-align: center;
-    }
-    .preview img, .preview video {
-        max-width: 100%;
-        border-radius: 10px;
-        margin-bottom: 10px;
-    }
-    .download-btn {
-        display: none;
-        padding: 10px 20px;
-        background: #0f0;
-        color: #000;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 16px;
-    }
-    .download-btn:hover {
-        background: #0c0;
-    }
+  body{background:#0d0d0d;color:#fff;font-family:Arial,sans-serif;display:flex;flex-direction:column;align-items:center;padding:24px;}
+  h1{color:#00e5ff;text-align:center;margin-bottom:20px;}
+  input{width:300px;padding:10px;border-radius:10px;border:none;margin-bottom:10px;text-align:center;}
+  button{padding:10px 16px;border-radius:10px;border:none;margin:5px;cursor:pointer;font-weight:700;}
+  #fetchBtn{background:#00e5ff;color:#000;}
+  .previewBox{margin-top:20px;text-align:center;}
+  video,img{max-width:400px;border-radius:12px;margin-bottom:10px;}
+  #downloadNow{background:#ff5500;color:#000;display:none;}
 </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>TikTok HD Downloader</h2>
-    <input type="text" id="tiktokUrl" placeholder="Masukkan link TikTok">
-    <button onclick="loadPreview()">Preview</button>
-    
-    <div class="preview" id="preview">
-        <!-- Preview video atau foto muncul di sini -->
-    </div>
-    <button class="download-btn" id="downloadBtn" onclick="downloadContent()">Download HD</button>
+<h1>🎵 TikTok Downloader HD (Front-End)</h1>
+<input id="urlInput" placeholder="Masukkan link TikTok (Demo URL)" />
+<button id="fetchBtn">Preview & Download</button>
+
+<div class="previewBox">
+  <video id="previewVideo" controls style="display:none"></video>
+  <img id="previewImg" style="display:none" />
+  <br/>
+  <button id="downloadNow">Download (HD)</button>
 </div>
 
 <script>
-async function loadPreview() {
-    const url = document.getElementById('tiktokUrl').value;
-    const previewDiv = document.getElementById('preview');
-    const downloadBtn = document.getElementById('downloadBtn');
-    
-    if (!url) {
-        alert("Masukkan link TikTok dulu!");
-        return;
-    }
+const fetchBtn = document.getElementById('fetchBtn');
+const urlInput = document.getElementById('urlInput');
+const previewVideo = document.getElementById('previewVideo');
+const previewImg = document.getElementById('previewImg');
+const downloadNow = document.getElementById('downloadNow');
 
-    // Contoh dummy preview, nanti diganti pakai API atau fetch langsung
-    if(url.includes("video")) {
-        previewDiv.innerHTML = `<video id="previewVideo" controls>
-                                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-                                    Your browser does not support HTML video.
-                                </video>`;
-    } else {
-        previewDiv.innerHTML = `<img id="previewImg" src="https://via.placeholder.com/400x400.png?text=Foto+TikTok" alt="Preview">`;
-    }
-    
-    downloadBtn.style.display = "block";
-}
+fetchBtn.onclick = () => {
+  const url = urlInput.value.trim();
+  if(!url) return alert('Tempel URL TikTok dulu!');
 
-function downloadContent() {
-    const video = document.getElementById('previewVideo');
-    const img = document.getElementById('previewImg');
-    let link = document.createElement('a');
-    
-    if(video) {
-        link.href = video.querySelector('source').src;
-        link.download = "tiktok_video_hd.mp4";
-    } else if(img) {
-        link.href = img.src;
-        link.download = "tiktok_foto_hd.jpg";
-    } else {
-        alert("Tidak ada konten untuk di-download!");
-        return;
-    }
+  // contoh simulasi: jika url mengandung 'video', pakai video demo; else image demo
+  if(url.includes('video')){
+    const demoVideo = 'https://www.w3schools.com/html/mov_bbb.mp4'; // ganti dengan HD TikTok asli jika ada
+    previewVideo.src = demoVideo;
+    previewVideo.style.display='block';
+    previewImg.style.display='none';
+    downloadNow.style.display='inline-block';
+    downloadNow.onclick = ()=>downloadBlob(demoVideo,'tiktok_video_hd.mp4');
+  } else {
+    const demoImage = 'https://via.placeholder.com/400x400.png?text=Foto+TikTok+HD';
+    previewImg.src = demoImage;
+    previewImg.style.display='block';
+    previewVideo.style.display='none';
+    downloadNow.style.display='inline-block';
+    downloadNow.onclick = ()=>downloadBlob(demoImage,'tiktok_photo_hd.jpg');
+  }
+};
 
-    link.click();
+// helper: download via blob
+async function downloadBlob(url,filename){
+  try{
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }catch(e){
+    alert('Gagal download: '+e);
+  }
 }
 </script>
 
