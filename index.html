@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TikTok Downloader HD</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #00e5ff;
+      text-shadow: 0 0 20px #00e5ff;
+    }
+    input {
+      width: 320px;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #00e5ff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #00bcd4;
+    }
+    .status {
+      margin-top: 10px;
+      color: #ff5555;
+      font-size: 14px;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="particles"></canvas>
+  <h1>TikTok Downloader HD</h1>
+  <input type="text" id="url" placeholder="Tempel link TikTok di sini" />
+  <button id="download">Download HD</button>
+  <div class="status" id="status"></div>
+
+  <script>
+    const btn = document.getElementById('download');
+    const statusText = document.getElementById('status');
+
+    btn.onclick = async () => {
+      const url = document.getElementById('url').value.trim();
+      if (!url) {
+        statusText.textContent = "Masukkan URL TikTok dulu.";
+        return;
+      }
+
+      statusText.textContent = "Memproses...";
+      try {
+        const res = await fetch(`/api/download?url=${encodeURIComponent(url)}`);
+        if (!res.ok) throw new Error("Gagal ambil data.");
+        const data = await res.json();
+
+        if (data?.hdVideoUrl) {
+          window.open(data.hdVideoUrl, "_blank");
+          statusText.textContent = "✅ HD video siap diunduh!";
+        } else {
+          statusText.textContent = "Gagal mendapatkan video HD.";
+        }
+      } catch (e) {
+        statusText.textContent = "Error koneksi. Coba lagi.";
+      }
+    };
+
+    // Efek partikel
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+    const particles = Array.from({length: 120}, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 1,
+      dx: (Math.random() - 0.5) * 1.2,
+      dy: (Math.random() - 0.5) * 1.2,
+      color: `hsl(${Math.random() * 360},100%,70%)`
+    }));
+    function animate() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      particles.forEach(p=>{
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=p.color;
+        ctx.fill();
+        p.x+=p.dx; p.y+=p.dy;
+        if(p.x<0||p.x>canvas.width)p.dx*=-1;
+        if(p.y<0||p.y>canvas.height)p.dy*=-1;
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
+</body>
+</html>
