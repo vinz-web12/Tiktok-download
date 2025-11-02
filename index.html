@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader HD - Sempurna</title>
+  <title>TikTok Downloader HD - 1080p Tanpa Watermark</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -190,10 +190,10 @@
       previewImg.style.display = 'none';
       downloadNow.style.display = 'none';
       status.style.display = 'block';
-      status.textContent = '⏳ Mengambil video...';
+      status.textContent = '⏳ Mengambil video HD...';
 
       try {
-        // Gunakan API publik tikwm.com (stabil, no CORS)
+        // Gunakan API tikwm.com untuk ambil data
         const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
         const res = await fetch(apiUrl);
         const data = await res.json();
@@ -201,7 +201,13 @@
         if (data.code !== 0) throw new Error(data.msg || 'Gagal mengambil video');
 
         const videoData = data.data;
-        const videoUrl = videoData.play; // HD tanpa watermark
+
+        // Ambil video HD tanpa watermark (nwm)
+        let videoUrl = videoData.nwm; // Ini adalah video HD tanpa watermark (biasanya 720p/1080p)
+        
+        // Jika nwm tidak ada, pakai play (fallback)
+        if (!videoUrl) videoUrl = videoData.play;
+
         const coverUrl = videoData.cover;
 
         // Tampilkan preview video
@@ -213,7 +219,7 @@
         downloadNow.style.display = 'inline-block';
         downloadNow.onclick = () => downloadFile(videoUrl, 'tiktok_video_hd_no_watermark.mp4');
 
-        status.textContent = '✅ Video siap! Klik "Download HD" untuk simpan.';
+        status.textContent = '✅ Video HD siap! Klik "Download HD" untuk simpan.';
       } catch (e) {
         console.error("Error:", e);
         status.textContent = `❌ Gagal: ${e.message || 'Link tidak valid atau server sibuk'}`;
@@ -246,85 +252,7 @@
     }
   </script>
 </body>
-</html>      <button id="downloadNow">Download HD</button>
-      <p class="status" id="status" style="display:none"></p>
-    </div>
-  </div>
-
-  <!-- Partikel background -->
-  <script>
-    (function(){
-      const canvas = document.getElementById('particles');
-      const ctx = canvas.getContext('2d');
-      function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
-      addEventListener('resize', resize); resize();
-      const parts=[]; 
-      for(let i=0;i<100;i++){
-        parts.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*2+0.5,dx:(Math.random()-0.5)*0.5,dy:(Math.random()-0.5)*0.5,h:Math.random()*360})
-      }
-      (function anim(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        for(const p of parts){
-          p.x+=p.dx; p.y+=p.dy; p.h+=0.5;
-          if(p.x<0||p.x>canvas.width)p.dx*=-1;
-          if(p.y<0||p.y>canvas.height)p.dy*=-1;
-          const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
-          g.addColorStop(0,`hsla(${p.h},90%,65%,0.9)`);
-          g.addColorStop(0.6,`hsla(${p.h},90%,55%,0.45)`);
-          g.addColorStop(1,'rgba(0,0,0,0)');
-          ctx.fillStyle=g;
-          ctx.beginPath();
-          ctx.arc(p.x,p.y,p.r*3,0,Math.PI*2);
-          ctx.fill();
-        }
-        requestAnimationFrame(anim);
-      })();
-    })();
-  </script>
-
-  <script>
-    const fetchBtn = document.getElementById('fetchBtn');
-    const urlInput = document.getElementById('urlInput');
-    const previewVideo = document.getElementById('previewVideo');
-    const previewImg = document.getElementById('previewImg');
-    const downloadNow = document.getElementById('downloadNow');
-    const status = document.getElementById('status');
-
-    // Bersihkan URL dari parameter tracking
-    function cleanTikTokURL(url) {
-      try {
-        const u = new URL(url);
-        u.search = ''; // hapus ?_r=1 dll
-        u.hash = '';
-        return u.toString();
-      } catch {
-        return url;
-      }
-    }
-
-    fetchBtn.onclick = async () => {
-      let url = urlInput.value.trim();
-      if (!url) return alert('Masukkan link TikTok terlebih dahulu!');
-
-      // Bersihkan URL
-      url = cleanTikTokURL(url);
-
-      // Reset UI
-      previewVideo.style.display = 'none';
-      previewImg.style.display = 'none';
-      downloadNow.style.display = 'none';
-      status.style.display = 'block';
-      status.textContent = 'Mengambil data video...';
-
-      try {
-        // Gunakan API publik dari tikwm.com (no CORS, free)
-        const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
-        const res = await fetch(apiUrl);
-        const data = await res.json();
-
-        if (data.code !== 0) throw new Error(data.msg || 'Gagal mengambil video');
-
-        const videoData = data.data;
+</html>ta.data;
         const videoUrl = videoData.play; // HD tanpa watermark
         const coverUrl = videoData.cover;
 
