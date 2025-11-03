@@ -1,337 +1,95 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TikTok Downloader HD</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TikTok Downloader</title>
   <style>
     body {
-      margin: 0;
-      background: #000;
-      color: white;
-      font-family: Arial, sans-serif;
+      font-family: sans-serif;
+      background: #0f0f0f;
+      color: #fff;
       text-align: center;
-      overflow: hidden;
+      margin: 0;
+      padding: 20px;
     }
-
-    h1 {
-      margin-top: 40px;
-      font-size: 28px;
-      color: #00eaff;
-      text-shadow: 0 0 10px #00eaff;
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #1c1c1c;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
     }
-
     input {
-      margin-top: 30px;
-      width: 80%;
-      padding: 10px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      outline: none;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 12px 25px;
-      background: #00eaff;
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 16px;
-      transition: 0.2s;
-    }
-
-    button:hover {
-      background: #00b3cc;
-    }
-
-    #status {
-      margin-top: 15px;
-      font-size: 16px;
-    }
-
-    #previewVideo {
-      display: none;
-      margin: 20px auto;
       width: 90%;
+      padding: 10px;
       border-radius: 10px;
+      border: none;
+      outline: none;
+      margin-bottom: 10px;
     }
-
-    #downloadNow {
-      display: none;
-      margin-bottom: 30px;
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 10px;
+      background: #00ff99;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 5px;
     }
+    button:hover { background: #00e68a; }
 
-    #slideList img {
-      width: 80%;
+    video, img {
+      max-width: 100%;
       border-radius: 10px;
       margin-top: 10px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #slideContainer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 10px;
+      gap: 10px;
+    }
+
+    .slideItem {
+      background: #222;
+      padding: 8px 12px;
+      border-radius: 10px;
       cursor: pointer;
     }
 
-    canvas#particles {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: -1;
+    .slideItem:hover {
+      background: #333;
     }
   </style>
 </head>
 <body>
-  <h1>🎵 TikTok Downloader HD</h1>
-  <input id="tiktokURL" type="text" placeholder="Tempel link TikTok...">
-  <br>
-  <button id="loadBtn">Preview & Download</button>
-  <p id="status"></p>
-  <video id="previewVideo" controls></video>
-  <div id="slideList"></div>
-  <button id="downloadNow">⬇️ Download Sekarang</button>
+  <div class="container">
+    <h2>🎵 TikTok Downloader</h2>
+    <input id="inputUrl" placeholder="Masukkan link TikTok..." />
+    <button id="fetchBtn">Ambil Video</button>
 
-  <canvas id="particles"></canvas>
+    <div id="status"></div>
 
-  <script>
-    const loadBtn = document.getElementById('loadBtn');
-    const status = document.getElementById('status');
-    const previewVideo = document.getElementById('previewVideo');
-    const slideList = document.getElementById('slideList');
-    const downloadNow = document.getElementById('downloadNow');
+    <button id="audioBtn" style="display:none;">🎧 Download Sound (MP3)</button>
+    <video id="previewVideo" controls style="display:none;"></video>
+    <img id="previewImg" style="display:none;" />
 
-    function randomName(ext = '') {
-      return Math.random().toString(36).substring(2, 10) + ext;
-    }
+    <div id="slideContainer"></div>
 
-    function autoDownload(url, name) {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = name;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
+    <button id="downloadNow" style="display:none;">⬇️ Download Sekarang</button>
+  </div>
 
-    loadBtn.onclick = async () => {
-      const url = document.getElementById('tiktokURL').value.trim();
-      if (!url) {
-        status.textContent = '❌ Masukkan link dulu!';
-        return;
-      }
-
-      status.textContent = '⏳ Memproses...';
-      previewVideo.style.display = 'none';
-      slideList.innerHTML = '';
-      downloadNow.style.display = 'none';
-
-      try {
-        const res = await fetch(`https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(url)}`);
-        const data = await res.json();
-
-        if (data.video && data.video.play_addr) {
-          // VIDEO
-          previewVideo.src = data.video.play_addr;
-          previewVideo.style.display = 'block';
-          status.textContent = '✅ Video siap!';
-          downloadNow.style.display = 'inline-block';
-          downloadNow.onclick = () => autoDownload(data.video.play_addr, randomName('.mp4'));
-        } 
-        else if (data.images && data.images.length > 0) {
-          // SLIDE FOTO
-          status.textContent = '✅ Slide siap! Klik foto untuk download.';
-          data.images.forEach((img, i) => {
-            const box = document.createElement('div');
-            const slide = document.createElement('img');
-            slide.src = img.url;
-            const btn = document.createElement('button');
-            btn.textContent = `⬇️ Download Slide ${i + 1}`;
-            btn.onclick = () => autoDownload(img.url, randomName('.jpg'));
-            box.appendChild(slide);
-            box.appendChild(btn);
-            slideList.appendChild(box);
-          });
-        } 
-        else {
-          status.textContent = '❌ Tidak ada media ditemukan.';
-        }
-      } catch (e) {
-        console.error(e);
-        status.textContent = '❌ Gagal memproses link.';
-      }
-    };
-  </script>
-
-  <!-- Background Partikel -->
-  <script>
-    (function(){
-      const canvas = document.getElementById('particles');
-      const ctx = canvas.getContext('2d');
-
-      function resize(){
-        canvas.width = innerWidth;
-        canvas.height = innerHeight;
-      }
-      addEventListener('resize', resize);
-      resize();
-
-      const parts = [];
-      for(let i = 0; i < 100; i++){
-        parts.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          r: Math.random() * 2 + 0.5,
-          dx: (Math.random() - 0.5) * 0.5,
-          dy: (Math.random() - 0.5) * 0.5,
-          h: Math.random() * 360
-        });
-      }
-
-      function anim(){
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for(const p of parts){
-          p.x += p.dx;
-          p.y += p.dy;
-          if(p.x < 0 || p.x > canvas.width) p.dx *= -1;
-          if(p.y < 0 || p.y > canvas.height) p.dy *= -1;
-          const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 8);
-          g.addColorStop(0, `hsla(${p.h}, 90%, 65%, 0.9)`);
-          g.addColorStop(1, 'transparent');
-          ctx.fillStyle = g;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r * 8, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        requestAnimationFrame(anim);
-      }
-      anim();
-    })();
-  </script>
+  <script src="script.js"></script>
 </body>
-</html>https://tikdown.org/api?url=${encodeURIComponent(url)}`,
-        `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`
-      ];
-
-      for (let api of apis) {
-        try {
-          const res = await fetch(api);
-          const text = await res.text();
-
-          // Cek apakah response adalah JSON
-          let data;
-          try {
-            data = JSON.parse(text);
-          } catch {
-            // Jika bukan JSON, coba parse HTML
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, 'text/html');
-            const videoLink = doc.querySelector('a[href*=".mp4"]')?.href;
-            if (videoLink) return { type: 'video', url: videoLink };
-            continue;
-          }
-
-          // Ambil video dari data
-          if (data.data && data.data.nwm) return { type: 'video', url: data.data.nwm };
-          if (data.data && data.data.hdplay) return { type: 'video', url: data.data.hdplay };
-          if (data.data && data.data.play) return { type: 'video', url: data.data.play };
-          if (data.data && data.data.cover) return { type: 'image', url: data.data.cover };
-
-          // Ambil slide jika ada
-          if (data.data && data.data.images && data.data.images.length > 0) {
-            return { type: 'slide', urls: data.data.images };
-          }
-
-        } catch (e) {
-          console.warn(`API ${api} gagal:`, e.message);
-          continue;
-        }
-      }
-
-      throw new Error('Semua API gagal. Coba link lain.');
-    }
-
-    fetchBtn.onclick = async () => {
-      let url = urlInput.value.trim();
-      if (!url) return alert('📌 Masukkan link TikTok!');
-
-      // Reset UI
-      previewVideo.style.display = 'none';
-      previewImg.style.display = 'none';
-      downloadNow.style.display = 'none';
-      audioBtn.style.display = 'none';
-      slideContainer.innerHTML = '';
-      status.style.display = 'block';
-      status.textContent = '⏳ Mengambil video...';
-
-      try {
-        const result = await getVideoUrl(url);
-
-        if (!result) throw new Error('Video tidak ditemukan');
-
-        // Tampilkan preview
-        if (result.type === 'video') {
-          previewVideo.src = result.url;
-          previewVideo.style.display = 'block';
-          // Tunggu metadata selesai load sebelum play
-          previewVideo.addEventListener('loadedmetadata', () => {
-            previewVideo.play();
-          });
-
-          // Tampilkan tombol download audio
-          audioBtn.style.display = 'inline-block';
-          audioBtn.onclick = () => {
-            // Ambil audio dari video (tidak mungkin tanpa server)
-            status.textContent = '⚠️ Audio tidak bisa di-download di browser. Gunakan app seperti CapCut.';
-          };
-
-          downloadNow.style.display = 'inline-block';
-          downloadNow.onclick = () => downloadFile(result.url);
-
-          status.textContent = '✅ Video HD siap!';
-
-        } else if (result.type === 'image') {
-          previewImg.src = result.url;
-          previewImg.style.display = 'block';
-
-          downloadNow.style.display = 'inline-block';
-          downloadNow.onclick = () => downloadFile(result.url);
-
-          status.textContent = '✅ Foto HD siap!';
-
-        } else if (result.type === 'slide') {
-          // Tampilkan slide
-          slideContainer.style.display = 'flex';
-          result.urls.forEach((slideUrl, index) => {
-            const slideItem = document.createElement('div');
-            slideItem.className = 'slideItem';
-            slideItem.innerHTML = `<img src="${slideUrl}" alt="Slide ${index + 1}">`;
-            slideItem.onclick = () => downloadFile(slideUrl, `slide_${index + 1}.jpg`);
-            slideContainer.appendChild(slideItem);
-          });
-
-          // Tampilkan tombol download slide
-          downloadNow.style.display = 'none';
-          status.textContent = '✅ Slide siap! Klik foto untuk download.';
-
-        }
-
-      } catch (e) {
-        console.error(e);
-        status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
-      }
-    };
-  </script>
-</body>
-</html>        slideItem.onclick = () => downloadFile(slideUrl, `slide_${index + 1}.jpg`);
-            slideContainer.appendChild(slideItem);
-          });
-
-          // Tampilkan tombol download slide
-          downloadNow.style.display = 'none';
-          status.textContent = '✅ Slide siap! Klik foto untuk download.';
-
-        }
-
-      } catch (e) {
+</html>atch (e) {
         console.error(e);
         status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
       }
