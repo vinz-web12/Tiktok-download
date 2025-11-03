@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TikTok Downloader</title>
+  <title>TikTok Downloader HD + Sound</title>
   <style>
     :root{--accent:#00e5ff;--bg:#0d0d0d;--muted:#9aa}
     *{box-sizing:border-box}
@@ -103,14 +103,17 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>🎵 TikTok Downloader</h1>
+  <h1>🎵 TikTok Downloader HD + Sound</h1>
   <input id="urlInput" placeholder="Tempel link TikTok..." />
   <button id="fetchBtn">Tampilkan Preview</button>
 
   <div class="previewBox" id="previewBox">
     <button id="downloadSound" class="btn" style="display:none;">🎵 Download Sound (MP3)</button>
+    <!-- Video Preview -->
     <video id="previewVideo" controls playsinline style="display:none"></video>
+    <!-- Galeri Foto akan dimasukkan di sini -->
     <div id="photoGallery"></div>
+    <!-- Tombol Unduh Semua (hanya tampil jika ada video/foto) -->
     <button id="downloadNow" class="btn" style="display:none;">⬇️ Download</button>
     <p class="status" id="status" style="display:none"></p>
   </div>
@@ -123,7 +126,7 @@
   const downloadNow=document.getElementById('downloadNow');
   const downloadSound=document.getElementById('downloadSound');
   const status=document.getElementById('status');
-  const photoGallery=document.getElementById('photoGallery'); // Elemen untuk galeri foto
+  const photoGallery=document.getElementById('photoGallery'); 
 
   let currentMedia=[],isVideo=false,soundUrl='';
 
@@ -139,7 +142,11 @@
       a.href=obj;a.download=filename;
       document.body.appendChild(a);a.click();a.remove();
       URL.revokeObjectURL(obj);
-    }catch(e){alert('Gagal mengunduh');}
+    }catch(e){
+      // Tidak menggunakan alert() karena dibatasi di lingkungan ini
+      console.error('Download gagal:', e);
+      status.textContent = 'Gagal mengunduh file. Coba lagi.';
+    }
   }
 
   async function resolveShort(u){
@@ -147,29 +154,25 @@
     catch{return u;}
   }
 
-  // FUNGSI BARU: Untuk membuat galeri foto dan tombol individu
+  // Fungsi untuk membuat galeri foto dan tombol individu
   function createPhotoGallery(images){
-    photoGallery.innerHTML = ''; // Bersihkan galeri
+    photoGallery.innerHTML = ''; 
     const idPrefix = `tiktok_${rnd(6)}`;
 
     images.forEach((url, index) => {
       const slideNumber = index + 1;
       
-      // 1. Wadah Foto
       const itemDiv = document.createElement('div');
       itemDiv.className = 'photo-item';
 
-      // 2. Gambar Preview
       const img = document.createElement('img');
       img.src = url;
       img.alt = `Slide ${slideNumber}`;
 
-      // 3. Tombol Unduh Individu
       const downloadBtn = document.createElement('button');
       downloadBtn.className = 'btn download-slide-btn';
       downloadBtn.textContent = `⬇️ Download Slide ${slideNumber}`;
       
-      // Event Unduh Individu
       downloadBtn.onclick = async () => {
           const filename = `${idPrefix}_slide_${slideNumber}.jpg`;
           await blobDownload(url, filename);
@@ -188,64 +191,92 @@
     
     // Sembunyikan semua elemen preview
     previewVideo.style.display='none';
-    photoGallery.innerHTML=''; // Bersihkan galeri
+    photoGallery.innerHTML=''; 
     downloadNow.style.display='none';
     downloadSound.style.display='none';
 
     status.style.display='block';
     status.textContent='Mengambil data...';
+    let dataFound = false;
 
     if(link.includes('vm.tiktok.com')||link.includes('vt.tiktok.com'))link=await resolveShort(link);
 
-    try{
-      const api=`https://www.tikwm.com/api/?url=${encodeURIComponent(link)}`;
-      const r=await fetch(api);
-      
-      // Pengecekan status HTTP agar pesan error lebih jelas
-      if (!r.ok) {
-        status.textContent = `Gagal mengambil data. Kode status: ${r.status}. Coba hosting file ini.`;
-        return;
-      }
-      
-      const j=await r.json();
-      if(!j||!j.data)return status.textContent='Gagal ambil data. Pastikan link benar.';
-      const d=j.data;
-      soundUrl=d.music || d.music_info?.play || '';
-      currentMedia=[];
+    // List API yang akan dicoba (Sesuai permintaan Anda)
+    const apis = [
+        `https://www.tikwm.com/api/?url=${encodeURIComponent(link)}`,
+        `https://tikdown.org/api?url=${encodeURIComponent(link)}`,
+        `https://snaptik.app/abc2.php?url=${encodeURIComponent(link)}`
+    ];
 
-      // Kasus FOTO (Carousel)
-      if(Array.isArray(d.images)&&d.images.length){
-        isVideo=false;
-        currentMedia=d.images.slice();
-        
-        createPhotoGallery(currentMedia); // Panggil fungsi untuk membuat galeri
-        
-        downloadNow.style.display='inline-block';
-        downloadNow.textContent='⬇️ Download SEMUA Foto Sekaligus';
-        status.textContent=`${currentMedia.length} foto (slide) ditemukan`;
+    // Lakukan loop untuk mencoba setiap API
+    for (let i = 0; i < apis.length; i++) {
+        const apiUrl = apis[i];
+        status.textContent = `Mencoba API ${i + 1}/${apis.length}...`;
+        console.log(`Mencoba ${apiUrl}`);
 
-      // Kasus VIDEO
-      }else{
-        const v=d.hdplay||d.play||'';
-        if(v){
-          isVideo=true;
-          currentMedia=[v];
-          previewVideo.src=v;
-          previewVideo.style.display='block';
-          downloadNow.style.display='inline-block';
-          downloadNow.textContent='⬇️ Download Video HD';
-          status.textContent='Preview video siap';
-        }else{
-          status.textContent='Tidak ada media yang ditemukan';
+        try {
+            const r = await fetch(apiUrl);
+            
+            if (!r.ok) {
+                console.warn(`API ${i + 1} gagal (Status: ${r.status}). Mencoba API berikutnya.`);
+                continue; // Lanjut ke API berikutnya
+            }
+            
+            const j = await r.json();
+            
+            // Logika pemrosesan data, mungkin berbeda antar API, 
+            // tapi kita coba format umum (tikwm) dulu.
+            const d = j.data || j; // tikwm pakai j.data, tikdown/snaptik mungkin j langsung
+
+            if (d && (d.hdplay || d.play || (Array.isArray(d.images) && d.images.length))) {
+                console.log(`Berhasil mendapatkan data dari API ${i + 1}`);
+                dataFound = true;
+
+                soundUrl = d.music || d.music_info?.play || '';
+                currentMedia=[];
+
+                // Kasus FOTO (Carousel)
+                if(Array.isArray(d.images)&&d.images.length){
+                    isVideo=false;
+                    currentMedia=d.images.slice();
+                    
+                    createPhotoGallery(currentMedia); 
+                    
+                    downloadNow.style.display='inline-block';
+                    downloadNow.textContent='⬇️ Download SEMUA Foto Sekaligus';
+                    status.textContent=`${currentMedia.length} foto (slide) ditemukan via API ${i + 1}`;
+
+                // Kasus VIDEO
+                } else {
+                    const v = d.hdplay || d.play || '';
+                    if(v){
+                        isVideo=true;
+                        currentMedia=[v];
+                        previewVideo.src=v;
+                        previewVideo.style.display='block';
+                        downloadNow.style.display='inline-block';
+                        downloadNow.textContent='⬇️ Download Video HD';
+                        status.textContent=`Preview video siap via API ${i + 1}`;
+                    }
+                }
+
+                // Tampilkan tombol unduh suara jika ada
+                if(soundUrl)downloadSound.style.display='inline-block';
+                
+                break; // Keluar dari loop karena sudah berhasil
+            } else {
+                console.warn(`API ${i + 1} merespon, tapi tidak ada media. Mencoba API berikutnya.`);
+            }
+
+        } catch(e) {
+            console.error(`Gagal memproses API ${i + 1}:`, e);
+            // Lanjut ke API berikutnya
         }
-      }
-      
-      // Tampilkan tombol unduh suara jika ada
-      if(soundUrl)downloadSound.style.display='inline-block';
+    }
 
-    }catch(e){
-        console.error(e);
-        status.textContent = 'Gagal memproses. Kemungkinan masalah CORS (Cross-Origin). Solusinya: **hosting file ini**.';
+    if (!dataFound) {
+      status.textContent = 'Gagal mengambil data dari semua API yang dicoba. Coba lagi atau pastikan link benar.';
+      console.warn('SEMUA API GAGAL. Periksa masalah CORS (hosting) atau validitas link.');
     }
   };
 
@@ -253,24 +284,23 @@
   downloadNow.onclick=async()=>{
     const id=`tiktok_${rnd(6)}`;
     if(isVideo){
-        // Download Video
         await blobDownload(currentMedia[0],`${id}_video.mp4`);
     } else {
-        // Download Semua Foto Sekaligus
         for(let i=0;i<currentMedia.length;i++){
             const f=`${id}_slide_${i+1}.jpg`;
             await blobDownload(currentMedia[i],f);
-            await new Promise(r=>setTimeout(r,300)); // Jeda sebentar antar unduhan
+            // Memberi jeda agar browser tidak menganggapnya spam
+            await new Promise(r=>setTimeout(r,300)); 
         }
-        alert('Semua foto selesai diunduh!');
     }
   };
 
   downloadSound.onclick=async()=>{
-    if(!soundUrl)return alert('Tidak ada audio');
+    if(!soundUrl)return;
     const id=`tiktok_${rnd(6)}_sound.mp3`;
     await blobDownload(soundUrl,id);
   };
 </script>
 </body>
 </html>
+
