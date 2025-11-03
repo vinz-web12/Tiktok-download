@@ -344,4 +344,21 @@
     };
   </script>
 </body>
+</html>        slideItem.onclick = () => downloadFile(slideUrl, `slide_${index + 1}.jpg`);
+            slideContainer.appendChild(slideItem);
+          });
+
+          // Tampilkan tombol download slide
+          downloadNow.style.display = 'none';
+          status.textContent = '✅ Slide siap! Klik foto untuk download.';
+
+        }
+
+      } catch (e) {
+        console.error(e);
+        status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
+      }
+    };
+  </script>
+</body>
 </html>
