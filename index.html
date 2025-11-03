@@ -194,30 +194,50 @@
       }
     }
 
+    // Fungsi untuk ambil video dari berbagai API
     async function getVideoUrl(url) {
-      // Hanya gunakan 1 API yang paling stabil: tikwm.com
-      try {
-        const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
-        const res = await fetch(apiUrl);
-        const data = await res.json();
+      const apis = [
+        `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`,
+        `https://tikdown.org/api?url=${encodeURIComponent(url)}`,
+        `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`
+      ];
 
-        if (data.code !== 0) throw new Error('Video tidak ditemukan');
+      for (let api of apis) {
+        try {
+          const res = await fetch(api);
+          const text = await res.text();
 
-        // Ambil HD tanpa watermark
-        const hdUrl = data.data.nwm;
-        if (!hdUrl) throw new Error('HD tidak tersedia');
+          // Cek apakah response adalah JSON
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch {
+            // Jika bukan JSON, coba parse HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+            const videoLink = doc.querySelector('a[href*=".mp4"]')?.href;
+            if (videoLink) return videoLink;
+            continue;
+          }
 
-        return hdUrl;
-      } catch (e) {
-        throw new Error('Gagal ambil video HD. Coba lagi.');
+          // Ambil video dari data
+          if (data.data && data.data.nwm) return data.data.nwm;
+          if (data.data && data.data.hdplay) return data.data.hdplay;
+          if (data.data && data.data.play) return data.data.play;
+
+        } catch (e) {
+          console.warn(`API ${api} gagal:`, e.message);
+          continue;
+        }
       }
+
+      throw new Error('Semua API gagal. Coba link lain.');
     }
 
     fetchBtn.onclick = async () => {
       let url = urlInput.value.trim();
       if (!url) return alert('📌 Masukkan link TikTok!');
 
-      // Reset UI
       previewVideo.style.display = 'none';
       previewImg.style.display = 'none';
       downloadNow.style.display = 'none';
@@ -227,15 +247,18 @@
       try {
         const hdUrl = await getVideoUrl(url);
 
+        if (!hdUrl) throw new Error('Video tidak ditemukan');
+
         previewVideo.src = hdUrl;
         previewVideo.style.display = 'block';
         downloadNow.style.display = 'inline-block';
         downloadNow.onclick = () => downloadFile(hdUrl);
 
-        status.textContent = '✅ Video HD tanpa watermark siap!';
+        status.textContent = '✅ Video HD siap!';
+
       } catch (e) {
-        status.textContent = `❌ ${e.message}`;
         console.error(e);
+        status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
       }
     };
   </script>
