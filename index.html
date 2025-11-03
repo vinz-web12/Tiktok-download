@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader HD - Stabil 720/1080p</title>
+  <title>TikTok Downloader HD - Stabil & Acak</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -110,7 +110,7 @@
   <canvas id="particles" aria-hidden="true"></canvas>
 
   <div class="wrap">
-    <h1>🎵 TikTok Downloader HD - Stabil 720/1080p</h1>
+    <h1>🎵 TikTok Downloader HD</h1>
     <input id="urlInput" placeholder="Tempel link TikTok (contoh: https://www.tiktok.com/@...)" />
     <button id="fetchBtn">Preview & Download</button>
 
@@ -181,6 +181,45 @@
       }
     }
 
+    // Generate nama file acak
+    function generateRandomName() {
+      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+      let name = 'tiktok_';
+      for (let i = 0; i < 6; i++) {
+        name += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return name;
+    }
+
+    // Fungsi download file
+    async function downloadFile(url) {
+      try {
+        status.textContent = '📥 Sedang mengunduh...';
+        const res = await fetch(url);
+        const blob = await res.blob();
+        
+        // Tentukan ekstensi berdasarkan tipe MIME
+        const mimeType = blob.type;
+        let ext = '.mp4';
+        if (mimeType === 'image/jpeg') ext = '.jpg';
+        else if (mimeType === 'image/png') ext = '.png';
+
+        const filename = generateRandomName() + ext;
+
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+        status.textContent = `✅ ${filename} berhasil disimpan!`;
+      } catch (e) {
+        status.textContent = `❌ Gagal download: ${e.message}`;
+      }
+    }
+
+    // Tombol fetch
     fetchBtn.onclick = async () => {
       let url = urlInput.value.trim();
       if (!url) return alert('📌 Masukkan link TikTok terlebih dahulu!');
@@ -193,7 +232,7 @@
       status.textContent = '⏳ Mengambil video HD...';
 
       try {
-        // Gunakan API tikwm.com untuk ambil data
+        // Gunakan API tikwm.com
         const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
         const res = await fetch(apiUrl);
         const data = await res.json();
@@ -201,71 +240,36 @@
         if (data.code !== 0) throw new Error(data.msg || 'Gagal mengambil video');
 
         const videoData = data.data;
+        let videoUrl = videoData.nwm || videoData.hdplay || videoData.play;
 
-        // Ambil video HD tanpa watermark (nwm)
-        let videoUrl = videoData.nwm; // Ini adalah video HD tanpa watermark (biasanya 720p/1080p)
-
-        // Jika nwm tidak ada → coba hdplay (jika ada)
-        if (!videoUrl && videoData.hdplay) {
-          videoUrl = videoData.hdplay;
-        }
-
-        // Jika masih tidak ada → coba play, tapi paksa ke 720p+
-        if (!videoUrl && videoData.play) {
-          videoUrl = videoData.play;
-          // Paksa ke 720p jika bisa
-          if (videoUrl.includes('.mp4')) {
-            const try720 = videoUrl.replace('.mp4', '_720p.mp4');
-            const testRes = await fetch(try720, { method: 'HEAD' });
-            if (testRes.ok) videoUrl = try720;
-          }
-        }
-
-        // Jika semua gagal → fallback ke demo 720p (bukan 480p!)
+        // Fallback ke demo 720p jika semua gagal
         if (!videoUrl) {
-          videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'; // 720p demo
+          videoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
         }
 
-        // Tampilkan preview video
+        // Tampilkan preview
         previewVideo.src = videoUrl;
         previewVideo.style.display = 'block';
         previewImg.style.display = 'none';
 
-        // Siapkan tombol download
+        // Siapkan tombol download (tanpa nama file tetap)
         downloadNow.style.display = 'inline-block';
-        downloadNow.onclick = () => downloadFile(videoUrl, 'tiktok_video_hd_no_watermark.mp4');
+        downloadNow.onclick = () => downloadFile(videoUrl);
 
         status.textContent = '✅ Video HD siap! Klik "Download HD" untuk simpan.';
       } catch (e) {
         console.error("Error:", e);
         status.textContent = `❌ Gagal: ${e.message || 'Link tidak valid atau server sibuk'}`;
+        
         // Fallback ke demo 720p
         const demoUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
         previewVideo.src = demoUrl;
         previewVideo.style.display = 'block';
         downloadNow.style.display = 'inline-block';
-        downloadNow.onclick = () => downloadFile(demoUrl, 'demo_video_720p.mp4');
-        status.textContent = '⚠️ Mode demo 720p aktif (gagal ambil video asli)';
+        downloadNow.onclick = () => downloadFile(demoUrl);
+        status.textContent = '⚠️ Mode demo 720p aktif';
       }
     };
-
-    async function downloadFile(url, filename) {
-      try {
-        status.textContent = '📥 Sedang mengunduh...';
-        const res = await fetch(url);
-        const blob = await res.blob();
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
-        status.textContent = '✅ Download selesai!';
-      } catch (e) {
-        status.textContent = `❌ Gagal download: ${e.message}`;
-      }
-    }
   </script>
 </body>
 </html>
