@@ -115,9 +115,10 @@
     <button id="fetchBtn">Download</button>
 
     <div class="previewBox">
-      <video id="previewVideo" controls style="display:none"></video>
+      <!-- Tambahkan crossorigin dan preload -->
+      <video id="previewVideo" controls style="display:none" crossorigin="anonymous" preload="metadata"></video>
       <img id="previewImg" style="display:none"/>
-      <button id="downloadNow">Download</button>
+      <button id="downloadNow">Download HD</button>
       <p class="status" id="status" style="display:none"></p>
     </div>
   </div>
@@ -194,7 +195,7 @@
       }
     }
 
-    // Fungsi untuk ambil video/foto dari berbagai API
+    // Fungsi untuk ambil video dari berbagai API
     async function getVideoUrl(url) {
       const apis = [
         `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`,
@@ -216,17 +217,14 @@
             const parser = new DOMParser();
             const doc = parser.parseFromString(text, 'text/html');
             const videoLink = doc.querySelector('a[href*=".mp4"]')?.href;
-            const imageLink = doc.querySelector('img[src*=".jpg"]')?.src;
             if (videoLink) return videoLink;
-            if (imageLink) return imageLink;
             continue;
           }
 
-          // Ambil video/foto dari data
+          // Ambil video dari data
           if (data.data && data.data.nwm) return data.data.nwm;
           if (data.data && data.data.hdplay) return data.data.hdplay;
           if (data.data && data.data.play) return data.data.play;
-          if (data.data && data.data.cover) return data.data.cover;
 
         } catch (e) {
           console.warn(`API ${api} gagal:`, e.message);
@@ -245,30 +243,29 @@
       previewImg.style.display = 'none';
       downloadNow.style.display = 'none';
       status.style.display = 'block';
-      status.textContent = '⏳ Mengambil video/foto...';
+      status.textContent = '⏳ Mengambil video...';
 
       try {
         const hdUrl = await getVideoUrl(url);
 
-        if (!hdUrl) throw new Error('Video/foto tidak ditemukan');
+        if (!hdUrl) throw new Error('Video tidak ditemukan');
 
-        // Tampilkan preview
-        if (hdUrl.endsWith('.mp4')) {
-          previewVideo.src = hdUrl;
-          previewVideo.style.display = 'block';
-        } else {
-          previewImg.src = hdUrl;
-          previewImg.style.display = 'block';
-        }
+        // Perbaiki preview
+        previewVideo.src = hdUrl;
+        previewVideo.style.display = 'block';
+        // Tunggu metadata selesai load sebelum play
+        previewVideo.addEventListener('loadedmetadata', () => {
+          previewVideo.play();
+        });
 
         downloadNow.style.display = 'inline-block';
         downloadNow.onclick = () => downloadFile(hdUrl);
 
-        status.textContent = '✅ Video/foto HD siap!';
+        status.textContent = '✅ Video HD siap!';
 
       } catch (e) {
         console.error(e);
-        status.textContent = `❌ ${e.message || 'Gagal memuat video/foto HD'}`;
+        status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
       }
     };
   </script>
