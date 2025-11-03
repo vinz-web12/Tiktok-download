@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader HD - No Error</title>
+  <title>TikTok Downloader HD - Bro Edition</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -170,12 +170,7 @@
     const status = document.getElementById('status');
 
     function generateRandomName() {
-      const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-      let name = 'tiktok_';
-      for (let i = 0; i < 6; i++) {
-        name += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return name;
+      return 'tiktok_' + Math.random().toString(36).substring(2, 8);
     }
 
     async function downloadFile(url) {
@@ -183,8 +178,7 @@
         status.textContent = '📥 Mengunduh...';
         const res = await fetch(url);
         const blob = await res.blob();
-        const ext = blob.type.startsWith('image/') ? 
-          (blob.type === 'image/jpeg' ? '.jpg' : '.png') : '.mp4';
+        const ext = blob.type.startsWith('image/') ? '.jpg' : '.mp4';
         const filename = generateRandomName() + ext;
 
         const a = document.createElement('a');
@@ -211,19 +205,18 @@
       status.textContent = '⏳ Mengambil video...';
 
       try {
-        // Gunakan API tikdown.org (stabil, no CORS)
-        const apiUrl = `https://tikdown.org/api?url=${encodeURIComponent(url)}`;
-        const res = await fetch(apiUrl);
+        // Gunakan proxy publik untuk hindari CORS
+        const proxyUrl = 'https://api.corsproxy.io/';
+        const targetUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
+        const res = await fetch(proxyUrl + targetUrl);
         const data = await res.json();
 
-        if (data.status !== 'success') throw new Error(data.msg || 'Gagal mengambil video');
+        if (data.code !== 0) throw new Error('Video tidak ditemukan atau privat');
 
-        const videoData = data.data;
-        const hdUrl = videoData.nwm || videoData.hdplay || videoData.play;
+        const hdUrl = data.data.nwm; // ini HD tanpa watermark
 
-        if (!hdUrl) throw new Error('Video HD tidak tersedia');
+        if (!hdUrl) throw new Error('HD tidak tersedia untuk video ini');
 
-        // Tampilkan video
         previewVideo.src = hdUrl;
         previewVideo.style.display = 'block';
         downloadNow.style.display = 'inline-block';
@@ -232,8 +225,8 @@
         status.textContent = '✅ Video HD tanpa watermark siap!';
 
       } catch (e) {
+        status.textContent = `❌ ${e.message || 'Gagal. Coba link lain.'}`;
         console.error(e);
-        status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
       }
     };
   </script>
