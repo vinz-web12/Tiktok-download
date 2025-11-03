@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader HD - Asli 1080p</title>
+  <title>TikTok Downloader HD - Asli Tanpa Watermark</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -211,34 +211,29 @@
       status.textContent = '⏳ Mengambil video...';
 
       try {
-        // Gunakan API tikwm.com (sumber HD terbaik saat ini)
-        const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
+        // Gunakan API snaptik.app (lebih sering memberikan HD)
+        const apiUrl = `https://www.snaptik.app/abc2.php?url=${encodeURIComponent(url)}`;
         const res = await fetch(apiUrl);
-        const data = await res.json();
+        const data = await res.text();
 
-        if (data.code !== 0) throw new Error(data.msg || 'Video tidak ditemukan');
+        // Parse HTML untuk ambil link video
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data, 'text/html');
+        const videoLink = doc.querySelector('a[href*=".mp4"]')?.href;
 
-        const videoData = data.data;
-
-        // Ambil video HD tanpa watermark
-        const hdUrl = videoData.nwm; // Ini adalah link HD asli tanpa watermark
-
-        if (!hdUrl) {
-          throw new Error('Video HD tidak tersedia (hanya tersedia versi rendah)');
-        }
+        if (!videoLink) throw new Error('Video HD tidak ditemukan');
 
         // Tampilkan video
-        previewVideo.src = hdUrl;
+        previewVideo.src = videoLink;
         previewVideo.style.display = 'block';
         downloadNow.style.display = 'inline-block';
-        downloadNow.onclick = () => downloadFile(hdUrl);
+        downloadNow.onclick = () => downloadFile(videoLink);
 
         status.textContent = '✅ Video HD tanpa watermark siap!';
 
       } catch (e) {
         console.error(e);
         status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
-        // TIDAK ADA FALLBACK KE 480P — biar jujur
       }
     };
   </script>
