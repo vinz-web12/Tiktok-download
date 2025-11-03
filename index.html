@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader AI HD</title>
+  <title>TikTok Downloader HD - No Error</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -110,14 +110,14 @@
   <canvas id="particles" aria-hidden="true"></canvas>
 
   <div class="wrap">
-    <h1>🎵 TikTok Downloader AI HD</h1>
+    <h1>🎵 TikTok Downloader HD</h1>
     <input id="urlInput" placeholder="Tempel link TikTok (contoh: https://www.tiktok.com/@...)" />
     <button id="fetchBtn">Preview & Download</button>
 
     <div class="previewBox">
       <video id="previewVideo" controls style="display:none"></video>
       <img id="previewImg" style="display:none"/>
-      <button id="downloadNow">Download AI HD</button>
+      <button id="downloadNow">Download HD</button>
       <p class="status" id="status" style="display:none"></p>
     </div>
   </div>
@@ -211,14 +211,17 @@
       status.textContent = '⏳ Mengambil video...';
 
       try {
-        // Gunakan API saya (backend AI)
-        const apiUrl = `https://your-ai-server.com/upscale?url=${encodeURIComponent(url)}`;
+        // Gunakan API tikdown.org (stabil, no CORS)
+        const apiUrl = `https://tikdown.org/api?url=${encodeURIComponent(url)}`;
         const res = await fetch(apiUrl);
         const data = await res.json();
 
-        if (data.error) throw new Error(data.error);
+        if (data.status !== 'success') throw new Error(data.msg || 'Gagal mengambil video');
 
-        const hdUrl = data.url; // Link video hasil AI upscale
+        const videoData = data.data;
+        const hdUrl = videoData.nwm || videoData.hdplay || videoData.play;
+
+        if (!hdUrl) throw new Error('Video HD tidak tersedia');
 
         // Tampilkan video
         previewVideo.src = hdUrl;
@@ -226,11 +229,11 @@
         downloadNow.style.display = 'inline-block';
         downloadNow.onclick = () => downloadFile(hdUrl);
 
-        status.textContent = '✅ Video AI HD siap!';
+        status.textContent = '✅ Video HD tanpa watermark siap!';
 
       } catch (e) {
         console.error(e);
-        status.textContent = `❌ ${e.message || 'Gagal memuat video AI HD'}`;
+        status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
       }
     };
   </script>
