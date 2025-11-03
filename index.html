@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader AI HD - Bro Edition</title>
+  <title>TikTok Downloader HD - Bro Edition</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -110,14 +110,14 @@
   <canvas id="particles" aria-hidden="true"></canvas>
 
   <div class="wrap">
-    <h1>🎵 TikTok Downloader AI HD</h1>
+    <h1>🎵 TikTok Downloader HD</h1>
     <input id="urlInput" placeholder="Tempel link TikTok (contoh: https://www.tiktok.com/@...)" />
     <button id="fetchBtn">Preview & Download</button>
 
     <div class="previewBox">
       <video id="previewVideo" controls style="display:none"></video>
       <img id="previewImg" style="display:none"/>
-      <button id="downloadNow">Download AI HD</button>
+      <button id="downloadNow">Download HD</button>
       <p class="status" id="status" style="display:none"></p>
     </div>
   </div>
@@ -194,6 +194,46 @@
       }
     }
 
+    // Fungsi untuk ambil video dari berbagai API
+    async function getVideoUrl(url) {
+      const apis = [
+        `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`,
+        `https://tikdown.org/api?url=${encodeURIComponent(url)}`,
+        `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`
+      ];
+
+      for (let api of apis) {
+        try {
+          const res = await fetch(api);
+          const text = await res.text();
+
+          // Cek apakah response adalah JSON
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch {
+            // Jika bukan JSON, coba parse HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+            const videoLink = doc.querySelector('a[href*=".mp4"]')?.href;
+            if (videoLink) return videoLink;
+            continue;
+          }
+
+          // Ambil video dari data
+          if (data.data && data.data.nwm) return data.data.nwm;
+          if (data.data && data.data.hdplay) return data.data.hdplay;
+          if (data.data && data.data.play) return data.data.play;
+
+        } catch (e) {
+          console.warn(`API ${api} gagal:`, e.message);
+          continue;
+        }
+      }
+
+      throw new Error('Semua API gagal. Coba link lain.');
+    }
+
     fetchBtn.onclick = async () => {
       let url = urlInput.value.trim();
       if (!url) return alert('📌 Masukkan link TikTok!');
@@ -205,34 +245,20 @@
       status.textContent = '⏳ Mengambil video...';
 
       try {
-        // Gunakan API gue (backend AI) — sudah di-host
-        const apiUrl = `https://api-ai-tiktok.up.railway.app/upscale?url=${encodeURIComponent(url)}`;
-        const res = await fetch(apiUrl);
-        
-        // Cek apakah response adalah HTML (error) atau JSON
-        const text = await res.text();
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch {
-          throw new Error('Server error: ' + text.substring(0, 100));
-        }
+        const hdUrl = await getVideoUrl(url);
 
-        if (data.error) throw new Error(data.error);
+        if (!hdUrl) throw new Error('Video tidak ditemukan');
 
-        const hdUrl = data.url; // Link video hasil AI upscale
-
-        // Tampilkan video
         previewVideo.src = hdUrl;
         previewVideo.style.display = 'block';
         downloadNow.style.display = 'inline-block';
         downloadNow.onclick = () => downloadFile(hdUrl);
 
-        status.textContent = '✅ Video AI HD siap!';
+        status.textContent = '✅ Video HD siap!';
 
       } catch (e) {
         console.error(e);
-        status.textContent = `❌ ${e.message || 'Gagal memuat video AI HD'}`;
+        status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
       }
     };
   </script>
