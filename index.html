@@ -1,99 +1,127 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TikTok Downloader</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Downloader HD</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #0f0f0f;
-      color: #fff;
+      font-family: 'Poppins', sans-serif;
+      background: #111;
+      color: white;
       text-align: center;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 500px;
-      margin: auto;
-      background: #1c1c1c;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+      padding: 30px;
     }
     input {
       width: 90%;
       padding: 10px;
+      margin: 10px 0;
       border-radius: 10px;
       border: none;
       outline: none;
-      margin-bottom: 10px;
+      font-size: 16px;
     }
     button {
-      padding: 10px 15px;
+      background: #00f2ea;
+      color: black;
       border: none;
+      padding: 12px 20px;
       border-radius: 10px;
-      background: #00ff99;
-      color: #000;
-      font-weight: bold;
       cursor: pointer;
+      font-weight: bold;
+      transition: 0.2s;
       margin: 5px;
     }
-    button:hover { background: #00e68a; }
-
+    button:hover {
+      background: #fff;
+      color: black;
+    }
+    .media-container {
+      margin-top: 20px;
+    }
     video, img {
-      max-width: 100%;
-      border-radius: 10px;
-      margin-top: 10px;
+      max-width: 90%;
+      margin: 15px auto;
+      border-radius: 12px;
       display: block;
-      margin-left: auto;
-      margin-right: auto;
     }
-
-    #slideContainer {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 10px;
-      gap: 10px;
-    }
-
-    .slideItem {
-      background: #222;
-      padding: 8px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-
-    .slideItem:hover {
-      background: #333;
+    .download-btn {
+      display: inline-block;
+      margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>🎵 TikTok Downloader</h2>
-    <input id="inputUrl" placeholder="Masukkan link TikTok..." />
-    <button id="fetchBtn">Ambil Video</button>
+  <h2>TikTok Downloader HD 🎵</h2>
+  <input id="url" type="text" placeholder="Tempel link TikTok di sini..." />
+  <br>
+  <button onclick="getMedia()">Download</button>
 
-    <div id="status"></div>
+  <div id="media" class="media-container"></div>
 
-    <button id="audioBtn" style="display:none;">🎧 Download Sound (MP3)</button>
-    <video id="previewVideo" controls style="display:none;"></video>
-    <img id="previewImg" style="display:none;" />
+  <script>
+    async function getMedia() {
+      const container = document.getElementById('media');
+      container.innerHTML = '<p>Loading...</p>';
+      const url = document.getElementById('url').value.trim();
+      if (!url) return alert('Tempel dulu link TikTok-nya!');
 
-    <div id="slideContainer"></div>
+      try {
+        const api = `https://api.tiklydown.eu.org/api/download?url=${encodeURIComponent(url)}`;
+        const res = await fetch(api);
+        const data = await res.json();
+        container.innerHTML = '';
 
-    <button id="downloadNow" style="display:none;">⬇️ Download Sekarang</button>
-  </div>
+        // tombol sound
+        const soundBtn = document.createElement('button');
+        soundBtn.textContent = '🎵 Download Sound (MP3)';
+        soundBtn.onclick = () => autoDownload(data.music.play_url, `sound_${Date.now()}.mp3`);
+        container.appendChild(soundBtn);
 
-  <script src="script.js"></script>
-</body>
-</html>atch (e) {
-        console.error(e);
-        status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
+        // kalau foto (slide)
+        if (data.images && data.images.length > 0) {
+          data.images.forEach((img, i) => {
+            const imageEl = document.createElement('img');
+            imageEl.src = img;
+            container.appendChild(imageEl);
+
+            const btn = document.createElement('button');
+            btn.className = 'download-btn';
+            btn.textContent = `Download slide ${i + 1}`;
+            btn.onclick = () => autoDownload(img, `slide_${i + 1}_${Math.random().toString(36).substring(2,8)}.jpg`);
+            container.appendChild(btn);
+          });
+        }
+        // kalau video
+        else if (data.video && data.video.play_addr) {
+          const vid = document.createElement('video');
+          vid.src = data.video.play_addr;
+          vid.controls = true;
+          vid.style.margin = '20px auto';
+          container.appendChild(vid);
+
+          const btn = document.createElement('button');
+          btn.textContent = '⬇️ Download Video (HD)';
+          btn.onclick = () => autoDownload(data.video.play_addr, `video_${Math.random().toString(36).substring(2,8)}.mp4`);
+          container.appendChild(btn);
+        } else {
+          container.innerHTML = '<p>Gagal ambil media. Pastikan link valid!</p>';
+        }
+
+      } catch (err) {
+        container.innerHTML = '<p>Gagal memproses link 😢</p>';
+        console.error(err);
       }
-    };
+    }
+
+    function autoDownload(url, filename) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
   </script>
 </body>
 </html>
