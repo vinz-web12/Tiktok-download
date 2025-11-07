@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader HD - Bro Sempurna</title>
+  <title>TikTok Downloader HD - Br Sempurna</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -210,6 +210,7 @@
         status.textContent = '📥 Mengunduh...';
         const res = await fetch(url);
         const blob = await res.blob();
+        // Fix ekstensi: video tetap .mp4, foto tetap .jpg
         const ext = blob.type.startsWith('image/') ? '.jpg' : '.mp4';
         const finalName = filename || generateRandomName() + ext;
 
