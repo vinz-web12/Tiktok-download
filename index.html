@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader HD - Bro Final</title>
+  <title>TikTok Downloader HD - Bro Ultimate</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -226,27 +226,53 @@
       }
     }
 
-    // Fungsi untuk ambil video dari tikwm.com (paling stabil)
+    // Fungsi untuk ambil video dari berbagai API
     async function getVideoUrl(url) {
-      const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
+      const apis = [
+        `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`, // HD terbaik
+        `https://tikdown.org/api?url=${encodeURIComponent(url)}`,    // Backup stabil
+        `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`, // Parse HTML
+        `https://tiktok-dl.vercel.app/api?url=${encodeURIComponent(url)}`, // Alternatif
+        `https://tikapi.io/api?url=${encodeURIComponent(url)}`,     // Video & musik
+        `https://api22.ssyapi.com/tiktok/?url=${encodeURIComponent(url)}`, // Kadang aktif
+        `https://tiktok-ssr.vercel.app/api?url=${encodeURIComponent(url)}`, // Komunitas
+        `https://tiktok-downloader-xyz.vercel.app/api?url=${encodeURIComponent(url)}` // Baru
+      ];
 
-      try {
-        const res = await fetch(apiUrl);
-        const data = await res.json();
+      for (let api of apis) {
+        try {
+          const res = await fetch(api);
+          const text = await res.text();
 
-        if (data.code !== 0) throw new Error('Video tidak ditemukan');
+          // Cek apakah response adalah JSON
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch {
+            // Jika bukan JSON, coba parse HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+            const videoLink = doc.querySelector('a[href*=".mp4"]')?.href;
+            if (videoLink) return { type: 'video', url: videoLink };
+            continue;
+          }
 
-        // Ambil video/foto/slide
-        if (data.data && data.data.nwm) return { type: 'video', url: data.data.nwm };
-        if (data.data && data.data.cover) return { type: 'image', url: data.data.cover };
-        if (data.data && data.data.images && data.data.images.length > 0) {
-          return { type: 'slide', urls: data.data.images };
+          // Ambil video dari data
+          if (data.data && data.data.nwm) return { type: 'video', url: data.data.nwm };
+          if (data.data && data.data.hdplay) return { type: 'video', url: data.data.hdplay };
+          if (data.data && data.data.play) return { type: 'video', url: data.data.play };
+          if (data.data && data.data.cover) return { type: 'image', url: data.data.cover };
+          if (data.data && data.data.images && data.data.images.length > 0) {
+            return { type: 'slide', urls: data.data.images };
+          }
+
+        } catch (e) {
+          console.warn(`API ${api} gagal:`, e.message);
+          continue;
         }
-
-        throw new Error('Tidak bisa ambil video/foto');
-      } catch (e) {
-        throw new Error('Gagal ambil video/foto. Coba link lain.');
       }
+
+      throw new Error('Semua API gagal. Coba link lain.');
     }
 
     fetchBtn.onclick = async () => {
@@ -321,18 +347,7 @@
     };
   </script>
 </body>
-</html>onclick = () => downloadFile(slideUrl, `slide_${index + 1}.jpg`);
-            slideContainer.appendChild(slideItem);
-          });
-
-          // Tampilkan tombol download slide
-          downloadNow.style.display = 'none';
-          status.textContent = '✅ Slide siap! Klik foto untuk download.';
-
-        }
-
-      } catch (e) {
-        console.error(e);
+</html>ole.error(e);
         status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
       }
     };
