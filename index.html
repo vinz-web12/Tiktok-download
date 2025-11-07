@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader HD - Bro Ultimate</title>
+  <title>TikTok Downloader HD - Bro Final</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -229,14 +229,9 @@
     // Fungsi untuk ambil video dari berbagai API
     async function getVideoUrl(url) {
       const apis = [
-        `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`, // HD terbaik
-        `https://tikdown.org/api?url=${encodeURIComponent(url)}`,    // Backup stabil
-        `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`, // Parse HTML
-        `https://tiktok-dl.vercel.app/api?url=${encodeURIComponent(url)}`, // Alternatif
-        `https://tikapi.io/api?url=${encodeURIComponent(url)}`,     // Video & musik
-        `https://api22.ssyapi.com/tiktok/?url=${encodeURIComponent(url)}`, // Kadang aktif
-        `https://tiktok-ssr.vercel.app/api?url=${encodeURIComponent(url)}`, // Komunitas
-        `https://tiktok-downloader-xyz.vercel.app/api?url=${encodeURIComponent(url)}` // Baru
+        `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`,
+        `https://tikdown.org/api?url=${encodeURIComponent(url)}`,
+        `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`
       ];
 
       for (let api of apis) {
@@ -262,6 +257,8 @@
           if (data.data && data.data.hdplay) return { type: 'video', url: data.data.hdplay };
           if (data.data && data.data.play) return { type: 'video', url: data.data.play };
           if (data.data && data.data.cover) return { type: 'image', url: data.data.cover };
+
+          // Ambil slide jika ada
           if (data.data && data.data.images && data.data.images.length > 0) {
             return { type: 'slide', urls: data.data.images };
           }
@@ -320,6 +317,34 @@
 
           downloadNow.style.display = 'inline-block';
           downloadNow.onclick = () => downloadFile(result.url);
+
+          status.textContent = '✅ Foto HD siap!';
+
+        } else if (result.type === 'slide') {
+          // Tampilkan slide
+          slideContainer.style.display = 'flex';
+          result.urls.forEach((slideUrl, index) => {
+            const slideItem = document.createElement('div');
+            slideItem.className = 'slideItem';
+            slideItem.innerHTML = `<img src="${slideUrl}" alt="Slide ${index + 1}">`;
+            slideItem.onclick = () => downloadFile(slideUrl, `slide_${index + 1}.jpg`);
+            slideContainer.appendChild(slideItem);
+          });
+
+          // Tampilkan tombol download slide
+          downloadNow.style.display = 'none';
+          status.textContent = '✅ Slide siap! Klik foto untuk download.';
+
+        }
+
+      } catch (e) {
+        console.error(e);
+        status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
+      }
+    };
+  </script>
+</body>
+</html>ick = () => downloadFile(result.url);
 
           status.textContent = '✅ Foto HD siap!';
 
