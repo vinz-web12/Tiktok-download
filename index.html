@@ -104,33 +104,6 @@
       margin-top: 6px;
       text-align: center;
     }
-    .slideContainer {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-top: 10px;
-    }
-    .slideItem {
-      width: 100px;
-      height: 100px;
-      border-radius: 8px;
-      overflow: hidden;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    }
-    .slideItem img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .audioBtn {
-      background: #00e5ff;
-      color: #000;
-      width: 220px;
-      margin-top: 10px;
-      display: none;
-    }
   </style>
 </head>
 <body>
@@ -142,12 +115,9 @@
     <button id="fetchBtn">Preview & Download</button>
 
     <div class="previewBox">
-      <!-- Tambahkan crossorigin dan preload -->
-      <video id="previewVideo" controls style="display:none" crossorigin="anonymous" preload="metadata"></video>
+      <video id="previewVideo" controls style="display:none"></video>
       <img id="previewImg" style="display:none"/>
       <button id="downloadNow">Download HD</button>
-      <button id="audioBtn" class="audioBtn">Download Audio</button>
-      <div id="slideContainer" class="slideContainer"></div>
       <p class="status" id="status" style="display:none"></p>
     </div>
   </div>
@@ -197,30 +167,28 @@
     const previewVideo = document.getElementById('previewVideo');
     const previewImg = document.getElementById('previewImg');
     const downloadNow = document.getElementById('downloadNow');
-    const audioBtn = document.getElementById('audioBtn');
-    const slideContainer = document.getElementById('slideContainer');
     const status = document.getElementById('status');
 
     function generateRandomName() {
       return 'tiktok_' + Math.random().toString(36).substring(2, 8);
     }
 
-    async function downloadFile(url, filename) {
+    async function downloadFile(url) {
       try {
         status.textContent = '📥 Mengunduh...';
         const res = await fetch(url);
         const blob = await res.blob();
         const ext = blob.type.startsWith('image/') ? '.jpg' : '.mp4';
-        const finalName = filename || generateRandomName() + ext;
+        const filename = generateRandomName() + ext;
 
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = finalName;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(a.href);
-        status.textContent = `✅ ${finalName} disimpan!`;
+        status.textContent = `✅ ${filename} disimpan!`;
       } catch (e) {
         status.textContent = `❌ Gagal: ${e.message}`;
       }
@@ -248,20 +216,14 @@
             const parser = new DOMParser();
             const doc = parser.parseFromString(text, 'text/html');
             const videoLink = doc.querySelector('a[href*=".mp4"]')?.href;
-            if (videoLink) return { type: 'video', url: videoLink };
+            if (videoLink) return videoLink;
             continue;
           }
 
           // Ambil video dari data
-          if (data.data && data.data.nwm) return { type: 'video', url: data.data.nwm };
-          if (data.data && data.data.hdplay) return { type: 'video', url: data.data.hdplay };
-          if (data.data && data.data.play) return { type: 'video', url: data.data.play };
-          if (data.data && data.data.cover) return { type: 'image', url: data.data.cover };
-
-          // Ambil slide jika ada
-          if (data.data && data.data.images && data.data.images.length > 0) {
-            return { type: 'slide', urls: data.data.images };
-          }
+          if (data.data && data.data.nwm) return data.data.nwm;
+          if (data.data && data.data.hdplay) return data.data.hdplay;
+          if (data.data && data.data.play) return data.data.play;
 
         } catch (e) {
           console.warn(`API ${api} gagal:`, e.message);
@@ -276,66 +238,23 @@
       let url = urlInput.value.trim();
       if (!url) return alert('📌 Masukkan link TikTok!');
 
-      // Reset UI
       previewVideo.style.display = 'none';
       previewImg.style.display = 'none';
       downloadNow.style.display = 'none';
-      audioBtn.style.display = 'none';
-      slideContainer.innerHTML = '';
       status.style.display = 'block';
       status.textContent = '⏳ Mengambil video...';
 
       try {
-        const result = await getVideoUrl(url);
+        const hdUrl = await getVideoUrl(url);
 
-        if (!result) throw new Error('Video tidak ditemukan');
+        if (!hdUrl) throw new Error('Video tidak ditemukan');
 
-        // Tampilkan preview
-        if (result.type === 'video') {
-          previewVideo.src = result.url;
-          previewVideo.style.display = 'block';
-          // Tunggu metadata selesai load sebelum play
-          previewVideo.addEventListener('loadedmetadata', () => {
-            previewVideo.play();
-          });
+        previewVideo.src = hdUrl;
+        previewVideo.style.display = 'block';
+        downloadNow.style.display = 'inline-block';
+        downloadNow.onclick = () => downloadFile(hdUrl);
 
-          // Tampilkan tombol download audio
-          audioBtn.style.display = 'inline-block';
-          audioBtn.onclick = () => {
-            // Ambil audio dari video (tidak mungkin tanpa server)
-            status.textContent = '⚠️ Audio tidak bisa di-download di browser. Gunakan app seperti CapCut.';
-          };
-
-          downloadNow.style.display = 'inline-block';
-          downloadNow.onclick = () => downloadFile(result.url);
-
-          status.textContent = '✅ Video HD siap!';
-
-        } else if (result.type === 'image') {
-          previewImg.src = result.url;
-          previewImg.style.display = 'block';
-
-          downloadNow.style.display = 'inline-block';
-          downloadNow.onclick = () => downloadFile(result.url);
-
-          status.textContent = '✅ Foto HD siap!';
-
-        } else if (result.type === 'slide') {
-          // Tampilkan slide
-          slideContainer.style.display = 'flex';
-          result.urls.forEach((slideUrl, index) => {
-            const slideItem = document.createElement('div');
-            slideItem.className = 'slideItem';
-            slideItem.innerHTML = `<img src="${slideUrl}" alt="Slide ${index + 1}">`;
-            slideItem.onclick = () => downloadFile(slideUrl, `slide_${index + 1}.jpg`);
-            slideContainer.appendChild(slideItem);
-          });
-
-          // Tampilkan tombol download slide
-          downloadNow.style.display = 'none';
-          status.textContent = '✅ Slide siap! Klik foto untuk download.';
-
-        }
+        status.textContent = '✅ Video HD siap!';
 
       } catch (e) {
         console.error(e);
