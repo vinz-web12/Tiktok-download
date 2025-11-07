@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader HD - kontol</title>
+  <title>TikTok Downloader HD - Bro Sempurna</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -137,7 +137,7 @@
   <canvas id="particles" aria-hidden="true"></canvas>
 
   <div class="wrap">
-    <h1>🎵 TikTok Downloader HDmmk</h1>
+    <h1>🎵 TikTok Downloader HD</h1>
     <input id="urlInput" placeholder="Tempel link TikTok (contoh: https://www.tiktok.com/@...)" />
     <button id="fetchBtn">Preview & Download</button>
 
@@ -226,48 +226,27 @@
       }
     }
 
-    // Fungsi untuk ambil video dari berbagai API
+    // Fungsi untuk ambil video dari tikwm.com (paling stabil)
     async function getVideoUrl(url) {
-      const apis = [
-        `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`,
-      ];
+      const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
 
-      for (let api of apis) {
-        try {
-          const res = await fetch(api);
-          const text = await res.text();
+      try {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
 
-          // Cek apakah response adalah JSON
-          let data;
-          try {
-            data = JSON.parse(text);
-          } catch {
-            // Jika bukan JSON, coba parse HTML
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, 'text/html');
-            const videoLink = doc.querySelector('a[href*=".mp4"]')?.href;
-            if (videoLink) return { type: 'video', url: videoLink };
-            continue;
-          }
+        if (data.code !== 0) throw new Error('Video tidak ditemukan');
 
-          // Ambil video dari data
-          if (data.data && data.data.nwm) return { type: 'video', url: data.data.nwm };
-          if (data.data && data.data.hdplay) return { type: 'video', url: data.data.hdplay };
-          if (data.data && data.data.play) return { type: 'video', url: data.data.play };
-          if (data.data && data.data.cover) return { type: 'image', url: data.data.cover };
-
-          // Ambil slide jika ada
-          if (data.data && data.data.images && data.data.images.length > 0) {
-            return { type: 'slide', urls: data.data.images };
-          }
-
-        } catch (e) {
-          console.warn(`API ${api} gagal:`, e.message);
-          continue;
+        // Ambil video/foto/slide
+        if (data.data && data.data.nwm) return { type: 'video', url: data.data.nwm };
+        if (data.data && data.data.cover) return { type: 'image', url: data.data.cover };
+        if (data.data && data.data.images && data.data.images.length > 0) {
+          return { type: 'slide', urls: data.data.images };
         }
-      }
 
-      throw new Error('Semua API gagal. Coba link lain.');
+        throw new Error('Tidak bisa ambil video/foto');
+      } catch (e) {
+        throw new Error('Gagal ambil video/foto. Coba link lain.');
+      }
     }
 
     fetchBtn.onclick = async () => {
