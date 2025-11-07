@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader HD - Bro Ultimate</title>
+  <title>TikTok Downloader HD - Bro Final</title>
   <style>
     :root {
       --accent: #00e5ff;
@@ -226,53 +226,27 @@
       }
     }
 
-    // Fungsi untuk ambil video dari berbagai API
+    // Fungsi untuk ambil video dari tikwm.com (paling stabil)
     async function getVideoUrl(url) {
-      const apis = [
-  `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`,
-  `https://tikdown.org/api?url=${encodeURIComponent(url)}`,
-  `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`,
-  `https://tiktok-dl.vercel.app/api?url=${encodeURIComponent(url)}`,
-  `https://tikapi.io/api?url=${encodeURIComponent(url)}`,
-  `https://api22.ssyapi.com/tiktok/?url=${encodeURIComponent(url)}`,
-  `https://tiktok-ssr.vercel.app/api?url=${encodeURIComponent(url)}`,
-  `https://tiktok-downloader-xyz.vercel.app/api?url=${encodeURIComponent(url)}`
-];
+      const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
 
-      for (let api of apis) {
-        try {
-          const res = await fetch(api);
-          const text = await res.text();
+      try {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
 
-          // Cek apakah response adalah JSON
-          let data;
-          try {
-            data = JSON.parse(text);
-          } catch {
-            // Jika bukan JSON, coba parse HTML
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, 'text/html');
-            const videoLink = doc.querySelector('a[href*=".mp4"]')?.href;
-            if (videoLink) return { type: 'video', url: videoLink };
-            continue;
-          }
+        if (data.code !== 0) throw new Error('Video tidak ditemukan');
 
-          // Ambil video dari data
-          if (data.data && data.data.nwm) return { type: 'video', url: data.data.nwm };
-          if (data.data && data.data.hdplay) return { type: 'video', url: data.data.hdplay };
-          if (data.data && data.data.play) return { type: 'video', url: data.data.play };
-          if (data.data && data.data.cover) return { type: 'image', url: data.data.cover };
-          if (data.data && data.data.images && data.data.images.length > 0) {
-            return { type: 'slide', urls: data.data.images };
-          }
-
-        } catch (e) {
-          console.warn(`API ${api} gagal:`, e.message);
-          continue;
+        // Ambil video/foto/slide
+        if (data.data && data.data.nwm) return { type: 'video', url: data.data.nwm };
+        if (data.data && data.data.cover) return { type: 'image', url: data.data.cover };
+        if (data.data && data.data.images && data.data.images.length > 0) {
+          return { type: 'slide', urls: data.data.images };
         }
-      }
 
-      throw new Error('Semua API gagal. Coba link lain.');
+        throw new Error('Tidak bisa ambil video/foto');
+      } catch (e) {
+        throw new Error('Gagal ambil video/foto. Coba link lain.');
+      }
     }
 
     fetchBtn.onclick = async () => {
@@ -347,38 +321,4 @@
     };
   </script>
 </body>
-</html>ole.error(e);
-        status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
-      }
-    };
-  </script>
-</body>
-</html>ick = () => downloadFile(result.url);
-
-          status.textContent = '✅ Foto HD siap!';
-
-        } else if (result.type === 'slide') {
-          // Tampilkan slide
-          slideContainer.style.display = 'flex';
-          result.urls.forEach((slideUrl, index) => {
-            const slideItem = document.createElement('div');
-            slideItem.className = 'slideItem';
-            slideItem.innerHTML = `<img src="${slideUrl}" alt="Slide ${index + 1}">`;
-            slideItem.onclick = () => downloadFile(slideUrl, `slide_${index + 1}.jpg`);
-            slideContainer.appendChild(slideItem);
-          });
-
-          // Tampilkan tombol download slide
-          downloadNow.style.display = 'none';
-          status.textContent = '✅ Slide siap! Klik foto untuk download.';
-
-        }
-
-      } catch (e) {
-        console.error(e);
-        status.textContent = `❌ ${e.message || 'Gagal memuat video HD'}`;
-      }
-    };
-  </script>
-</body>
-</html>
+  </html>
