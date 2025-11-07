@@ -229,15 +229,15 @@
     // Fungsi untuk ambil video dari berbagai API
     async function getVideoUrl(url) {
       const apis = [
-        `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`, // HD terbaik
-        `https://tikdown.org/api?url=${encodeURIComponent(url)}`,    // Backup stabil
-        `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`, // Parse HTML
-        `https://tiktok-dl.vercel.app/api?url=${encodeURIComponent(url)}`, // Alternatif
-        `https://tikapi.io/api?url=${encodeURIComponent(url)}`,     // Video & musik
-        `https://api22.ssyapi.com/tiktok/?url=${encodeURIComponent(url)}`, // Kadang aktif
-        `https://tiktok-ssr.vercel.app/api?url=${encodeURIComponent(url)}`, // Komunitas
-        `https://tiktok-downloader-xyz.vercel.app/api?url=${encodeURIComponent(url)}` // Baru
-      ];
+  `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`,
+  `https://tikdown.org/api?url=${encodeURIComponent(url)}`,
+  `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`,
+  `https://tiktok-dl.vercel.app/api?url=${encodeURIComponent(url)}`,
+  `https://tikapi.io/api?url=${encodeURIComponent(url)}`,
+  `https://api22.ssyapi.com/tiktok/?url=${encodeURIComponent(url)}`,
+  `https://tiktok-ssr.vercel.app/api?url=${encodeURIComponent(url)}`,
+  `https://tiktok-downloader-xyz.vercel.app/api?url=${encodeURIComponent(url)}`
+];
 
       for (let api of apis) {
         try {
