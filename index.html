@@ -230,8 +230,6 @@
     async function getVideoUrl(url) {
       const apis = [
         `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`,
-        `https://tikdown.org/api?url=${encodeURIComponent(url)}`,
-        `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`
       ];
 
       for (let api of apis) {
