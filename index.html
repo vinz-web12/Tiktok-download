@@ -59,17 +59,12 @@
     const slideContainer = document.getElementById("slideContainer");
 
     const apis = [
-      `https://www.tikwm.com/api/?url=`,
-      `https://tikdown.org/api?url=`,
-      `https://snaptik.app/abc2.php?url=`,
-      `https://tiktok-dl.vercel.app/api?url=`,
-      `https://tikapi.io/api?url=`,
-      `https://api22.ssyapi.com/tiktok/?url=`,
-      `https://tiktok-ssr.vercel.app/api?url=`,
-      `https://tiktok-downloader-xyz.vercel.app/api?url=`,
-      `https://tiktok-downloader-1.vercel.app/api?url=`,
-      `https://tiktok-downloader-two.vercel.app/api?url=`
-    ];
+  `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`, // HD terbaik
+  `https://tikdown.org/api?url=${encodeURIComponent(url)}`,    // Backup stabil
+  `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`, // Parse HTML
+  `https://tiktok-dl.vercel.app/api?url=${encodeURIComponent(url)}`, // Alternatif
+  `https://tikapi.io/api?url=${encodeURIComponent(url)}`       // Video & musik
+];
 
     function randomName(prefix, ext) {
       const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
