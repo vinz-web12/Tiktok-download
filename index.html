@@ -2,199 +2,184 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TikTok Downloader HD - Bro Sempurna</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TikTok Downloader HD</title>
   <style>
-    :root {
-      --accent: #00e5ff;
-      --bg: #0d0d0d;
-      --muted: #9aa;
-    }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
     body {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      background: var(--bg);
-      color: #fff;
-      font-family: Arial, sans-serif;
-      padding: 24px;
-      overflow-y: auto;
-      position: relative;
-    }
-    canvas#particles {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-    }
-    .wrap {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 640px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
-    h1 {
-      margin: 0 0 16px 0;
-      color: var(--accent);
-      font-size: 24px;
-      text-shadow: 0 0 10px var(--accent);
+      background: black;
+      color: white;
+      font-family: 'Poppins', sans-serif;
       text-align: center;
+      margin: 0;
+      padding: 20px;
     }
+
+    h1 {
+      color: cyan;
+      font-size: 24px;
+      margin-bottom: 15px;
+      text-shadow: 0 0 8px cyan;
+    }
+
     input {
-      width: 100%;
-      padding: 12px 14px;
+      width: 90%;
+      max-width: 500px;
+      padding: 10px;
       border-radius: 10px;
       border: none;
       outline: none;
-      font-size: 15px;
-      text-align: center;
-      background: #0f1113;
-      color: #fff;
-      margin-bottom: 12px;
+      font-size: 16px;
+      margin-bottom: 15px;
     }
+
     button {
-      padding: 10px 16px;
-      border-radius: 10px;
+      padding: 10px 20px;
+      background-color: cyan;
+      color: black;
       border: none;
+      border-radius: 8px;
+      font-weight: bold;
       cursor: pointer;
-      font-weight: 700;
-      margin-top: 6px;
       transition: 0.2s;
     }
+
     button:hover {
-      transform: scale(1.04);
-      opacity: 0.9;
+      background-color: #00ffff;
+      transform: scale(1.05);
     }
-    #fetchBtn {
-      background: var(--accent);
-      color: #000;
-      width: 180px;
-    }
-    .previewBox {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 12px;
-    }
-    video, img {
-      width: 100%;
-      height: auto; /* biar tinggi menyesuaikan */
-      max-width: 560px;
+
+    .slide {
+      background: #111;
+      padding: 10px;
       border-radius: 12px;
+      margin: 15px auto;
+      box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
+      width: 95%;
+      max-width: 600px;
+    }
+
+    img {
+      width: 100%;
+      max-height: 500px;
+      object-fit: contain;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    video {
+      width: 95%;
+      max-width: 600px;
+      border-radius: 10px;
+      margin: 15px auto;
       display: block;
-      object-fit: contain; /* biar gak terpotong */
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
-    #downloadNow {
-      background: #ff5500;
-      color: #000;
-      width: 220px;
-      display: none;
-    }
-    .status {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 6px;
+
+    .download-btn {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      background-color: #00e5ff;
+      color: black;
       text-align: center;
-    }
-    .slideContainer {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-top: 10px;
-      width: 100%;
-    }
-    .slideItem {
-      width: 100px;
-      height: 100px;
       border-radius: 8px;
-      overflow: hidden;
-      cursor: pointer;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      font-weight: bold;
+      transition: 0.2s;
+      width: fit-content;
     }
-    .slideItem img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+
+    .download-btn:hover {
+      background-color: #00ffff;
+      transform: scale(1.05);
     }
-    .audioBtn {
-      background: #00e5ff;
-      color: #000;
-      width: 220px;
-      margin-top: 10px;
-      display: none;
+
+    #result p {
+      color: #ccc;
     }
   </style>
 </head>
 <body>
-  <canvas id="particles" aria-hidden="true"></canvas>
+  <h1>🎵 TikTok Downloader HD</h1>
+  <input id="urlInput" type="text" placeholder="Tempel link TikTok di sini..." />
+  <br />
+  <button onclick="getData()">Preview & Download</button>
+  <div id="result"></div>
 
-  <div class="wrap">
-    <h1>🎵 TikTok Downloader HD</h1>
-    <input id="urlInput" placeholder="Tempel link TikTok (contoh: https://www.tiktok.com/@...)" />
-    <button id="fetchBtn">Preview & Download</button>
-
-    <div class="previewBox">
-      <button id="audioBtn" class="audioBtn">🎧 Download Audio (MP3)</button>
-      <video id="previewVideo" controls style="display:none" crossorigin="anonymous" preload="metadata"></video>
-      <img id="previewImg" style="display:none"/>
-      <button id="downloadNow">⬇️ Download HD</button>
-      <div id="slideContainer" class="slideContainer"></div>
-      <p class="status" id="status" style="display:none"></p>
-    </div>
-  </div>
-
-  <!-- Partikel Background -->
   <script>
-    (function(){
-      const canvas = document.getElementById('particles');
-      const ctx = canvas.getContext('2d');
-      function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
-      addEventListener('resize', resize); resize();
-      const parts=[]; 
-      for(let i=0;i<100;i++){
-        parts.push({
-          x:Math.random()*canvas.width,
-          y:Math.random()*canvas.height,
-          r:Math.random()*2+0.5,
-          dx:(Math.random()-0.5)*0.5,
-          dy:(Math.random()-0.5)*0.5,
-          h:Math.random()*360
-        });
-      }
-      (function anim(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        for(const p of parts){
-          p.x+=p.dx; p.y+=p.dy; p.h+=0.5;
-          if(p.x<0||p.x>canvas.width)p.dx*=-1;
-          if(p.y<0||p.y>canvas.height)p.dy*=-1;
-          const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
-          g.addColorStop(0,`hsla(${p.h},90%,65%,0.9)`);
-          g.addColorStop(0.6,`hsla(${p.h},90%,55%,0.45)`);
-          g.addColorStop(1,'rgba(0,0,0,0)');
-          ctx.fillStyle=g;
-          ctx.beginPath();
-          ctx.arc(p.x,p.y,p.r*3,0,Math.PI*2);
-          ctx.fill();
+    async function getData() {
+      const url = document.getElementById("urlInput").value.trim();
+      const result = document.getElementById("result");
+      result.innerHTML = "<p>⏳ Sedang mengambil data...</p>";
+
+      try {
+        const res = await fetch(`https://api.tiklydown.me/api/download?url=${encodeURIComponent(url)}`);
+        const data = await res.json();
+        const item = data.data;
+
+        result.innerHTML = "";
+
+        // Kalau video
+        if (item.play) {
+          const audioBtn = document.createElement("a");
+          audioBtn.href = item.music;
+          audioBtn.download = "sound.mp3";
+          audioBtn.className = "download-btn";
+          audioBtn.textContent = "⬇️ Download Sound (MP3)";
+          result.appendChild(audioBtn);
+
+          const video = document.createElement("video");
+          video.src = item.play;
+          video.controls = true;
+          video.autoplay = false;
+          result.appendChild(video);
+
+          const vidBtn = document.createElement("a");
+          vidBtn.href = item.play;
+          vidBtn.download = `tiktok_${Math.random().toString(36).slice(2, 8)}.mp4`;
+          vidBtn.className = "download-btn";
+          vidBtn.textContent = "⬇️ Download Video";
+          result.appendChild(vidBtn);
         }
-        requestAnimationFrame(anim);
-      })();
-    })();
+
+        // Kalau foto (image slideshow)
+        if (item.images && item.images.length > 0) {
+          const audioBtn = document.createElement("a");
+          audioBtn.href = item.music;
+          audioBtn.download = "sound.mp3";
+          audioBtn.className = "download-btn";
+          audioBtn.textContent = "⬇️ Download Sound (MP3)";
+          result.appendChild(audioBtn);
+
+          await Promise.all(item.images.map(async (imgUrl, i) => {
+            const div = document.createElement("div");
+            div.className = "slide";
+
+            const img = document.createElement("img");
+            img.src = imgUrl;
+            img.loading = "lazy";
+            img.alt = `Slide ${i + 1}`;
+            img.onerror = () => (img.style.display = "none");
+            div.appendChild(img);
+
+            const btn = document.createElement("a");
+            btn.href = imgUrl;
+            btn.download = `slide_${i + 1}_${Math.random().toString(36).slice(2, 7)}.jpg`;
+            btn.className = "download-btn";
+            btn.textContent = `⬇️ Download Slide ${i + 1}`;
+            div.appendChild(btn);
+
+            result.appendChild(div);
+          }));
+        }
+
+        if (!item.play && (!item.images || item.images.length === 0)) {
+          result.innerHTML = "<p>⚠️ Tidak ditemukan konten dari link tersebut.</p>";
+        }
+
+      } catch (err) {
+        console.error(err);
+        result.innerHTML = "<p>❌ Terjadi kesalahan. Coba lagi nanti.</p>";
+      }
+    }
   </script>
 </body>
 </html>
