@@ -2,89 +2,160 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TikTok Downloader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TikTok Downloader HD - Bro Sempurna</title>
   <style>
-    body {
-      font-family: sans-serif;
-      background: #0f0f0f;
-      color: #fff;
-      text-align: center;
-      margin: 0;
-      padding: 20px;
+    :root {
+      --accent: #00e5ff;
+      --bg: #0d0d0d;
+      --muted: #9aa;
     }
-    .container {
-      max-width: 500px;
-      margin: auto;
-      background: #1c1c1c;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: var(--bg);
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 24px;
+      overflow-y: auto;
+      position: relative;
+    }
+    canvas#particles {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    h1 {
+      margin: 0 0 16px 0;
+      color: var(--accent);
+      font-size: 24px;
+      text-shadow: 0 0 10px var(--accent);
+      text-align: center;
     }
     input {
-      width: 90%;
-      padding: 10px;
+      width: 100%;
+      padding: 12px 14px;
       border-radius: 10px;
       border: none;
       outline: none;
-      margin-bottom: 10px;
+      font-size: 15px;
+      text-align: center;
+      background: #0f1113;
+      color: #fff;
+      margin-bottom: 12px;
     }
     button {
-      padding: 10px 15px;
+      padding: 10px 16px;
+      border-radius: 10px;
       border: none;
-      border-radius: 10px;
-      background: #00ff99;
-      color: #000;
-      font-weight: bold;
       cursor: pointer;
-      margin: 5px;
+      font-weight: 700;
+      margin-top: 6px;
     }
-    button:hover { background: #00e68a; }
-
+    #fetchBtn {
+      background: var(--accent);
+      color: #000;
+      width: 180px;
+    }
+    .previewBox {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
     video, img {
-      max-width: 100%;
-      border-radius: 10px;
-      margin-top: 10px;
+      width: 100%;
+      max-width: 560px;
+      border-radius: 12px;
       display: block;
-      margin-left: auto;
-      margin-right: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
-
+    #downloadNow {
+      background: #ff5500;
+      color: #000;
+      width: 220px;
+      display: none;
+    }
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+      text-align: center;
+    }
     .photoItem {
-      background: #1b1b1b;
+      background: #141414;
       padding: 10px;
       border-radius: 12px;
       margin-top: 15px;
+      width: 100%;
+      max-width: 560px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.4);
     }
-
-    #slideContainer {
+    .photoItem img {
+      width: 100%;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+    .photoItem button {
+      background: var(--accent);
+      color: #000;
+      width: 100%;
+    }
+    .audioBtn {
+      background: #00e5ff;
+      color: #000;
+      width: 220px;
       margin-top: 10px;
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>🎵 TikTok Downloader</h2>
-    <input id="inputUrl" placeholder="Masukkan link TikTok..." />
-    <button id="fetchBtn">Ambil Video</button>
+  <canvas id="particles" aria-hidden="true"></canvas>
 
-    <div id="status"></div>
+  <div class="wrap">
+    <h1>🎵 TikTok Downloader HD</h1>
+    <input id="urlInput" placeholder="Tempel link TikTok (contoh: https://www.tiktok.com/@...)" />
+    <button id="fetchBtn">Preview & Download</button>
 
-    <button id="audioBtn" style="display:none;">🎧 Download Sound (MP3)</button>
-    <video id="previewVideo" controls style="display:none;"></video>
-
-    <div id="slideContainer"></div>
-
-    <button id="downloadNow" style="display:none;">⬇️ Download Video</button>
+    <div class="previewBox">
+      <video id="previewVideo" controls style="display:none" crossorigin="anonymous" preload="metadata"></video>
+      <button id="audioBtn" class="audioBtn">Download Audio</button>
+      <div id="slideContainer"></div>
+      <button id="downloadNow">Download HD</button>
+      <p class="status" id="status" style="display:none"></p>
+    </div>
   </div>
 
   <script>
-    const input = document.getElementById("inputUrl");
+    const urlInput = document.getElementById("urlInput");
     const fetchBtn = document.getElementById("fetchBtn");
-    const status = document.getElementById("status");
     const previewVideo = document.getElementById("previewVideo");
     const downloadNow = document.getElementById("downloadNow");
     const audioBtn = document.getElementById("audioBtn");
+    const status = document.getElementById("status");
     const slideContainer = document.getElementById("slideContainer");
 
     function randomName(prefix, ext) {
@@ -95,22 +166,19 @@
     }
 
     async function downloadFile(url, name) {
-      try {
-        const res = await fetch(url);
-        const blob = await res.blob();
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = name;
-        a.click();
-      } catch {
-        alert("Gagal mendownload file!");
-      }
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
     }
 
     fetchBtn.onclick = async () => {
-      const url = input.value.trim();
+      const url = urlInput.value.trim();
       if (!url) return alert("Masukkan link TikTok!");
 
+      status.style.display = "block";
       status.textContent = "⏳ Mengambil data...";
       previewVideo.style.display = "none";
       downloadNow.style.display = "none";
@@ -121,61 +189,85 @@
         const res = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`);
         const data = await res.json();
 
-        if (!data || !data.data) throw new Error("Video tidak ditemukan!");
+        if (!data || !data.data) throw new Error("Tidak ditemukan.");
 
         const d = data.data;
+        status.textContent = "";
 
-        // Jika konten berupa slide foto
+        // Jika slide foto
         if (d.images && d.images.length > 0) {
           status.textContent = "📸 Slide foto siap!";
-
-          // tombol sound di atas
           if (d.music && d.music.play_url) {
             audioBtn.style.display = "inline-block";
             audioBtn.onclick = () => downloadFile(d.music.play_url, randomName("sound", "mp3"));
           }
 
-          // tampilkan semua foto + tombol di bawahnya
           d.images.forEach((img, i) => {
             const div = document.createElement("div");
             div.className = "photoItem";
-
             const image = document.createElement("img");
             image.src = img;
-            image.alt = `Slide ${i + 1}`;
-
             const btn = document.createElement("button");
             btn.textContent = `⬇️ Download Slide ${i + 1}`;
             btn.onclick = () => downloadFile(img, randomName("slide", "jpg"));
-
             div.appendChild(image);
             div.appendChild(btn);
             slideContainer.appendChild(div);
           });
-
           return;
         }
 
-        // Jika konten berupa video
-        status.textContent = "🎬 Video siap!";
-        previewVideo.style.display = "block";
+        // Jika video
         previewVideo.src = d.play;
-        previewVideo.load();
-
+        previewVideo.style.display = "block";
         downloadNow.style.display = "inline-block";
         downloadNow.onclick = () => downloadFile(d.play, randomName("video", "mp4"));
-
         if (d.music && d.music.play_url) {
           audioBtn.style.display = "inline-block";
-          audioBtn.onclick = () =>
-            downloadFile(d.music.play_url, randomName("sound", "mp3"));
+          audioBtn.onclick = () => downloadFile(d.music.play_url, randomName("sound", "mp3"));
         }
-
+        status.textContent = "🎬 Video siap!";
       } catch (e) {
         console.error(e);
-        status.textContent = "❌ Gagal memuat video / foto!";
+        status.textContent = "❌ Gagal memuat konten!";
       }
     };
+
+    // Background Partikel
+    (function(){
+      const canvas = document.getElementById('particles');
+      const ctx = canvas.getContext('2d');
+      function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
+      addEventListener('resize', resize); resize();
+      const parts=[]; 
+      for(let i=0;i<100;i++){
+        parts.push({
+          x:Math.random()*canvas.width,
+          y:Math.random()*canvas.height,
+          r:Math.random()*2+0.5,
+          dx:(Math.random()-0.5)*0.5,
+          dy:(Math.random()-0.5)*0.5,
+          h:Math.random()*360
+        });
+      }
+      (function anim(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        for(const p of parts){
+          p.x+=p.dx; p.y+=p.dy; p.h+=0.5;
+          if(p.x<0||p.x>canvas.width)p.dx*=-1;
+          if(p.y<0||p.y>canvas.height)p.dy*=-1;
+          const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*4);
+          g.addColorStop(0,`hsla(${p.h},90%,65%,0.9)`);
+          g.addColorStop(0.6,`hsla(${p.h},90%,55%,0.45)`);
+          g.addColorStop(1,'rgba(0,0,0,0)');
+          ctx.fillStyle=g;
+          ctx.beginPath();
+          ctx.arc(p.x,p.y,p.r*3,0,Math.PI*2);
+          ctx.fill();
+        }
+        requestAnimationFrame(anim);
+      })();
+    })();
   </script>
 </body>
 </html>
