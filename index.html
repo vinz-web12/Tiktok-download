@@ -70,6 +70,11 @@
       cursor: pointer;
       font-weight: 700;
       margin-top: 6px;
+      transition: 0.2s;
+    }
+    button:hover {
+      transform: scale(1.04);
+      opacity: 0.9;
     }
     #fetchBtn {
       background: var(--accent);
@@ -87,9 +92,11 @@
     }
     video, img {
       width: 100%;
+      height: auto; /* biar tinggi menyesuaikan */
       max-width: 560px;
       border-radius: 12px;
       display: block;
+      object-fit: contain; /* biar gak terpotong */
       box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     }
     #downloadNow {
@@ -104,24 +111,26 @@
       margin-top: 6px;
       text-align: center;
     }
-    .photoItem {
-      background: #141414;
-      padding: 10px;
-      border-radius: 12px;
-      margin-top: 15px;
+    .slideContainer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
       width: 100%;
-      max-width: 560px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.4);
     }
-    .photoItem img {
-      width: 100%;
-      border-radius: 10px;
-      margin-bottom: 8px;
+    .slideItem {
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
-    .photoItem button {
-      background: var(--accent);
-      color: #000;
+    .slideItem img {
       width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
     .audioBtn {
       background: #00e5ff;
@@ -141,99 +150,17 @@
     <button id="fetchBtn">Preview & Download</button>
 
     <div class="previewBox">
+      <button id="audioBtn" class="audioBtn">🎧 Download Audio (MP3)</button>
       <video id="previewVideo" controls style="display:none" crossorigin="anonymous" preload="metadata"></video>
-      <button id="audioBtn" class="audioBtn">Download Audio</button>
-      <div id="slideContainer"></div>
-      <button id="downloadNow">Download HD</button>
+      <img id="previewImg" style="display:none"/>
+      <button id="downloadNow">⬇️ Download HD</button>
+      <div id="slideContainer" class="slideContainer"></div>
       <p class="status" id="status" style="display:none"></p>
     </div>
   </div>
 
+  <!-- Partikel Background -->
   <script>
-    const urlInput = document.getElementById("urlInput");
-    const fetchBtn = document.getElementById("fetchBtn");
-    const previewVideo = document.getElementById("previewVideo");
-    const downloadNow = document.getElementById("downloadNow");
-    const audioBtn = document.getElementById("audioBtn");
-    const status = document.getElementById("status");
-    const slideContainer = document.getElementById("slideContainer");
-
-    function randomName(prefix, ext) {
-      const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-      let r = "";
-      for (let i = 0; i < 8; i++) r += chars[Math.floor(Math.random() * chars.length)];
-      return `${prefix}_${r}.${ext}`;
-    }
-
-    async function downloadFile(url, name) {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = name;
-      a.click();
-    }
-
-    fetchBtn.onclick = async () => {
-      const url = urlInput.value.trim();
-      if (!url) return alert("Masukkan link TikTok!");
-
-      status.style.display = "block";
-      status.textContent = "⏳ Mengambil data...";
-      previewVideo.style.display = "none";
-      downloadNow.style.display = "none";
-      audioBtn.style.display = "none";
-      slideContainer.innerHTML = "";
-
-      try {
-        const res = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`);
-        const data = await res.json();
-
-        if (!data || !data.data) throw new Error("Tidak ditemukan.");
-
-        const d = data.data;
-        status.textContent = "";
-
-        // Jika slide foto
-        if (d.images && d.images.length > 0) {
-          status.textContent = "📸 Slide foto siap!";
-          if (d.music && d.music.play_url) {
-            audioBtn.style.display = "inline-block";
-            audioBtn.onclick = () => downloadFile(d.music.play_url, randomName("sound", "mp3"));
-          }
-
-          d.images.forEach((img, i) => {
-            const div = document.createElement("div");
-            div.className = "photoItem";
-            const image = document.createElement("img");
-            image.src = img;
-            const btn = document.createElement("button");
-            btn.textContent = `⬇️ Download Slide ${i + 1}`;
-            btn.onclick = () => downloadFile(img, randomName("slide", "jpg"));
-            div.appendChild(image);
-            div.appendChild(btn);
-            slideContainer.appendChild(div);
-          });
-          return;
-        }
-
-        // Jika video
-        previewVideo.src = d.play;
-        previewVideo.style.display = "block";
-        downloadNow.style.display = "inline-block";
-        downloadNow.onclick = () => downloadFile(d.play, randomName("video", "mp4"));
-        if (d.music && d.music.play_url) {
-          audioBtn.style.display = "inline-block";
-          audioBtn.onclick = () => downloadFile(d.music.play_url, randomName("sound", "mp3"));
-        }
-        status.textContent = "🎬 Video siap!";
-      } catch (e) {
-        console.error(e);
-        status.textContent = "❌ Gagal memuat konten!";
-      }
-    };
-
-    // Background Partikel
     (function(){
       const canvas = document.getElementById('particles');
       const ctx = canvas.getContext('2d');
