@@ -58,6 +58,19 @@
     const status = document.getElementById("status");
     const slideContainer = document.getElementById("slideContainer");
 
+    const apis = [
+      `https://www.tikwm.com/api/?url=`,
+      `https://tikdown.org/api?url=`,
+      `https://snaptik.app/abc2.php?url=`,
+      `https://tiktok-dl.vercel.app/api?url=`,
+      `https://tikapi.io/api?url=`,
+      `https://api22.ssyapi.com/tiktok/?url=`,
+      `https://tiktok-ssr.vercel.app/api?url=`,
+      `https://tiktok-downloader-xyz.vercel.app/api?url=`,
+      `https://tiktok-downloader-1.vercel.app/api?url=`,
+      `https://tiktok-downloader-two.vercel.app/api?url=`
+    ];
+
     function randomName(prefix, ext) {
       const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
       let r = "";
@@ -88,6 +101,19 @@
       throw new Error("gagal load gambar");
     }
 
+    async function fetchFromApis(url) {
+      for (const base of apis) {
+        try {
+          const res = await fetch(base + encodeURIComponent(url));
+          const data = await res.json();
+          if (data && (data.data || data.video || data.play)) return data;
+        } catch (err) {
+          console.warn("API gagal:", base);
+        }
+      }
+      throw new Error("Semua API gagal diakses.");
+    }
+
     fetchBtn.onclick = async () => {
       const url = urlInput.value.trim();
       if (!url) return alert("Masukkan link TikTok!");
@@ -100,14 +126,12 @@
       slideContainer.innerHTML = "";
 
       try {
-        const res = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`);
-        const data = await res.json();
-        if (!data || !data.data) throw new Error("Tidak ditemukan.");
-
-        const d = data.data;
+        const response = await fetchFromApis(url);
+        const d = response.data || response.video || response;
+        if (!d) throw new Error("Tidak ditemukan.");
         status.textContent = "";
 
-        // Jika slide foto
+        // Slide foto
         if (d.images && d.images.length > 0) {
           status.textContent = "📸 Slide foto siap!";
           if (d.music && d.music.play_url) {
@@ -133,14 +157,19 @@
           return;
         }
 
-        // Jika video
-        previewVideo.src = d.play;
+        // Video
+        const videoUrl = d.play || d.url || d.downloadUrl || (d.links && d.links.video);
+        if (!videoUrl) throw new Error("URL video tidak ditemukan");
+
+        previewVideo.src = videoUrl;
         previewVideo.style.display = "block";
         downloadNow.style.display = "inline-block";
-        downloadNow.onclick = () => downloadFile(d.play, randomName("video", "mp4"));
-        if (d.music && d.music.play_url) {
+        downloadNow.onclick = () => downloadFile(videoUrl, randomName("video", "mp4"));
+
+        if (d.music && (d.music.play_url || d.music.url)) {
           audioBtn.style.display = "inline-block";
-          audioBtn.onclick = () => downloadFile(d.music.play_url, randomName("sound", "mp3"));
+          const au = d.music.play_url || d.music.url;
+          audioBtn.onclick = () => downloadFile(au, randomName("sound", "mp3"));
         }
         status.textContent = "🎬 Video siap!";
       } catch (e) {
