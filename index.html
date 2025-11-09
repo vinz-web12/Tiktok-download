@@ -59,12 +59,17 @@
     const slideContainer = document.getElementById("slideContainer");
 
     const apis = [
-  `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`, // HD terbaik
-  `https://tikdown.org/api?url=${encodeURIComponent(url)}`,    // Backup stabil
-  `https://snaptik.app/abc2.php?url=${encodeURIComponent(url)}`, // Parse HTML
-  `https://tiktok-dl.vercel.app/api?url=${encodeURIComponent(url)}`, // Alternatif
-  `https://tikapi.io/api?url=${encodeURIComponent(url)}`       // Video & musik
-];
+      `https://www.tikwm.com/api/?url=`,
+      `https://tikdown.org/api?url=`,
+      `https://snaptik.app/abc2.php?url=`,
+      `https://tiktok-dl.vercel.app/api?url=`,
+      `https://tikapi.io/api?url=`,
+      `https://api22.ssyapi.com/tiktok/?url=`,
+      `https://tiktok-ssr.vercel.app/api?url=`,
+      `https://tiktok-downloader-xyz.vercel.app/api?url=`,
+      `https://tiktok-downloader-1.vercel.app/api?url=`,
+      `https://tiktok-downloader-two.vercel.app/api?url=`
+    ];
 
     function randomName(prefix, ext) {
       const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
@@ -80,20 +85,6 @@
       a.href = URL.createObjectURL(blob);
       a.download = name;
       a.click();
-    }
-
-    async function loadImageSafe(src, retries = 3) {
-      for (let i = 0; i < retries; i++) {
-        try {
-          const img = new Image();
-          img.src = src + (i > 0 ? `?r=${Math.random()}` : "");
-          await img.decode();
-          return img;
-        } catch (e) {
-          console.warn("retry img", i + 1);
-        }
-      }
-      throw new Error("gagal load gambar");
     }
 
     async function fetchFromApis(url) {
@@ -126,7 +117,7 @@
         if (!d) throw new Error("Tidak ditemukan.");
         status.textContent = "";
 
-        // Slide foto
+        // Jika slide foto
         if (d.images && d.images.length > 0) {
           status.textContent = "📸 Slide foto siap!";
           if (d.music && d.music.play_url) {
@@ -134,25 +125,25 @@
             audioBtn.onclick = () => downloadFile(d.music.play_url, randomName("sound", "mp3"));
           }
 
-          for (let i = 0; i < d.images.length; i++) {
-            try {
-              const div = document.createElement("div");
-              div.className = "photoItem";
-              const img = await loadImageSafe(d.images[i]);
-              const btn = document.createElement("button");
-              btn.textContent = `⬇️ Download Slide ${i + 1}`;
-              btn.onclick = () => downloadFile(d.images[i], randomName("slide", "jpg"));
-              div.appendChild(img);
-              div.appendChild(btn);
-              slideContainer.appendChild(div);
-            } catch {
-              console.warn("skip gambar gagal index", i);
-            }
-          }
+          // Load cepat per gambar (langsung tampil saat 1 selesai)
+          d.images.forEach((src, i) => {
+            const div = document.createElement("div");
+            div.className = "photoItem";
+            const img = document.createElement("img");
+            img.loading = "lazy";
+            img.decoding = "async";
+            img.src = src;
+            const btn = document.createElement("button");
+            btn.textContent = `⬇️ Download Slide ${i + 1}`;
+            btn.onclick = () => downloadFile(src, randomName("slide", "jpg"));
+            div.appendChild(img);
+            div.appendChild(btn);
+            slideContainer.appendChild(div);
+          });
           return;
         }
 
-        // Video
+        // Jika video
         const videoUrl = d.play || d.url || d.downloadUrl || (d.links && d.links.video);
         if (!videoUrl) throw new Error("URL video tidak ditemukan");
 
