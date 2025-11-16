@@ -29,7 +29,7 @@
       border-radius:12px;
       display:block;
       box-shadow:0 10px 30px rgba(0,0,0,0.6);
-      /* Tampilan lebih tajam di preview */
+      /* Tampilan lebih tajam */
       filter: contrast(1.1) brightness(1.1) saturate(1.1);
       transform: scale(1.05);
       transform-origin: center;
@@ -46,7 +46,7 @@
   <canvas id="particles" aria-hidden="true"></canvas>
 
   <div class="wrap">
-    <h1>🎵 TikTok Downloader (HD Asli)</h1>
+    <h1>🎵 TikTok Downloader (Paksa HD)</h1>
     <input id="urlInput" placeholder="Tempel link TikTok (contoh: https://www.tiktok.com/@...)" />
     <button id="fetchBtn">Preview & Download</button>
 
@@ -97,7 +97,7 @@
         try {
           const res = await fetch(base + encodeURIComponent(url));
           const data = await res.json();
-          if (data && (data.data || data.video || data.play)) return data;
+          if (data && data.code === 0 && data.data) return data;
         } catch (err) {
           console.warn("API gagal:", base);
         }
@@ -118,7 +118,7 @@
 
       try {
         const response = await fetchFromApis(url);
-        const d = response.data || response.video || response;
+        const d = response.data;
         if (!d) throw new Error("Tidak ditemukan.");
         status.textContent = "";
 
@@ -147,15 +147,15 @@
           return;
         }
 
-        // ✅ PENTING: Prioritaskan nwm (HD tanpa watermark)
-        const videoUrl = d.nwm || d.hdplay || d.play || d.url || d.downloadUrl || (d.links && d.links.video);
+        // Ambil video
+        const videoUrl = d.nwm || d.hdplay || d.play || d.url || d.downloadUrl;
 
         if (!videoUrl) throw new Error("URL video tidak ditemukan");
 
         previewVideo.src = videoUrl;
         previewVideo.style.display = "block";
         downloadNow.style.display = "inline-block";
-        downloadNow.onclick = () => downloadFile(videoUrl, randomName("video", "mp4"));
+        downloadNow.onclick = () => downloadFile(videoUrl, randomName("video_hd", "mp4"));
 
         if (d.music && (d.music.play_url || d.music.url)) {
           audioBtn.style.display = "inline-block";
