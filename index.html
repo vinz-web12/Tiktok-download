@@ -46,7 +46,7 @@
   <canvas id="particles" aria-hidden="true"></canvas>
 
   <div class="wrap">
-    <h1>🎵 TikTok Downloader (Tidak Buram + HD)</h1>
+    <h1>🎵 TikTok Downloader (Fix API)</h1>
     <input id="urlInput" placeholder="Tempel link TikTok (contoh: https://www.tiktok.com/@...)" />
     <button id="fetchBtn">Preview & Download</button>
 
@@ -71,6 +71,7 @@
     // Gunakan proxy CORS untuk hindari blokir browser
     const proxy = 'https://api.corsproxy.io/?url=';
 
+    // API yang paling stabil
     const apis = [
       proxy + encodeURIComponent('https://www.tikwm.com/api/?url='),
       proxy + encodeURIComponent('https://tikdown.org/api?url='),
