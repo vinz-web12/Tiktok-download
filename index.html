@@ -46,7 +46,7 @@
   <canvas id="particles" aria-hidden="true"></canvas>
 
   <div class="wrap">
-    <h1>🎵 TikTok Downloader (Fix Ambil Video)</h1>
+    <h1>🎵 TikTok Downloader</h1>
     <input id="urlInput" placeholder="Tempel link TikTok (contoh: https://www.tiktok.com/@...)" />
     <button id="fetchBtn">Preview & Download</button>
 
@@ -54,7 +54,7 @@
       <video id="previewVideo" controls style="display:none" crossorigin="anonymous" preload="metadata"></video>
       <button id="audioBtn" class="audioBtn">Download Audio</button>
       <div id="slideContainer"></div>
-      <button id="downloadNow">Download HD</button>
+      <button id="downloadNow">Download</button>
       <p class="status" id="status" style="display:none"></p>
     </div>
   </div>
@@ -68,13 +68,12 @@
     const status = document.getElementById("status");
     const slideContainer = document.getElementById("slideContainer");
 
-    // API yang paling stabil
     const apis = [
-      `https://www.tikwm.com/api/?url=`,  // Prioritas 1: nwm
-      `https://tikdown.org/api?url=`,     // Prioritas 2: hdplay
-      `https://tiktok-dl.vercel.app/api?url=`, // Prioritas 3
-      `https://tikapi.io/api?url=`,       // Alternatif
-      `https://api22-normal-c-useast1a.tiktokv.com/aweme/v1/feed/?aweme_id=` // Backup
+      `https://www.tikwm.com/api/?url=`,
+      `https://tikdown.org/api?url=`,
+      `https://snaptik.app/abc2.php?url=`,
+      `https://tiktok-dl.vercel.app/api?url=`,
+      `https://tikapi.io/api?url=`
     ];
 
     function randomName(prefix, ext) {
