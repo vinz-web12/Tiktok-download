@@ -46,7 +46,7 @@
   <canvas id="particles" aria-hidden="true"></canvas>
 
   <div class="wrap">
-    <h1>🎵 TikTok Downloader (Bersih + Bisa Jalan)</h1>
+    <h1>🎵 TikTok Downloader (Tidak Buram + HD)</h1>
     <input id="urlInput" placeholder="Tempel link TikTok (contoh: https://www.tiktok.com/@...)" />
     <button id="fetchBtn">Preview & Download</button>
 
@@ -68,13 +68,16 @@
     const status = document.getElementById("status");
     const slideContainer = document.getElementById("slideContainer");
 
-    // API yang tidak perlu proxy
+    // Gunakan proxy CORS untuk hindari blokir browser
+    const proxy = 'https://api.corsproxy.io/?url=';
+
+    // API yang paling stabil
     const apis = [
-      `https://www.tikwm.com/api/?url=`,
-      `https://tikdown.org/api?url=`,
-      `https://tiktok-dl.vercel.app/api?url=`,
-      `https://tikapi.io/api?url=`,
-      `https://snaptik.app/abc2.php?url=`
+      proxy + encodeURIComponent('https://www.tikwm.com/api/?url='),
+      proxy + encodeURIComponent('https://tikdown.org/api?url='),
+      proxy + encodeURIComponent('https://tiktok-dl.vercel.app/api?url='),
+      proxy + encodeURIComponent('https://tikapi.io/api?url='),
+      proxy + encodeURIComponent('https://snaptik.app/abc2.php?url=')
     ];
 
     function randomName(prefix, ext) {
@@ -96,7 +99,7 @@
     async function fetchFromApis(url) {
       for (const base of apis) {
         try {
-          const res = await fetch(base + url);
+          const res = await fetch(base + encodeURIComponent(url));
           const data = await res.json();
           if (data && data.code === 0 && data.data) return data;
         } catch (err) {
