@@ -1,7 +1,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { background:#0a0d14; font-family:'Inter',system-ui,sans-serif; color:#e8edf9; min-height:100vh; }
 .app { max-width:1200px; margin:0 auto; padding:1.5rem; }
-.navbar { display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0 2rem; }
+.navbar { display:flex; justify-content:space-between; align-items:center; padding:0 0 2rem; }
 .logo { font-size:1.8rem; font-weight:600; }
 .logo span { color:#7b8cff; }
 .nav-badge { background:#1f2638; padding:0.4rem 1.2rem; border-radius:40px; font-size:0.75rem; color:#8e9acf; border:1px solid #2d3449; }
