@@ -1,16 +1,23 @@
-from flask import Flask, render_template, request, jsonify
-from flask_cors import CORS
 import os
+import sys
 import json
 import random
 from datetime import datetime, timedelta
+from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 
+# ========== INISIALISASI ==========
 app = Flask(__name__)
 CORS(app)
 
-# ========== OSINT ENGINE ==========
+# ========== PATH UTILITIES ==========
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, 'data')
+DUMMY_DB_PATH = os.path.join(DATA_DIR, 'dummy_db.json')
+
+# ========== OSINT ENGINE (DIREKT DI SINI BIAR GAK IMPORT GAGAL) ==========
 def osint_check_number(number):
-    """Cek nomor via OSINT API (real)"""
+    """Cek nomor via OSINT API"""
     try:
         import requests
         url = f"https://api.whatsapp-osint.com/v1/check?number={number}"
@@ -35,9 +42,11 @@ def osint_check_number(number):
 
 # ========== DUMMY DATA ==========
 def load_dummy_db():
-    db_path = os.path.join(os.path.dirname(__file__), 'data', 'dummy_db.json')
-    with open(db_path, 'r') as f:
-        return json.load(f)
+    try:
+        with open(DUMMY_DB_PATH, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return []
 
 def get_dummy_user(number):
     db = load_dummy_db()
@@ -69,7 +78,7 @@ def track():
     if not number:
         return jsonify({'error': 'Nomor tidak boleh kosong'}), 400
 
-    # Coba OSINT dulu
+    # Coba OSINT
     osint_result = osint_check_number(number)
     if osint_result:
         osint_result['source'] = 'osint'
@@ -101,6 +110,7 @@ def history():
         })
     return jsonify(history_points[::-1])
 
-# Vercel needs this
+# ========== UNTUK VERCEL ==========
+# Ini yang bikin Vercel bisa jalan
 if __name__ == '__main__':
     app.run(debug=True)
