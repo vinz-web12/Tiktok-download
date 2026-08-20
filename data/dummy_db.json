@@ -14,13 +14,5 @@
         "base_lng": 106.8271,
         "location": "Jakarta Pusat",
         "device": "Samsung Galaxy S24"
-    },
-    {
-        "number": "+6281234567892",
-        "name": "Citra Dewi",
-        "base_lat": -6.2634,
-        "base_lng": 106.7945,
-        "location": "Jakarta Barat",
-        "device": "Xiaomi 14 Pro"
     }
 ]
