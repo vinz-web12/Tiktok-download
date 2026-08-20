@@ -63,4 +63,33 @@ input.addEventListener('keydown', e => {
     if (e.key === 'Enter') trackBtn.click();
 });
 
+trackNumber('+6281234567890');async function trackNumber(number) {
+    try {
+        const res = await fetch('/api/track', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ number })
+        });
+        const data = await res.json();
+        updateUI(data);
+    } catch (e) {
+        alert('Server error.');
+    }
+}
+
+trackBtn.addEventListener('click', () => {
+    const raw = input.value.trim();
+    if (!raw) return alert('Masukkan nomor!');
+    trackNumber(raw);
+});
+
+resetBtn.addEventListener('click', () => {
+    input.value = '+6281234567890';
+    trackNumber('+6281234567890');
+});
+
+input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') trackBtn.click();
+});
+
 trackNumber('+6281234567890');
