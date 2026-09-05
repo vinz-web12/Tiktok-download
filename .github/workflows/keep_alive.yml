@@ -1,0 +1,13 @@
+name: Keep Bot Alive
+on:
+  schedule:
+    - cron: '*/5 * * * *'  # Tiap 5 menit
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Vercel Webhook
+        run: |
+          curl -s "https://bot-vercel.vercel.app/webhook" || echo "Ping failed"
