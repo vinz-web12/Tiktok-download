@@ -1,191 +1,306 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="id">
 <head>
-    <title>Bot Aktif</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HD Maker – Foto dan Video ke HD</title>
+<style>
+:root{--bg:#eef1f5;--card:#fff;--ink:#10161f;--mut:#5a6675;--line:#d5dbe3;--acc:#2450ff;--accink:#fff;--stg:#dfe4ea;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1016;--card:#151b24;--ink:#e8edf4;--mut:#93a0b1;--line:#262f3b;--acc:#7b94ff;--accink:#0c1016;--stg:#0a0d12;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0c1016;--card:#151b24;--ink:#e8edf4;--mut:#93a0b1;--line:#262f3b;--acc:#7b94ff;--accink:#0c1016;--stg:#0a0d12;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif}
+main{max-width:920px;margin:0 auto;padding:28px 18px 56px;display:grid;gap:18px}
+h1{font:800 clamp(2rem,6vw,3.2rem)/1 "Avenir Next","Segoe UI",system-ui,sans-serif;letter-spacing:-.035em;margin:0 0 8px}
+.sub{margin:0;color:var(--mut);max-width:56ch}
+.tabs{display:inline-flex;border:1px solid var(--line);border-radius:12px;padding:3px;background:var(--card);width:max-content}
+.tabs button{border:0;background:none;color:var(--mut);font:600 .95rem inherit;font-family:inherit;padding:.5rem 1.3rem;border-radius:9px;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--acc);color:var(--accink)}
+.drop{display:block;border:2px dashed var(--line);border-radius:16px;padding:34px 18px;text-align:center;background:var(--card);cursor:pointer;font-weight:600}
+.drop.on,.drop:hover{border-color:var(--acc)}
+.drop small{display:block;font-weight:400;color:var(--mut);margin-top:4px}
+.drop input{position:absolute;width:1px;height:1px;opacity:0}
+.drop:focus-within{outline:2px solid var(--acc);outline-offset:2px}
+.stage{--ar:1.5;--p:50;position:relative;width:min(100%,calc(70vh*var(--ar)));aspect-ratio:var(--ar);margin:0 auto;background:var(--stg);border-radius:14px;overflow:hidden;touch-action:pan-y}
+.stage img,.stage canvas,.stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block}
+.stage[data-s=photo] #cv{clip-path:inset(0 0 0 calc(var(--p)*1%))}
+.stage[data-s=photo] #pv,.stage[data-s=vrun] #orig,.stage[data-s=vrun] .cm,.stage[data-s=vsrc] #cv,.stage[data-s=vsrc] #orig,.stage[data-s=vsrc] .cm{display:none}
+.stage[data-s=vrun] #pv{opacity:0;pointer-events:none}
+.cm{position:absolute;inset:0}
+.cm input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize}
+.cm i{position:absolute;top:0;bottom:0;left:calc(var(--p)*1%);width:2px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.35);pointer-events:none}
+.cm b{position:absolute;top:10px;padding:2px 9px;border-radius:99px;background:rgba(0,0,0,.6);color:#fff;font-size:.8rem;pointer-events:none}
+.cm b:first-of-type{left:10px}.cm b:last-of-type{right:10px}
+.info{text-align:center;color:var(--mut);font-size:.92rem;margin-top:10px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 22px}
+label.f{display:grid;gap:4px;font-weight:600;font-size:.92rem}
+label.f span{display:flex;justify-content:space-between}
+label.f output{color:var(--mut);font-weight:400;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--acc)}
+select{font:inherit;padding:.5rem .6rem;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.btn{font:700 1rem inherit;font-family:inherit;border-radius:11px;padding:.7rem 1.3rem;border:1px solid var(--acc);background:var(--acc);color:var(--accink);cursor:pointer}
+.btn.s{background:none;color:var(--ink);border-color:var(--line);padding:.45rem .9rem;font-weight:600;font-size:.9rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+progress{flex:1;min-width:140px;height:10px;accent-color:var(--acc)}
+.note{color:var(--mut);font-size:.88rem;margin:0}
+#msg{min-height:1.4em;margin:0;font-size:.92rem}
+#rv{width:100%;max-height:70vh;border-radius:14px;background:var(--stg)}
+[hidden]{display:none!important}
+</style>
 </head>
 <body>
-    <h1>🤖 Bot Telegram Aktif</h1>
-    <p>Webhook endpoint: <code>/webhook</code></p>
-    <p>Status: ✅ Online</p>
-</body>
-</html>            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #1a1a2e;
-        }
-        .status-item:last-child { border-bottom: none; }
-        .status-item .label { color: #888; }
-        .status-item .value.on { color: #4caf50; }
-        .status-item .value.off { color: #f44336; }
+<main>
+<header>
+<h1>HD Maker</h1>
+<p class="sub">Perbesar dan pertajam foto atau video sampai 4K. Semua diproses di perangkatmu, tidak ada file yang diunggah.</p>
+</header>
 
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: 0.2s;
-        }
-        .btn.primary { background: #2a7de1; color: #fff; }
-        .btn.primary:hover { background: #1a6bc8; }
-        .btn.danger { background: #f44336; color: #fff; }
-        .btn.danger:hover { background: #d32f2f; }
-        .btn.success { background: #4caf50; color: #fff; }
-        .btn.success:hover { background: #388e3c; }
-        .btn.secondary { background: #2a2a4a; color: #fff; }
-        .btn.secondary:hover { background: #3a3a5a; }
-
-        .input-group {
-            margin-top: 15px;
-            text-align: left;
-        }
-        .input-group label {
-            display: block;
-            font-size: 14px;
-            color: #aaa;
-            margin-bottom: 5px;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #2a2a4a;
-            background: #0f0f1f;
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-        }
-        .log-box {
-            background: #0f0f1f;
-            border-radius: 8px;
-            padding: 10px;
-            margin-top: 15px;
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 12px;
-            color: #888;
-            text-align: left;
-        }
-        .log-box div { padding: 4px 0; border-bottom: 1px solid #1a1a2e; }
-        .log-box .time { color: #666; }
-        .footer { margin-top: 15px; color: #444; font-size: 11px; }
-        .commands {
-            margin-top: 15px;
-            text-align: left;
-        }
-        .commands h3 { color: #fff; font-size: 14px; margin-bottom: 8px; }
-        .cmd-item {
-            background: #0f0f1f;
-            padding: 6px 12px;
-            border-radius: 6px;
-            margin-bottom: 4px;
-            font-size: 13px;
-            border-left: 3px solid #2a7de1;
-        }
-        .cmd-item .cmd { color: #4caf50; font-weight: bold; }
-        .cmd-item .desc { color: #888; }
-    </style>
-</head>
-<body>
-
-<div class="dashboard">
-    <h1>🤖 Bot Telegram</h1>
-    <p class="sub">Status & Kontrol Bot</p>
-
-    <div class="status-box">
-        <div class="status-item">
-            <span class="label">📡 Status</span>
-            <span class="value on" id="statusText">✅ Online</span>
-        </div>
-        <div class="status-item">
-            <span class="label">👥 Total User</span>
-            <span class="value" id="userCount">0</span>
-        </div>
-        <div class="status-item">
-            <span class="label">📊 Total Command</span>
-            <span class="value" id="cmdCount">0</span>
-        </div>
-    </div>
-
-    <button class="btn danger" id="toggleBtn">⏹️ Nonaktifkan Bot</button>
-
-    <div class="input-group">
-        <label>🔗 Set Webhook URL</label>
-        <input type="text" id="webhookInput" placeholder="https://tiktok-download-nine.vercel.app/webhook">
-        <button class="btn success" id="setWebhookBtn" style="margin-top:5px;">Set Webhook</button>
-    </div>
-
-    <div class="commands">
-        <h3>📋 Command Tersedia</h3>
-        <div class="cmd-item"><span class="cmd">/start</span> <span class="desc">Mulai bot</span></div>
-        <div class="cmd-item"><span class="cmd">/tiktok &lt;link&gt;</span> <span class="desc">Download video TikTok</span></div>
-        <div class="cmd-item"><span class="cmd">/mp3 &lt;link&gt;</span> <span class="desc">Download audio TikTok</span></div>
-        <div class="cmd-item"><span class="cmd">/status</span> <span class="desc">Cek status bot</span></div>
-    </div>
-
-    <div class="log-box" id="logBox">
-        <div style="color:#666;">📋 Log akan muncul di sini</div>
-    </div>
-
-    <div class="footer">
-        Token: 7961613868:AAExZB1W9L5EinCeDvwGASisthoLGgYayBM
-    </div>
+<div class="tabs" role="group" aria-label="Jenis file">
+<button type="button" data-m="foto" aria-pressed="true">Foto</button>
+<button type="button" data-m="video" aria-pressed="false">Video</button>
 </div>
 
+<label class="drop" id="drop">
+<input type="file" id="file" accept="image/*">
+<span id="dropt">Pilih foto atau seret ke sini</span>
+<small>JPG, PNG, WebP, HEIC (jika didukung browser)</small>
+</label>
+
+<section id="sw" hidden>
+<div class="stage" id="stage" data-s="photo">
+<img id="orig" alt="Foto asli">
+<canvas id="cv"></canvas>
+<video id="pv" playsinline preload="auto" controls></video>
+<div class="cm"><i></i><b>Asli</b><b>HD</b><input type="range" id="cmp" min="0" max="100" value="50" aria-label="Geser untuk membandingkan asli dan HD"></div>
+</div>
+<div class="info" id="info"></div>
+</section>
+
+<section class="panel">
+<div class="row">
+<label class="f" style="grid-auto-flow:column;align-items:center;gap:10px">Resolusi hasil
+<select id="res">
+<option value="x2">2× lipat</option>
+<option value="x3">3× lipat</option>
+<option value="x4">4× lipat</option>
+<option value="1080">Full HD (1080p)</option>
+<option value="1440">2K (1440p)</option>
+<option value="2160" selected>4K (2160p)</option>
+</select></label>
+<span id="fmtw" class="row" style="gap:10px"><label class="f" style="grid-auto-flow:column;align-items:center;gap:10px">Format
+<select id="fmt"><option value="png">PNG (kualitas penuh)</option><option value="jpg">JPG</option><option value="webp">WebP</option></select></label></span>
+<span class="row" style="margin-left:auto">
+<button type="button" class="btn s" data-p="nat">Natural</button>
+<button type="button" class="btn s" data-p="taj">Tajam</button>
+<button type="button" class="btn s" data-p="mak">Maksimal</button>
+</span>
+</div>
+<div class="grid" id="sl"></div>
+<p class="note">Cara kerjanya: pembesaran bicubic, pengurangan noise yang menjaga tepi, lalu penajaman. Detail yang memang tidak ada di file asli tidak bisa dibuat ulang, jadi hasil terbaik datang dari sumber yang sudah cukup bersih.</p>
+</section>
+
+<div class="row">
+<button type="button" class="btn" id="go" hidden>Buat video HD</button>
+<button type="button" class="btn s" id="stop" hidden>Batal</button>
+<progress id="pg" max="1" value="0" hidden></progress>
+<button type="button" class="btn" id="save" hidden>Simpan hasil</button>
+</div>
+<p id="msg" role="status"></p>
+
+<section id="result" hidden>
+<video id="rv" controls playsinline></video>
+</section>
+</main>
+
 <script>
-    const API_BASE = window.location.origin;
+(()=>{
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const cv=$('#cv'),stage=$('#stage'),pv=$('#pv'),orig=$('#orig'),msg=$('#msg'),pg=$('#pg');
+const gl=cv.getContext('webgl',{preserveDrawingBuffer:true,antialias:false,alpha:false});
+if(!gl){document.querySelector('main').innerHTML='<p>Browser ini tidak mendukung WebGL. Coba Chrome, Edge, Firefox, atau Safari terbaru.</p>';return}
+const VS='attribute vec2 p;varying vec2 uv;void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}';
+const FS=`#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+varying vec2 uv;uniform sampler2D t;uniform vec2 ts;uniform float sh,rd,ct,sa,dn;
+vec3 T(vec2 u){return texture2D(t,u).rgb;}
+vec3 cr(vec2 u){
+ vec2 sp=u*ts,tp=floor(sp-.5)+.5,f=sp-tp;
+ vec2 w0=f*(-.5+f*(1.-.5*f)),w1=1.+f*f*(-2.5+1.5*f),w2=f*(.5+f*(2.-1.5*f)),w3=f*f*(-.5+.5*f);
+ vec2 w12=w1+w2,o=w2/w12,a=(tp-1.)/ts,b=(tp+o)/ts,c=(tp+2.)/ts;
+ return T(vec2(a.x,a.y))*w0.x*w0.y+T(vec2(b.x,a.y))*w12.x*w0.y+T(vec2(c.x,a.y))*w3.x*w0.y
+ +T(vec2(a.x,b.y))*w0.x*w12.y+T(vec2(b.x,b.y))*w12.x*w12.y+T(vec2(c.x,b.y))*w3.x*w12.y
+ +T(vec2(a.x,c.y))*w0.x*w3.y+T(vec2(b.x,c.y))*w12.x*w3.y+T(vec2(c.x,c.y))*w3.x*w3.y;}
+void main(){
+ vec2 d=rd/ts,e=1.5/ts;
+ vec3 c=cr(uv);
+ vec3 bw=(T(uv+vec2(e.x,0.))+T(uv-vec2(e.x,0.))+T(uv+vec2(0.,e.y))+T(uv-vec2(0.,e.y)))*.25;
+ c=mix(c,bw,dn*(1.-smoothstep(.02,.14,length(c-bw))));
+ vec3 bl=(T(uv+vec2(d.x,0.))+T(uv-vec2(d.x,0.))+T(uv+vec2(0.,d.y))+T(uv-vec2(0.,d.y)))*.25;
+ c+=sh*(c-bl);
+ c=(c-.5)*ct+.5;
+ float l=dot(c,vec3(.299,.587,.114));
+ c=mix(vec3(l),c,sa);
+ gl_FragColor=vec4(clamp(c,0.,1.),1.);}`;
+const mk=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o};
+const pr=gl.createProgram();gl.attachShader(pr,mk(gl.VERTEX_SHADER,VS));gl.attachShader(pr,mk(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);gl.useProgram(pr);
+gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+const lp=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(lp);gl.vertexAttribPointer(lp,2,gl.FLOAT,false,0,0);
+gl.bindTexture(gl.TEXTURE_2D,gl.createTexture());
+[gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE));
+[gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR));
+const U={};['ts','sh','rd','ct','sa','dn'].forEach(n=>U[n]=gl.getUniformLocation(pr,n));
+const MAXT=gl.getParameter(gl.MAX_TEXTURE_SIZE);
 
-    async function fetchStatus() {
-        try {
-            const res = await fetch(`${API_BASE}/api/status`);
-            const data = await res.json();
-            document.getElementById('statusText').textContent = data.active ? '✅ Online' : '❌ Offline';
-            document.getElementById('statusText').className = 'value ' + (data.active ? 'on' : 'off');
-            document.getElementById('userCount').textContent = data.total_users || 0;
-            document.getElementById('cmdCount').textContent = data.total_commands || 0;
+const SL=[['sh','Ketajaman',0,2,.05,.9],['rd','Radius penajaman',.3,2,.05,.7],['dn','Pengurangan noise',0,1,.05,.3],['ct','Kontras',.8,1.4,.01,1.06],['sa','Warna',.8,1.5,.01,1.08]];
+const PRE={nat:[.5,.7,.2,1.02,1.04],taj:[.9,.7,.3,1.06,1.08],mak:[1.3,.6,.45,1.1,1.12]};
+$('#sl').innerHTML=SL.map(([id,n,a,b,s,v])=>`<label class="f"><span>${n}<output id="o${id}"></output></span><input type="range" id="${id}" min="${a}" max="${b}" step="${s}" value="${v}"></label>`).join('');
+const val=id=>+$('#'+id).value;
+const sync=()=>SL.forEach(([id])=>$('#o'+id).textContent=val(id).toFixed(2));
 
-            const logBox = document.getElementById('logBox');
-            if (data.logs && data.logs.length > 0) {
-                logBox.innerHTML = data.logs.map(log =>
-                    `<div><span class="time">${log.time}</span> — ${log.chat_id} <span style="color:#fff;">${log.command}</span></div>`
-                ).join('');
-            }
-        } catch (e) {
-            console.error('Gagal fetch status:', e);
-        }
-    }
+let mode='foto',S=null,R=null,dl=null,busy=false,rec=null,go=false,canceled=false,errText='',AC,SRC,DEST,spk,q=0;
+window.claude?.use('downloads').then(d=>{dl=d}).catch(()=>{});
+const say=t=>{msg.textContent=t};
 
-    document.getElementById('toggleBtn').addEventListener('click', async () => {
-        const current = document.getElementById('statusText').textContent.includes('Online');
-        try {
-            const res = await fetch(`${API_BASE}/api/toggle`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ active: !current })
-            });
-            if (res.ok) fetchStatus();
-        } catch (e) { console.error(e); }
-    });
+function outSize(w,h){
+ const v=$('#res').value;const s=v[0]=='x'?+v.slice(1):+v/Math.min(w,h);
+ const W=w*s,H=h*s,k=Math.min(1,8192/Math.max(W,H),Math.sqrt(16.7e6/(W*H)));
+ return[Math.max(2,Math.round(W*k/2)*2),Math.max(2,Math.round(H*k/2)*2)];
+}
+const fmtT=s=>Math.floor(s/60)+':'+String(Math.round(s%60)).padStart(2,'0');
+function setOut(){
+ if(!S)return;
+ const[W,H]=outSize(S.w,S.h);cv.width=W;cv.height=H;
+ stage.style.setProperty('--ar',W/H);
+ $('#info').textContent=S.w+'×'+S.h+' → '+W+'×'+H+(S.kind=='video'?' · lama proses ≈ '+fmtT(S.dur)+' (sepanjang video)':'');
+}
+function draw(){
+ if(!S)return;
+ if(S.live||!S.up){
+  if(S.live&&S.src.readyState<2)return;
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,S.src);S.up=true;
+ }
+ gl.viewport(0,0,cv.width,cv.height);
+ gl.uniform2f(U.ts,S.w,S.h);
+ ['sh','rd','ct','sa','dn'].forEach(n=>gl.uniform1f(U[n],val(n)));
+ gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+}
+const render=()=>{cancelAnimationFrame(q);q=requestAnimationFrame(()=>{if(S&&S.kind=='foto')draw()})};
 
-    document.getElementById('setWebhookBtn').addEventListener('click', async () => {
-        const url = document.getElementById('webhookInput').value.trim();
-        if (!url) { alert('Masukkan URL webhook!'); return; }
-        try {
-            const res = await fetch(`${API_BASE}/api/set_webhook`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: url })
-            });
-            const data = await res.json();
-            alert(data.status === 'ok' ? '✅ Webhook berhasil diset!' : '❌ ' + data.msg);
-        } catch (e) { alert('❌ Error: ' + e.message); }
-    });
+function ui(){
+ const vid=mode=='video';
+ $('#go').hidden=!vid||busy||!S;$('#stop').hidden=!busy;pg.hidden=!busy;
+ $('#save').hidden=vid?!R:!S;$('#fmtw').hidden=vid;
+ $$('.tabs button,#file').forEach(b=>b.disabled=busy);
+ $('#sw').hidden=!S;
+}
+function reset(){
+ S=null;R=null;say('');$('#result').hidden=true;
+ pv.pause();pv.removeAttribute('src');pv.load();orig.removeAttribute('src');
+ $('#file').value='';ui();
+}
+$$('.tabs button').forEach(b=>b.onclick=()=>{
+ mode=b.dataset.m;$$('.tabs button').forEach(x=>x.setAttribute('aria-pressed',x==b));
+ $('#file').accept=mode=='foto'?'image/*':'video/*';
+ $('#dropt').textContent=mode=='foto'?'Pilih foto atau seret ke sini':'Pilih video atau seret ke sini';
+ $('#drop small').textContent=mode=='foto'?'JPG, PNG, WebP, HEIC (jika didukung browser)':'MP4, MOV, WebM. Video diproses sepanjang durasinya.';
+ $('#res').value=mode=='foto'?'2160':'1080';
+ reset();
+});
 
-    fetchStatus();
-    setInterval(fetchStatus, 5000);
+async function load(f){
+ if(!f)return;
+ const isV=f.type.startsWith('video/');
+ if((mode=='video')!==isV&&f.type){say(mode=='foto'?'Ini bukan foto. Pindah ke tab Video untuk file video.':'Ini bukan video. Pindah ke tab Foto untuk file foto.');return}
+ reset();say('Membuka file…');
+ const url=URL.createObjectURL(f),name=f.name||'hasil';
+ try{
+  if(mode=='foto'){
+   const im=new Image();im.src=url;await im.decode();
+   let src=im,w=im.naturalWidth,h=im.naturalHeight;
+   if(Math.max(w,h)>MAXT){const k=MAXT/Math.max(w,h),c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);src=c;w=c.width;h=c.height}
+   S={kind:'foto',name,src,w,h,up:false};orig.src=url;stage.dataset.s='photo';
+  }else{
+   pv.src=url;
+   await new Promise((ok,no)=>{pv.onloadedmetadata=ok;pv.onerror=no});
+   S={kind:'video',name,src:pv,w:pv.videoWidth,h:pv.videoHeight,dur:pv.duration,live:true};stage.dataset.s='vsrc';pv.controls=true;
+  }
+ }catch(e){S=null;say(mode=='video'?'Video tidak bisa dibuka. Video iPhone berformat HEVC sering gagal di Chrome; coba di Safari atau ubah ke MP4 (H.264) dulu.':'Foto tidak bisa dibuka di browser ini. Coba JPG atau PNG.');ui();return}
+ say('');setOut();ui();render();
+}
+$('#file').onchange=e=>load(e.target.files[0]);
+const dr=$('#drop');
+['dragenter','dragover'].forEach(n=>dr.addEventListener(n,e=>{e.preventDefault();dr.classList.add('on')}));
+['dragleave','drop'].forEach(n=>dr.addEventListener(n,e=>{e.preventDefault();dr.classList.remove('on')}));
+dr.addEventListener('drop',e=>load(e.dataTransfer.files[0]));
+
+SL.forEach(([id])=>$('#'+id).addEventListener('input',()=>{sync();render()}));
+$$('[data-p]').forEach(b=>b.onclick=()=>{PRE[b.dataset.p].forEach((v,i)=>$('#'+SL[i][0]).value=v);sync();render()});
+$('#res').onchange=()=>{if(S&&!busy){setOut();render()}};
+$('#cmp').addEventListener('input',e=>stage.style.setProperty('--p',e.target.value));
+sync();
+
+const FM={png:['image/png','png'],jpg:['image/jpeg','jpg'],webp:['image/webp','webp']};
+const save=(b,e)=>dl.save({filename:S.name.replace(/\.[^.]+$/,'')+'-hd.'+e,data:b}).then(()=>say('Tersimpan.')).catch(x=>{if(!x||x.code!='declined')say('Gagal menyimpan file.')});
+$('#save').onclick=()=>{
+ if(!dl){say('Penyimpanan tidak tersedia di tampilan ini. Buka halaman ini langsung dari tautan artefaknya.');return}
+ if(mode=='foto'){draw();const[t,e]=FM[$('#fmt').value];cv.toBlob(b=>b?save(b,e):say('Gagal membuat file. Coba resolusi yang lebih kecil.'),t,.95)}
+ else save(R.blob,R.ext);
+};
+
+$('#stop').onclick=()=>{canceled=true;if(rec&&rec.state!='inactive')rec.stop()};
+$('#go').onclick=async()=>{
+ if(!window.MediaRecorder||!cv.captureStream){say('Browser ini belum mendukung perekaman video. Coba Chrome, Edge, atau Safari terbaru.');return}
+ busy=true;canceled=false;errText='';R=null;$('#result').hidden=true;say('Memproses. Biarkan tab ini tetap terbuka dan terlihat sampai selesai.');
+ stage.dataset.s='vrun';pv.controls=false;setOut();ui();
+ const ch=[];let withAudio=false;
+ const fail=e=>{
+  errText='Gagal memproses: '+((e&&(e.name||e.message))?(e.name||'')+' '+(e.message||''):String(e));canceled=true;
+  if(rec&&rec.state!='inactive')rec.stop();
+  else{go=false;busy=false;stage.dataset.s='vsrc';pv.controls=true;say(errText);ui()}
+ };
+ try{
+  try{
+   AC=AC||new AudioContext();await Promise.race([AC.resume(),new Promise(r=>setTimeout(r,800))]);
+   if(!SRC){SRC=AC.createMediaElementSource(pv);DEST=AC.createMediaStreamDestination();spk=AC.createGain();SRC.connect(DEST);SRC.connect(spk);spk.connect(AC.destination)}
+   spk.gain.value=0;withAudio=true;
+  }catch(_){withAudio=false}
+  S.up=false;await new Promise(r=>{pv.onseeked=r;pv.currentTime=0;setTimeout(r,400)});draw();
+  const st=cv.captureStream();
+  if(withAudio)DEST.stream.getAudioTracks().forEach(t=>st.addTrack(t));
+  const mt=['video/mp4;codecs=avc1,mp4a.40.2','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(m=>MediaRecorder.isTypeSupported(m))||'';
+  const bps=Math.min(2.5e7,cv.width*cv.height*30*.2);
+  try{rec=new MediaRecorder(st,mt?{mimeType:mt,videoBitsPerSecond:bps}:{videoBitsPerSecond:bps})}catch(_){rec=new MediaRecorder(st)}
+  rec.ondataavailable=e=>{if(e.data.size)ch.push(e.data)};
+  rec.onerror=e=>fail(e.error||e);
+  rec.onstop=()=>{
+   go=false;if(spk)spk.gain.value=1;pv.pause();pv.controls=true;busy=false;stage.dataset.s='vsrc';
+   if(!canceled&&ch.length){
+    const type=(rec.mimeType||mt||'video/webm').split(';')[0];
+    R={blob:new Blob(ch,{type}),ext:type.includes('mp4')?'mp4':'webm'};
+    if($('#rv').src)URL.revokeObjectURL($('#rv').src);
+    $('#rv').src=URL.createObjectURL(R.blob);$('#result').hidden=false;say('Selesai. Putar hasilnya di bawah, lalu simpan.');
+   }else say(errText||(canceled?'Dibatalkan.':'Perekaman gagal. Coba pilih resolusi lebih kecil, misalnya 1080p.'));
+   ui();
+  };
+  const tick=()=>{
+   if(!go)return;draw();pg.value=pv.duration?pv.currentTime/pv.duration:0;
+   if('requestVideoFrameCallback' in pv)pv.requestVideoFrameCallback(tick);else requestAnimationFrame(tick);
+  };
+  pv.onended=()=>{draw();setTimeout(()=>{if(rec.state!='inactive')rec.stop()},250)};
+  go=true;rec.start(500);
+  pv.play().then(()=>tick()).catch(fail);
+ }catch(e){fail(e)}
+};
+ui();
+})();
 </script>
-
 </body>
-  </html>
+    </html>
+    
